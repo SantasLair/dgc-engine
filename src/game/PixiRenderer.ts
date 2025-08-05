@@ -256,6 +256,14 @@ export class PixiRenderer {
   }
 
   /**
+   * Clear the path display
+   */
+  public clearPath(): void {
+    if (!this.isInitialized) return
+    this.pathContainer.removeChildren()
+  }
+
+  /**
    * Draw the target position with visual emphasis
    */
   public drawTarget(target: Position): void {
@@ -286,6 +294,14 @@ export class PixiRenderer {
     
     targetGraphics.position.set(xPos, yPos)
     this.targetContainer.addChild(targetGraphics)
+  }
+
+  /**
+   * Clear the target display
+   */
+  public clearTarget(): void {
+    if (!this.isInitialized) return
+    this.targetContainer.removeChildren()
   }
 
   /**

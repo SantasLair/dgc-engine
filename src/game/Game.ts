@@ -143,6 +143,8 @@ export class Game {
    */
   private executeMovement(): void {
     if (this.path.length > 0) {
+      // Hide path and target indicators immediately when movement starts
+      this.isPathShown = false
       this.animatePlayerMovement()
     }
   }
@@ -164,15 +166,26 @@ export class Game {
         
         setTimeout(moveStep, 300) // 300ms between moves
       } else {
-        // Movement complete
-        this.path = []
-        this.targetPosition = null
-        this.isPathShown = false
+        // Movement complete - clear all indicators
+        this.clearPathAndTarget()
         this.nextTurn()
       }
     }
     
     moveStep()
+  }
+
+  /**
+   * Clear path and target indicators
+   */
+  private clearPathAndTarget(): void {
+    this.path = []
+    this.targetPosition = null
+    this.isPathShown = false
+    
+    // Force clear the renderer containers
+    this.renderer.clearPath()
+    this.renderer.clearTarget()
   }
 
   /**
