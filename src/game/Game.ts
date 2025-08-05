@@ -17,6 +17,8 @@ export class Game {
   private currentTurn: number = 1
   private isPlayerTurn: boolean = true
   private path: Position[] = []
+  private targetPosition: Position | null = null
+  private isPathShown: boolean = false
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -55,6 +57,10 @@ export class Game {
       this.renderer.drawPath(this.path)
     }
     
+    if (this.targetPosition && this.isPathShown) {
+      this.renderer.drawTarget(this.targetPosition)
+    }
+    
     requestAnimationFrame(() => this.gameLoop())
   }
 
@@ -70,6 +76,7 @@ export class Game {
 
   /**
    * Handle canvas click events for player movement
+   * First click: Show path, Second click on same position: Execute movement
    */
   private handleCanvasClick(event: MouseEvent): void {
     if (!this.isPlayerTurn) return
@@ -82,24 +89,45 @@ export class Game {
     
     if (this.gameBoard.isValidPosition(gridPos.x, gridPos.y) && 
         this.gameBoard.isWalkable(gridPos.x, gridPos.y)) {
-      this.movePlayer(gridPos)
+      
+      // Check if this is the same position as the current target
+      if (this.targetPosition && 
+          this.targetPosition.x === gridPos.x && 
+          this.targetPosition.y === gridPos.y && 
+          this.isPathShown) {
+        // Second click on same position - execute movement
+        this.executeMovement()
+      } else {
+        // First click or different position - show path
+        this.showPath(gridPos)
+      }
     }
   }
 
   /**
-   * Move player to target position using pathfinding
+   * Show the path to the target position (first click)
    */
-  private movePlayer(target: Position): void {
+  private showPath(target: Position): void {
     const playerPos = this.player.getPosition()
     
     this.easystar.findPath(playerPos.x, playerPos.y, target.x, target.y, (path) => {
       if (path) {
         this.path = path.map(p => ({ x: p.x, y: p.y }))
-        this.animatePlayerMovement()
+        this.targetPosition = target
+        this.isPathShown = true
       }
     })
     
     this.easystar.calculate()
+  }
+
+  /**
+   * Execute the movement along the shown path (second click)
+   */
+  private executeMovement(): void {
+    if (this.path.length > 0) {
+      this.animatePlayerMovement()
+    }
   }
 
   /**
@@ -121,6 +149,8 @@ export class Game {
       } else {
         // Movement complete
         this.path = []
+        this.targetPosition = null
+        this.isPathShown = false
         this.nextTurn()
       }
     }

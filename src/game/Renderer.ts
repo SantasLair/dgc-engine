@@ -151,6 +151,34 @@ export class Renderer {
   }
 
   /**
+   * Draw the target position with visual emphasis
+   */
+  public drawTarget(target: Position): void {
+    const xPos = this.gridOffsetX + target.x * this.cellSize
+    const yPos = this.gridOffsetY + target.y * this.cellSize
+    
+    // Draw pulsing target indicator
+    this.ctx.strokeStyle = '#FF5722'
+    this.ctx.lineWidth = 3
+    this.ctx.setLineDash([])
+    
+    // Draw target square border
+    this.ctx.strokeRect(xPos + 2, yPos + 2, this.cellSize - 4, this.cellSize - 4)
+    
+    // Draw target crosshair
+    const centerX = xPos + this.cellSize / 2
+    const centerY = yPos + this.cellSize / 2
+    const crossSize = 8
+    
+    this.ctx.beginPath()
+    this.ctx.moveTo(centerX - crossSize, centerY)
+    this.ctx.lineTo(centerX + crossSize, centerY)
+    this.ctx.moveTo(centerX, centerY - crossSize)
+    this.ctx.lineTo(centerX, centerY + crossSize)
+    this.ctx.stroke()
+  }
+
+  /**
    * Convert screen coordinates to grid coordinates
    */
   public screenToGrid(screenX: number, screenY: number, gameBoard: GameBoard): Position {

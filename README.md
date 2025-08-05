@@ -13,11 +13,12 @@ A 2D turn-based movement game demo built with **Vite**, **TypeScript**, and **Ea
 
 ## Game Mechanics
 
-1. **Click on any walkable cell** to move the player character
-2. The game calculates the shortest path using A* algorithm
-3. The player moves step-by-step along the calculated path
-4. Each movement sequence counts as one turn
-5. Obstacles block movement and pathfinding
+1. **First click** on any walkable cell shows the calculated path to that position
+2. **Second click** on the same target cell executes the movement
+3. The game calculates the shortest path using A* algorithm
+4. The player moves step-by-step along the calculated path
+5. Each movement sequence counts as one turn
+6. Obstacles block movement and pathfinding
 
 ## Project Structure
 
@@ -79,9 +80,10 @@ npm run preview
 
 ## Game Controls
 
-- **Left Click**: Move player to the clicked grid cell
-- The game automatically calculates and shows the path
-- Wait for the current movement to complete before clicking again
+- **First Click**: Show path to the clicked grid cell (displays yellow dashed line and red target indicator)
+- **Second Click**: On the same target to execute the movement
+- Click on a different cell to show a new path instead
+- Wait for the current movement to complete before making new moves
 
 ## Customization
 
