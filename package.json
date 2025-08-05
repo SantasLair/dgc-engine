@@ -14,6 +14,7 @@
     "vite": "^7.0.4"
   },
   "dependencies": {
-    "easystarjs": "^0.4.4"
+    "easystarjs": "^0.4.4",
+    "pixi.js": "^8.11.0"
   }
 }

@@ -1,7 +1,7 @@
 import * as EasyStar from 'easystarjs'
 import { GameBoard } from './GameBoard'
 import { Player } from './Player'
-import { Renderer } from './Renderer'
+import { PixiRenderer } from './PixiRenderer'
 import type { Position } from './types'
 
 /**
@@ -9,10 +9,9 @@ import type { Position } from './types'
  */
 export class Game {
   private canvas: HTMLCanvasElement
-  private ctx: CanvasRenderingContext2D
   private gameBoard: GameBoard
   private player: Player
-  private renderer: Renderer
+  private renderer: PixiRenderer
   private easystar: EasyStar.js
   private currentTurn: number = 1
   private isPlayerTurn: boolean = true
@@ -22,25 +21,28 @@ export class Game {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
-    this.ctx = canvas.getContext('2d')!
     
     // Initialize game components
     this.gameBoard = new GameBoard(20, 15) // 20x15 grid
     this.player = new Player(0, 0)
-    this.renderer = new Renderer(this.ctx, this.canvas.width, this.canvas.height)
+    this.renderer = new PixiRenderer(this.canvas, this.canvas.width, this.canvas.height)
     
     // Initialize EasyStar pathfinding
     this.easystar = new EasyStar.js()
     this.setupPathfinding()
-    
-    // Bind event handlers
-    this.canvas.addEventListener('click', this.handleCanvasClick.bind(this))
   }
 
   /**
-   * Start the game
+   * Start the game (async to wait for Pixi initialization)
    */
-  public start(): void {
+  public async start(): Promise<void> {
+    console.log('Waiting for Pixi.js to initialize...')
+    await this.renderer.waitForReady()
+    console.log('Pixi.js ready, setting up event handlers...')
+    
+    // Setup event handlers after Pixi is ready
+    this.setupEventHandlers()
+    
     this.updateUI()
     this.gameLoop()
   }
@@ -75,17 +77,32 @@ export class Game {
   }
 
   /**
-   * Handle canvas click events for player movement
+   * Setup event handlers using Pixi's event system
+   */
+  private setupEventHandlers(): void {
+    if (!this.renderer.isReady()) {
+      console.error('Cannot setup event handlers: Pixi not ready')
+      return
+    }
+    
+    const app = this.renderer.getApp()
+    app.stage.eventMode = 'static'
+    app.stage.hitArea = app.screen
+    app.stage.on('pointerdown', this.handleStageClick.bind(this))
+    console.log('Event handlers setup successfully')
+  }
+
+  /**
+   * Handle stage click events for player movement using Pixi events
    * First click: Show path, Second click on same position: Execute movement
    */
-  private handleCanvasClick(event: MouseEvent): void {
+  private handleStageClick(event: any): void {
     if (!this.isPlayerTurn) return
 
-    const rect = this.canvas.getBoundingClientRect()
-    const x = event.clientX - rect.left
-    const y = event.clientY - rect.top
+    const globalPos = event.global
+    const localPos = event.target.toLocal(globalPos)
     
-    const gridPos = this.renderer.screenToGrid(x, y, this.gameBoard)
+    const gridPos = this.renderer.screenToGrid(localPos.x, localPos.y, this.gameBoard)
     
     if (this.gameBoard.isValidPosition(gridPos.x, gridPos.y) && 
         this.gameBoard.isWalkable(gridPos.x, gridPos.y)) {
@@ -182,5 +199,12 @@ export class Game {
       const pos = this.player.getPosition()
       positionInfo.textContent = `Position: (${pos.x}, ${pos.y})`
     }
+  }
+
+  /**
+   * Clean up resources
+   */
+  public destroy(): void {
+    this.renderer.destroy()
   }
 }

@@ -1,6 +1,6 @@
 # Turn-Based Movement Game Demo
 
-A 2D turn-based movement game demo built with **Vite**, **TypeScript**, and **EasyStar.js** for pathfinding.
+A 2D turn-based movement game demo built with **Vite**, **TypeScript**, **Pixi.js**, and **EasyStar.js** for pathfinding.
 
 ## Features
 
@@ -9,6 +9,7 @@ A 2D turn-based movement game demo built with **Vite**, **TypeScript**, and **Ea
 - **Animated movement** along calculated paths
 - **Obstacle avoidance** with randomly generated obstacles
 - **TypeScript** for type safety and better development experience
+- **Pixi.js** for WebGL-accelerated 2D rendering
 - **Vite** for fast development and building
 
 ## Game Mechanics
@@ -75,7 +76,7 @@ npm run preview
 - **[Vite](https://vite.dev/)** - Fast build tool and development server
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
 - **[EasyStar.js](https://github.com/prettymuchbryce/easystarjs)** - A* pathfinding library
-- **HTML5 Canvas** - 2D rendering
+- **[Pixi.js](https://pixijs.com/)** - WebGL-accelerated 2D rendering engine
 - **CSS3** - Styling and layout
 
 ## Game Controls

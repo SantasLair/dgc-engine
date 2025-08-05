@@ -2,7 +2,7 @@ import './style.css'
 import { Game } from './game/Game'
 
 // Initialize the game when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   console.log('DOM loaded, looking for canvas...')
   const canvas = document.querySelector<HTMLCanvasElement>('#gameCanvas')
   
@@ -12,11 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
     return
   }
   
-  console.log('Canvas found, initializing game...')
+  console.log('Canvas found, initializing game with Pixi.js...')
   try {
     const game = new Game(canvas)
-    game.start()
-    console.log('Game started successfully!')
+    
+    // Start the game and wait for initialization
+    await game.start()
+    console.log('Game started successfully with Pixi.js!')
+    
   } catch (error) {
     console.error('Error starting game:', error)
     document.body.innerHTML = `<h1>Error starting game: ${error}</h1>`
