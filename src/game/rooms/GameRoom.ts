@@ -147,7 +147,7 @@ export class GameRoom extends Room {
 
     backButton.addEventListener('click', async () => {
       console.log('Returning to menu...')
-      const success = await this.game.switchToRoom('menu')
+      const success = await this.game.goToRoom('menu')
       console.log('Menu switch result:', success)
     })
 

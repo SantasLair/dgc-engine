@@ -1,5 +1,7 @@
 import './style.css'
 import { Game } from './game/Game'
+import { room_goto, room_restart, room_get_name } from './game/gml'
+import './examples/GMLRoomExample'
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
@@ -26,16 +28,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('Game instance exposed to window.game for debugging')
       
       // Expose room functionality for testing
-      ;(window as any).switchToGame = async () => await game.switchToRoom('game')
-      ;(window as any).switchToMenu = async () => await game.switchToRoom('menu')
+      ;(window as any).goToGame = async () => await game.goToRoom('game')
+      ;(window as any).goToMenu = async () => await game.goToRoom('menu')
       ;(window as any).getCurrentRoom = () => game.getCurrentRoom()?.name
       ;(window as any).getRoomManager = () => game.getRoomManager()
       
+      // Expose GML room functions for testing
+      ;(window as any).room_goto = room_goto
+      ;(window as any).room_restart = room_restart
+      ;(window as any).room_get_name = room_get_name
+      
       console.log('🏠 Room system enabled! Available debug commands:')
-      console.log('  switchToGame() - Switch to game room')
-      console.log('  switchToMenu() - Switch to menu room')
+      console.log('  goToGame() - Switch to game room')
+      console.log('  goToMenu() - Switch to menu room')
       console.log('  getCurrentRoom() - Get current room name')
       console.log('  getRoomManager() - Get room manager')
+      console.log('')
+      console.log('🎮 GML Functions available:')
+      console.log('  room_goto("game") - Switch to game room (GML style)')
+      console.log('  room_goto("menu") - Switch to menu room (GML style)')
+      console.log('  room_restart() - Restart current room')
+      console.log('  room_get_name() - Get current room name')
     }
     
   } catch (error) {

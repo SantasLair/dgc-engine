@@ -2,7 +2,7 @@ import { BaseGame, GameObject, GameEvent, type GameEngineConfig, Room, RoomManag
 import { GameBoard, Player, Enemy, Item } from './gameobjects'
 import { GameRoom, MenuRoom } from './rooms'
 import { Grid } from './Grid'
-import { ds_grid_create, ds_grid_get, ds_grid_set, ds_grid_width, ds_grid_height } from './gml'
+import { ds_grid_create, ds_grid_get, ds_grid_set, ds_grid_width, ds_grid_height, gml_set_game_instance } from './gml'
 import type { Position } from './types'
 
 /**
@@ -38,6 +38,9 @@ export class Game extends BaseGame {
    * Setup game-specific logic after engine creation
    */
   protected async setupGame(): Promise<void> {
+    // Setup GML game instance reference for compatibility functions
+    gml_set_game_instance(this)
+    
     // Setup engine integration
     this.setupEngineIntegration()
     
@@ -58,7 +61,7 @@ export class Game extends BaseGame {
     }
     
     // Start with the menu room
-    await this.roomManager.switchToRoom('menu')
+    await this.roomManager.goToRoom('menu')
   }
 
   /**
@@ -259,8 +262,8 @@ export class Game extends BaseGame {
   /**
    * Switch to a different room
    */
-  public async switchToRoom(roomName: string): Promise<boolean> {
-    return await this.roomManager.switchToRoom(roomName)
+  public async goToRoom(roomName: string): Promise<boolean> {
+    return await this.roomManager.goToRoom(roomName)
   }
 
   /**

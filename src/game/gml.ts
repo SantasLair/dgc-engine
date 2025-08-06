@@ -180,8 +180,182 @@ export function ds_grid_value_find(grid: GMLGrid, value: any): {x: number, y: nu
   return null
 }
 
+// =============================================================================
+// ROOM FUNCTIONS (GameMaker room management compatibility)
+// =============================================================================
+
+/**
+ * Switch to a different room
+ * GameMaker equivalent: room_goto(room)
+ */
+export async function room_goto(roomName: string | number): Promise<boolean> {
+  // Get the current game instance from global context
+  const game = getGameInstance()
+  if (!game) {
+    console.warn('room_goto: No game instance available')
+    return false
+  }
+  
+  // Convert room index to room name if needed
+  const roomNameStr = typeof roomName === 'number' ? getRoomNameFromIndex(roomName) : roomName
+  
+  return await game.goToRoom(roomNameStr)
+}
+
+/**
+ * Switch to the next room in the order
+ * GameMaker equivalent: room_goto_next()
+ */
+export async function room_goto_next(): Promise<boolean> {
+  const game = getGameInstance()
+  if (!game) {
+    console.warn('room_goto_next: No game instance available')
+    return false
+  }
+  
+  const currentRoom = game.getCurrentRoom()
+  if (!currentRoom) {
+    console.warn('room_goto_next: No current room')
+    return false
+  }
+  
+  // Get next room in sequence (simplified implementation)
+  const nextRoomName = getNextRoomName(currentRoom.name)
+  if (nextRoomName) {
+    return await game.goToRoom(nextRoomName)
+  }
+  
+  console.warn('room_goto_next: No next room available')
+  return false
+}
+
+/**
+ * Switch to the previous room in the order
+ * GameMaker equivalent: room_goto_previous()
+ */
+export async function room_goto_previous(): Promise<boolean> {
+  const game = getGameInstance()
+  if (!game) {
+    console.warn('room_goto_previous: No game instance available')
+    return false
+  }
+  
+  const currentRoom = game.getCurrentRoom()
+  if (!currentRoom) {
+    console.warn('room_goto_previous: No current room')
+    return false
+  }
+  
+  // Get previous room in sequence (simplified implementation)
+  const prevRoomName = getPreviousRoomName(currentRoom.name)
+  if (prevRoomName) {
+    return await game.goToRoom(prevRoomName)
+  }
+  
+  console.warn('room_goto_previous: No previous room available')
+  return false
+}
+
+/**
+ * Restart the current room
+ * GameMaker equivalent: room_restart()
+ */
+export async function room_restart(): Promise<boolean> {
+  const game = getGameInstance()
+  if (!game) {
+    console.warn('room_restart: No game instance available')
+    return false
+  }
+  
+  const currentRoom = game.getCurrentRoom()
+  if (!currentRoom) {
+    console.warn('room_restart: No current room')
+    return false
+  }
+  
+  // Restart by going to the same room
+  return await game.goToRoom(currentRoom.name)
+}
+
+/**
+ * Get the current room name
+ * GameMaker equivalent: room (room variable)
+ */
+export function room_get_name(): string | null {
+  const game = getGameInstance()
+  if (!game) {
+    console.warn('room_get_name: No game instance available')
+    return null
+  }
+  
+  const currentRoom = game.getCurrentRoom()
+  return currentRoom ? currentRoom.name : null
+}
+
+// =============================================================================
+// HELPER FUNCTIONS (Internal)
+// =============================================================================
+
+/**
+ * Global game instance reference for GML functions
+ * This should be set by the game when it initializes
+ */
+let globalGameInstance: any = null
+
+/**
+ * Set the global game instance for GML functions to use
+ * Should be called during game initialization
+ */
+export function gml_set_game_instance(game: any): void {
+  globalGameInstance = game
+}
+
+/**
+ * Get the current game instance
+ */
+function getGameInstance(): any {
+  return globalGameInstance
+}
+
+/**
+ * Convert room index to room name (simplified mapping)
+ */
+function getRoomNameFromIndex(index: number): string {
+  const roomNames = ['menu', 'game', 'settings', 'credits'] // Can be configured
+  return roomNames[index] || `room_${index}`
+}
+
+/**
+ * Get the next room name in sequence
+ */
+function getNextRoomName(currentRoomName: string): string | null {
+  const roomSequence = ['menu', 'game'] // Simplified sequence
+  const currentIndex = roomSequence.indexOf(currentRoomName)
+  
+  if (currentIndex >= 0 && currentIndex < roomSequence.length - 1) {
+    return roomSequence[currentIndex + 1]
+  }
+  
+  return null
+}
+
+/**
+ * Get the previous room name in sequence
+ */
+function getPreviousRoomName(currentRoomName: string): string | null {
+  const roomSequence = ['menu', 'game'] // Simplified sequence
+  const currentIndex = roomSequence.indexOf(currentRoomName)
+  
+  if (currentIndex > 0) {
+    return roomSequence[currentIndex - 1]
+  }
+  
+  return null
+}
+
 // Export all functions as a namespace for organized imports
 export const gml = {
+  // Grid functions
   ds_grid_create,
   ds_grid_get,
   ds_grid_set,
@@ -196,5 +370,13 @@ export const gml = {
   ds_grid_get_sum,
   ds_grid_get_max,
   ds_grid_get_min,
-  ds_grid_value_find
+  ds_grid_value_find,
+  
+  // Room functions
+  room_goto,
+  room_goto_next,
+  room_goto_previous,
+  room_restart,
+  room_get_name,
+  gml_set_game_instance
 }

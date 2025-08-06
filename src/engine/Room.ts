@@ -284,7 +284,7 @@ export class RoomManager {
   /**
    * Switch to a different room
    */
-  public async switchToRoom(roomName: string): Promise<boolean> {
+  public async goToRoom(roomName: string): Promise<boolean> {
     const newRoom = this.rooms.get(roomName)
     if (!newRoom) {
       console.warn(`Room '${roomName}' not found`)
