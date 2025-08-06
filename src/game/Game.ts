@@ -1,4 +1,4 @@
-import { BaseGame, GameObject, GameEvent, type GameEngineConfig } from '../engine'
+import { BaseGame, GameObject, GameEvent, type GameEngineConfig, Room, RoomManager, type RoomConfig } from '../engine'
 import { GameBoard } from './GameBoard'
 import { Player } from './Player'
 import type { Position } from './types'
@@ -10,12 +10,14 @@ import type { Position } from './types'
 export class Game extends BaseGame {
   private gameBoard: GameBoard
   private player: Player | null = null
+  private roomManager: RoomManager
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
     
     // Initialize game-specific components
     this.gameBoard = new GameBoard(20, 15) // 20x15 grid
+    this.roomManager = new RoomManager()
   }
 
   /**
@@ -41,22 +43,80 @@ export class Game extends BaseGame {
     // Setup input handlers
     this.setupEventHandlers()
     
-    // Create the player object
-    this.player = new Player(0, 0)
+    // Initialize room manager
+    this.roomManager.initialize()
     
-    // Add player to the engine
-    this.addObject(this.player)
+    // Setup rooms
+    this.setupRooms()
     
-    // Setup player-specific events
-    this.setupPlayerMovementIntegration()
-    
-    // Add custom draw event to trigger renderer updates
-    this.player.addEventScript(GameEvent.DRAW, () => {
-      this.updateGameRenderer()
-    })
-    
-    // Initial render
-    this.updateGameRenderer()
+    // Start with the main game room
+    await this.roomManager.switchToRoom('game')
+  }
+
+  /**
+   * Setup all game rooms
+   */
+  private setupRooms(): void {
+    // Create main game room
+    const gameRoomConfig: RoomConfig = {
+      name: 'game',
+      width: 20,
+      height: 15,
+      background: '#2c3e50',
+      onCreate: async (_room) => {
+        console.log('Game room created!')
+        
+        // Create the player object
+        this.player = new Player(0, 0)
+        
+        // Add player to the engine
+        this.addObject(this.player)
+        
+        // Setup player-specific events
+        this.setupPlayerMovementIntegration()
+        
+        // Add custom draw event to trigger renderer updates
+        this.player.addEventScript(GameEvent.DRAW, () => {
+          this.updateGameRenderer()
+        })
+        
+        // Initial render
+        this.updateGameRenderer()
+      },
+      onStep: async (_room) => {
+        // Game room update logic
+        // Check for escape key to show menu (future feature)
+        if (this.getEngine()?.isKeyJustPressed('Escape')) {
+          console.log('Escape pressed - could show menu here')
+        }
+      }
+    }
+
+    // Create a simple menu room for future use
+    const menuRoomConfig: RoomConfig = {
+      name: 'menu',
+      width: 20,
+      height: 15,
+      background: '#34495e',
+      onCreate: async (_room) => {
+        console.log('Menu room created!')
+        
+        // Create menu items (simple approach for now)
+        const startButton = this.createObject('menu_button', 10, 7)
+        startButton.addEventScript(GameEvent.CREATE, (self) => {
+          self.setVariable('text', 'Start Game')
+          console.log('Start button created')
+        })
+        
+        startButton.addEventScript(GameEvent.MOUSE_LEFT_PRESSED, (_self) => {
+          this.roomManager.switchToRoom('game')
+        })
+      }
+    }
+
+    // Add rooms to manager
+    this.roomManager.addRoom(new Room(gameRoomConfig))
+    this.roomManager.addRoom(new Room(menuRoomConfig))
   }
 
   /**
@@ -80,6 +140,20 @@ export class Game extends BaseGame {
    * Setup integration between the engine and the renderer
    */
   private setupEngineIntegration(): void {
+    // Create a system object to handle room manager updates
+    const roomSystemObject = this.createObject('room_system', 0, 0)
+    roomSystemObject.visible = false // Hidden system object
+    
+    roomSystemObject.addEventScript(GameEvent.STEP, async (_self) => {
+      // Update room manager every frame
+      await this.roomManager.step()
+    })
+    
+    roomSystemObject.addEventScript(GameEvent.DRAW, async (_self) => {
+      // Handle room drawing
+      await this.roomManager.draw()
+    })
+    
     // Listen for engine events to trigger rendering updates
     this.addEventListener('object_moved', () => {
       this.updateGameRenderer()
@@ -298,6 +372,27 @@ export class Game extends BaseGame {
    */
   public getGameBoard(): GameBoard {
     return this.gameBoard
+  }
+
+  /**
+   * Get the room manager for advanced room operations
+   */
+  public getRoomManager(): RoomManager {
+    return this.roomManager
+  }
+
+  /**
+   * Switch to a different room
+   */
+  public async switchToRoom(roomName: string): Promise<boolean> {
+    return await this.roomManager.switchToRoom(roomName)
+  }
+
+  /**
+   * Get the current active room
+   */
+  public getCurrentRoom(): Room | undefined {
+    return this.roomManager.getCurrentRoom()
   }
 
   /**

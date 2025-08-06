@@ -26,6 +26,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (import.meta.env.DEV) {
       ;(window as any).game = game
       console.log('Game instance exposed to window.game for testing')
+      
+      // Expose room functionality for testing
+      ;(window as any).switchToGame = async () => await game.switchToRoom('game')
+      ;(window as any).switchToMenu = async () => await game.switchToRoom('menu')
+      ;(window as any).getCurrentRoom = () => game.getCurrentRoom()?.name
+      ;(window as any).getRoomManager = () => game.getRoomManager()
+      
+      console.log('🏠 Room system enabled! Available commands:')
+      console.log('  switchToGame() - Switch to game room')
+      console.log('  switchToMenu() - Switch to menu room')
+      console.log('  getCurrentRoom() - Get current room name')
+      console.log('  getRoomManager() - Get room manager')
     }
     
     // Demo: Create some game objects to show the engine in action
