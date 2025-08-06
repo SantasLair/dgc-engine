@@ -1,5 +1,9 @@
 # Turn-Based Movement Game Engine
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Pixi.js](https://img.shields.io/badge/Pixi.js-e91e63?logo=javascript&logoColor=white)](https://pixijs.com/)
+
 A professional GameMaker-style game engine built with **TypeScript**, **Pixi.js**, and modern web technologies. What started as a simple turn-based movement demo evolved into a comprehensive game engine with room management, event-driven GameObjects, and industry-standard architecture.
 
 ## 🎮 Engine Features
@@ -160,4 +164,32 @@ Possible improvements for this demo:
 
 ## License
 
-This project is open source and available under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### What this means:
+- ✅ **Free to use** for personal and commercial projects
+- ✅ **Modify and distribute** as you see fit
+- ✅ **No attribution required** (but appreciated!)
+- ✅ **Perfect for learning** and building upon
+
+## Contributing
+
+Contributions are welcome! This project demonstrates:
+- Modern TypeScript game development
+- GameMaker-style architecture patterns  
+- Professional game engine design
+- Comprehensive documentation practices
+
+Feel free to:
+- Report bugs and issues
+- Suggest new features
+- Submit pull requests
+- Use as learning material
+- Build your own games with it
+
+## Acknowledgments
+
+- **GameMaker Studio** for the architectural inspiration
+- **Pixi.js** community for excellent 2D rendering
+- **TypeScript** team for type-safe development
+- **Vite** for lightning-fast development experience
