@@ -13,6 +13,7 @@ export class Game extends BaseGame {
   private gameBoard: GameBoard | null = null
   private player: Player | null = null
   private roomManager: RoomManager
+  private devUIVisible: boolean = false // Track dev UI visibility state
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
@@ -54,10 +55,9 @@ export class Game extends BaseGame {
     this.setupRooms()
     
     // Add development UI for debugging
-    if (false && import.meta.env.DEV) {
-      this.addDevUI()
-      // Wait a frame to ensure DOM elements are added
-      await new Promise(resolve => requestAnimationFrame(resolve))
+    if (import.meta.env.DEV) {
+      // Start with dev UI hidden - use F12 or Ctrl+D to show
+      console.log('💡 Dev UI available! Press F12 or Ctrl+D to toggle visibility')
     }
     
     // Start with the menu room
@@ -143,6 +143,57 @@ export class Game extends BaseGame {
         gridPosition: gridPos
       })
     })
+    
+    // Setup keyboard handlers for dev UI toggle
+    this.setupKeyboardHandlers()
+  }
+
+  /**
+   * Setup keyboard event handlers
+   */
+  private setupKeyboardHandlers(): void {
+    if (!import.meta.env.DEV) return
+    
+    document.addEventListener('keydown', (event) => {
+      // Toggle dev UI with F12 key
+      if (event.key === 'F12') {
+        event.preventDefault()
+        this.toggleDevUI()
+      }
+      
+      // Alternative: Toggle dev UI with Ctrl+D
+      if (event.ctrlKey && event.key === 'd') {
+        event.preventDefault()
+        this.toggleDevUI()
+      }
+    })
+  }
+
+  /**
+   * Toggle development UI visibility
+   */
+  private toggleDevUI(): void {
+    if (!import.meta.env.DEV) return
+    
+    const devUI = document.getElementById('devUI')
+    if (!devUI) {
+      // Dev UI doesn't exist, create it
+      this.addDevUI()
+      this.devUIVisible = true
+      console.log('Dev UI shown (F12 or Ctrl+D to toggle)')
+      return
+    }
+    
+    this.devUIVisible = !this.devUIVisible
+    this.setDevUIVisible(this.devUIVisible)
+    console.log(`Dev UI ${this.devUIVisible ? 'shown' : 'hidden'} (F12 or Ctrl+D to toggle)`)
+  }
+
+  /**
+   * Get current dev UI visibility state
+   */
+  public isDevUIVisible(): boolean {
+    return this.devUIVisible
   }
 
   /**

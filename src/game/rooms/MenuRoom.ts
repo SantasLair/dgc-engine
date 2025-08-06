@@ -41,8 +41,8 @@ export class MenuRoom extends Room {
     }
     
     // Remove development UI in menu completely
-    console.log('Removing devUI...')
-    this.game.removeDevUI()
+    console.log('Hiding devUI for menu...')
+    this.game.setDevUIVisible(false)
     
     // Create HTML menu
     this.createMenuHTML()
@@ -60,9 +60,16 @@ export class MenuRoom extends Room {
       canvas.style.display = 'block'
     }
     
-    // Re-add development UI when leaving menu
-    if (import.meta.env.DEV) {
-      this.game.addDevUI()
+    // Restore development UI visibility when leaving menu
+    if (import.meta.env.DEV && this.game.isDevUIVisible()) {
+      // Only show if it was visible before entering menu
+      const devUI = document.getElementById('devUI')
+      if (devUI) {
+        this.game.setDevUIVisible(true)
+      } else {
+        // Create it if it doesn't exist and should be visible
+        this.game.addDevUI()
+      }
     }
     
     // Remove HTML menu

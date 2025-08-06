@@ -38,6 +38,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       ;(window as any).room_restart = room_restart
       ;(window as any).room_get_name = room_get_name
       
+      // Expose dev UI toggle for testing
+      ;(window as any).toggleDevUI = () => {
+        // Trigger the F12 key event to use the existing toggle logic
+        const event = new KeyboardEvent('keydown', { key: 'F12' })
+        document.dispatchEvent(event)
+      }
+      
       console.log('🏠 Room system enabled! Available debug commands:')
       console.log('  goToGame() - Switch to game room')
       console.log('  goToMenu() - Switch to menu room')
@@ -48,6 +55,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('  room_goto("game") - Switch to game room (GML style)')
       console.log('  room_goto("menu") - Switch to menu room (GML style)')
       console.log('  room_restart() - Restart current room')
+      console.log('  room_get_name() - Get current room name')
+      console.log('')
+      console.log('⌨️  Hotkeys:')
+      console.log('  F12 or Ctrl+D - Toggle dev UI visibility')
+      console.log('')
+      console.log('🔧 Dev Functions:')
+      console.log('  toggleDevUI() - Toggle dev UI from console')
       console.log('  room_get_name() - Get current room name')
     }
     
