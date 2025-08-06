@@ -1,14 +1,16 @@
 import { CellType } from '../types'
 import { GameObject, GameEvent } from '../../engine'
+import { Grid } from '../Grid'
 
 /**
  * Represents the game board with grid-based layout
+ * Uses GameMaker-style Grid for clean (x, y) coordinate access
  * Extends GameObject to be managed by the room system
  */
 export class GameBoard extends GameObject {
   private boardWidth: number
   private boardHeight: number
-  private grid: number[][]
+  private grid: Grid<CellType>
 
   constructor(width: number, height: number) {
     super('GameBoard', { x: 0, y: 0, visible: true })
@@ -37,15 +39,8 @@ export class GameBoard extends GameObject {
   /**
    * Initialize the grid with default values and some obstacles
    */
-  private initializeGrid(): number[][] {
-    const grid: number[][] = []
-    
-    for (let y = 0; y < this.boardHeight; y++) {
-      grid[y] = []
-      for (let x = 0; x < this.boardWidth; x++) {
-        grid[y][x] = CellType.EMPTY
-      }
-    }
+  private initializeGrid(): Grid<CellType> {
+    const grid = new Grid<CellType>(this.boardWidth, this.boardHeight, CellType.EMPTY)
     
     // Add some random obstacles for demonstration
     this.addRandomObstacles(grid, 25) // 25% obstacle density
@@ -56,7 +51,7 @@ export class GameBoard extends GameObject {
   /**
    * Add random obstacles to the grid
    */
-  private addRandomObstacles(grid: number[][], density: number): void {
+  private addRandomObstacles(grid: Grid<CellType>, density: number): void {
     const totalCells = this.boardWidth * this.boardHeight
     const obstacleCount = Math.floor((totalCells * density) / 100)
     
@@ -67,16 +62,16 @@ export class GameBoard extends GameObject {
       do {
         x = Math.floor(Math.random() * this.boardWidth)
         y = Math.floor(Math.random() * this.boardHeight)
-      } while (grid[y][x] !== CellType.EMPTY || (x === 0 && y === 0))
+      } while (grid.get(x, y) !== CellType.EMPTY || (x === 0 && y === 0))
       
-      grid[y][x] = CellType.OBSTACLE
+      grid.set(x, y, CellType.OBSTACLE)
     }
   }
 
   /**
-   * Get the grid array for pathfinding
+   * Get the grid for direct access (GameMaker style)
    */
-  public getGrid(): number[][] {
+  public getGrid(): Grid<CellType> {
     return this.grid
   }
 
@@ -98,7 +93,7 @@ export class GameBoard extends GameObject {
    * Check if a position is valid (within bounds)
    */
   public isValidPosition(x: number, y: number): boolean {
-    return x >= 0 && x < this.boardWidth && y >= 0 && y < this.boardHeight
+    return this.grid.isValid(x, y)
   }
 
   /**
@@ -106,7 +101,7 @@ export class GameBoard extends GameObject {
    */
   public isWalkable(x: number, y: number): boolean {
     if (!this.isValidPosition(x, y)) return false
-    return this.grid[y][x] === CellType.EMPTY
+    return this.grid.get(x, y) === CellType.EMPTY
   }
 
   /**
@@ -114,7 +109,7 @@ export class GameBoard extends GameObject {
    */
   public getCellType(x: number, y: number): CellType {
     if (!this.isValidPosition(x, y)) return CellType.OBSTACLE
-    return this.grid[y][x] as CellType
+    return this.grid.get(x, y)
   }
 
   /**
@@ -122,7 +117,7 @@ export class GameBoard extends GameObject {
    */
   public setCellType(x: number, y: number, type: CellType): void {
     if (this.isValidPosition(x, y)) {
-      this.grid[y][x] = type
+      this.grid.set(x, y, type)
     }
   }
 
@@ -165,10 +160,10 @@ export class GameBoard extends GameObject {
    * Clear all obstacles from the board
    */
   public clearObstacles(): void {
-    for (let y = 0; y < this.boardHeight; y++) {
-      for (let x = 0; x < this.boardWidth; x++) {
-        if (this.grid[y][x] === CellType.OBSTACLE) {
-          this.grid[y][x] = CellType.EMPTY
+    for (let x = 0; x < this.boardWidth; x++) {
+      for (let y = 0; y < this.boardHeight; y++) {
+        if (this.grid.get(x, y) === CellType.OBSTACLE) {
+          this.grid.set(x, y, CellType.EMPTY)
         }
       }
     }
@@ -180,7 +175,7 @@ export class GameBoard extends GameObject {
    * Returns a 2D array where 0 = walkable, 1 = obstacle
    */
   public getPathfindingGrid(): number[][] {
-    return this.grid.map(row => [...row])
+    return this.grid.toRowMajorArray()
   }
 
   /**
