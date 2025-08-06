@@ -5,20 +5,27 @@ import { Item } from './game/Item'
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
+  console.log('🚀 DOM loaded, starting initialization...')
   console.log('DOM loaded, initializing GameMaker-style engine...')
   const canvas = document.querySelector<HTMLCanvasElement>('#gameCanvas')
   
   if (!canvas) {
-    console.error('Canvas element not found!')
+    console.error('❌ Canvas element not found!')
     document.body.innerHTML = '<h1>Error: Canvas element not found!</h1>'
     return
   }
   
+  console.log('✅ Canvas found:', canvas)
+  console.log('Canvas dimensions:', canvas.width, 'x', canvas.height)
+  
   console.log('Canvas found, initializing game...')
   try {
+    console.log('Creating Game instance...')
     const game = new Game(canvas)
+    console.log('Game instance created successfully')
     
     // Start the game and wait for initialization
+    console.log('Starting game...')
     await game.start()
     console.log('Game started successfully!')
     
@@ -29,14 +36,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     // Demo: Create some game objects to show the engine in action
+    console.log('Setting up demo objects...')
     setupDemo(game)
     
     // Add some UI for demonstration
+    console.log('Adding demo UI...')
     addDemoUI(game)
     
   } catch (error) {
     console.error('Error starting game:', error)
-    document.body.innerHTML = `<h1>Error starting game: ${error}</h1>`
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorStack = error instanceof Error ? error.stack : ''
+    console.error('Error stack:', errorStack)
+    document.body.innerHTML = `<h1>Error starting game: ${errorMessage}</h1><pre>${errorStack}</pre>`
   }
 })
 

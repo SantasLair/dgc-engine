@@ -3,11 +3,12 @@ import type { Position } from './types'
 import { CellType } from './types'
 import type { GameBoard } from './GameBoard'
 import type { Player } from './Player'
+import type { IRenderer, RendererConfig } from '../engine/IRenderer'
 
 /**
  * Pixi.js-based renderer for the game
  */
-export class PixiRenderer {
+export class PixiRenderer implements IRenderer {
   private app: PIXI.Application
   private gridContainer!: PIXI.Container
   private playerContainer!: PIXI.Container
@@ -19,23 +20,39 @@ export class PixiRenderer {
   private playerSprite: PIXI.Graphics | null = null
   private gridCells: PIXI.Graphics[][] = []
   private isInitialized: boolean = false
+  private config: RendererConfig | null = null
 
-  constructor(canvasElement: HTMLCanvasElement, width: number, height: number) {
+  constructor(config: RendererConfig) {
     // Initialize Pixi application
     this.app = new PIXI.Application()
     
-    // Initialize the app and setup containers
-    this.initializeApp(canvasElement, width, height)
+    // Store config for later initialization
+    this.config = config
   }
 
-  private async initializeApp(canvasElement: HTMLCanvasElement, width: number, height: number): Promise<void> {
+  /**
+   * Initialize the renderer (implements IRenderer interface)
+   */
+  public async initialize(): Promise<void> {
+    if (!this.config) {
+      throw new Error('No renderer config provided')
+    }
+    
+    await this.initializeApp(this.config)
+    
+    if (!this.isInitialized) {
+      throw new Error('Renderer not properly initialized')
+    }
+  }
+
+  private async initializeApp(config: RendererConfig): Promise<void> {
     try {
       await this.app.init({
-        canvas: canvasElement,
-        width,
-        height,
-        backgroundColor: 0x333333,
-        antialias: true
+        canvas: config.canvas,
+        width: config.width,
+        height: config.height,
+        backgroundColor: config.backgroundColor || 0x333333,
+        antialias: config.antialias !== false
       })
       
       this.setupContainers()
@@ -307,7 +324,24 @@ export class PixiRenderer {
   /**
    * Convert screen coordinates to grid coordinates
    */
-  public screenToGrid(screenX: number, screenY: number, gameBoard: GameBoard): Position {
+  public screenToGrid(screenX: number, screenY: number): Position {
+    // Use default game board if one isn't stored
+    const defaultGridWidth = 20
+    const defaultGridHeight = 15
+    
+    const gridX = Math.floor((screenX - this.gridOffsetX) / this.cellSize)
+    const gridY = Math.floor((screenY - this.gridOffsetY) / this.cellSize)
+    
+    return {
+      x: Math.max(0, Math.min(gridX, defaultGridWidth - 1)),
+      y: Math.max(0, Math.min(gridY, defaultGridHeight - 1))
+    }
+  }
+
+  /**
+   * Convert screen coordinates to grid coordinates with explicit game board
+   */
+  public screenToGridWithBoard(screenX: number, screenY: number, gameBoard: GameBoard): Position {
     const gridX = Math.floor((screenX - this.gridOffsetX) / this.cellSize)
     const gridY = Math.floor((screenY - this.gridOffsetY) / this.cellSize)
     
@@ -315,6 +349,98 @@ export class PixiRenderer {
       x: Math.max(0, Math.min(gridX, gameBoard.getWidth() - 1)),
       y: Math.max(0, Math.min(gridY, gameBoard.getHeight() - 1))
     }
+  }
+
+  /**
+   * Convert grid coordinates to screen coordinates
+   */
+  public gridToScreen(gridX: number, gridY: number): Position {
+    return {
+      x: gridX * this.cellSize + this.gridOffsetX + this.cellSize / 2,
+      y: gridY * this.cellSize + this.gridOffsetY + this.cellSize / 2
+    }
+  }
+
+  /**
+   * Set up input handlers for mouse/pointer events
+   */
+  public setupInputHandlers(onPointerDown: (position: Position) => void): void {
+    this.app.stage.eventMode = 'static'
+    this.app.stage.hitArea = this.app.screen
+    
+    this.app.stage.on('pointerdown', (event: any) => {
+      const globalPos = event.global
+      const gridPos = this.screenToGrid(globalPos.x, globalPos.y)
+      onPointerDown(gridPos)
+    })
+  }
+
+  /**
+   * Draw a game object (implements IRenderer interface)
+   */
+  public drawObject(object: any): void {
+    const pos = object.getPosition()
+    
+    switch (object.objectType) {
+      case 'Player':
+        this.drawPlayer({ getPosition: () => pos } as any)
+        break
+      case 'Enemy':
+        this.drawEnemyObject(object)
+        break
+      case 'Item':
+        this.drawItemObject(object)
+        break
+    }
+  }
+
+  /**
+   * Render/update the current frame
+   */
+  public render(): void {
+    // Pixi automatically renders, but we can trigger additional updates here
+    if (this.app.renderer) {
+      this.app.renderer.render(this.app.stage)
+    }
+  }
+
+  /**
+   * Resize the renderer
+   */
+  public resize(width: number, height: number): void {
+    this.app.renderer.resize(width, height)
+  }
+
+  /**
+   * Draw an enemy object
+   */
+  private drawEnemyObject(enemy: any): void {
+    const pos = enemy.getPosition()
+    const screenPos = this.gridToScreen(pos.x, pos.y)
+    
+    const enemyGraphics = new PIXI.Graphics()
+    enemyGraphics.circle(0, 0, this.cellSize * 0.3)
+    enemyGraphics.fill(0xff0000) // Red color
+    enemyGraphics.x = screenPos.x
+    enemyGraphics.y = screenPos.y
+    
+    this.playerContainer.addChild(enemyGraphics)
+  }
+
+  /**
+   * Draw an item object
+   */
+  private drawItemObject(item: any): void {
+    const pos = item.getPosition()
+    const screenPos = this.gridToScreen(pos.x, pos.y)
+    
+    const itemGraphics = new PIXI.Graphics()
+    itemGraphics.rect(-this.cellSize * 0.2, -this.cellSize * 0.2, this.cellSize * 0.4, this.cellSize * 0.4)
+    itemGraphics.fill(0xffff00) // Yellow color
+    itemGraphics.x = screenPos.x
+    itemGraphics.y = screenPos.y
+    
+    this.playerContainer.addChild(itemGraphics)
   }
 
   /**

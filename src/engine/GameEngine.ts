@@ -1,6 +1,7 @@
 import { EventManager } from './EventManager'
 import { GameObjectManager } from './GameObjectManager'
 import { GameObject, GameEvent } from './GameObject'
+import type { IRenderer } from './IRenderer'
 import type { Position } from '../game/types'
 
 /**
@@ -97,6 +98,7 @@ export class GameEngine {
   private eventManager: EventManager
   private gameObjectManager: GameObjectManager
   private inputManager: InputManager
+  private renderer: IRenderer | null = null
   private isRunning: boolean = false
   private lastTime: number = 0
   private targetFPS: number = 60
@@ -105,10 +107,14 @@ export class GameEngine {
   // Global engine variables (similar to GameMaker's global variables)
   private globalVariables: Map<string, any> = new Map()
   
-  constructor() {
+  constructor(renderer?: IRenderer) {
     this.eventManager = new EventManager()
     this.gameObjectManager = new GameObjectManager(this.eventManager)
     this.inputManager = new InputManager()
+    
+    if (renderer) {
+      this.setRenderer(renderer)
+    }
     
     // Setup default global variables
     this.setGlobalVariable('fps', this.targetFPS)
@@ -141,6 +147,59 @@ export class GameEngine {
     
     // Emit game end event
     await this.eventManager.emitGlobalEvent('game_end')
+  }
+
+  /**
+   * Set the renderer for the engine
+   */
+  public setRenderer(renderer: IRenderer): void {
+    this.renderer = renderer
+    
+    // Don't setup input handling here - wait until renderer is initialized
+    // Input handling will be set up after renderer.initialize() is called
+  }
+
+  /**
+   * Get the current renderer
+   */
+  public getRenderer(): IRenderer | null {
+    return this.renderer
+  }
+
+  /**
+   * Setup input handlers after renderer is initialized
+   */
+  public setupInputHandlers(): void {
+    if (this.renderer && this.renderer.isReady()) {
+      this.renderer.setupInputHandlers((gridPosition: Position) => {
+        // Emit engine events for mouse clicks
+        this.emitEvent('mouse_click', { 
+          gridPosition,
+          mousePosition: { x: 0, y: 0 } // This could be enhanced
+        })
+      })
+    }
+  }
+
+  /**
+   * Render the current frame using the attached renderer
+   */
+  public render(): void {
+    if (!this.renderer) return
+    
+    // Clear the renderer
+    this.renderer.clear()
+    
+    // Draw all visible game objects
+    const allObjects = this.gameObjectManager.getAllObjects()
+    for (const obj of allObjects) {
+      if (obj.visible) {
+        this.renderer.drawObject(obj)
+      }
+    }
+    
+    // Trigger renderer update
+    this.renderer.render()
   }
   
   /**
@@ -182,6 +241,9 @@ export class GameEngine {
     
     // Process draw events
     await this.eventManager.processObjectEvents()
+    
+    // Render using the attached renderer
+    this.render()
   }
   
   /**
