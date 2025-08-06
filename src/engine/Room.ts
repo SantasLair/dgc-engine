@@ -211,7 +211,7 @@ export class Room {
   /**
    * Execute a room event script
    */
-  private async executeEvent(event: string, eventData?: any): Promise<void> {
+  public async executeEvent(event: string, eventData?: any): Promise<void> {
     const script = this.eventScripts.get(event)
     if (script) {
       // Create a dummy game object for room events (rooms don't inherit from GameObject)
@@ -291,9 +291,10 @@ export class RoomManager {
       return false
     }
 
-    // Deactivate current room
+    // Deactivate and cleanup current room
     if (this.currentRoom) {
-      this.currentRoom.deactivate()
+      // Fully destroy the room and all its game objects
+      await this.currentRoom.destroy()
     }
 
     // Activate new room

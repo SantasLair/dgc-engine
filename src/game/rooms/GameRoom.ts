@@ -7,6 +7,7 @@ import type { Game } from '../Game'
  */
 export class GameRoom extends Room {
   private game: Game
+  private gameUI: HTMLElement | null = null
 
   constructor(game: Game) {
     const config: RoomConfig = {
@@ -15,7 +16,8 @@ export class GameRoom extends Room {
       height: 15,
       background: '#2c3e50',
       onCreate: async (_gameObject) => await this.onCreateRoom(),
-      onStep: async (_gameObject) => await this.onStepRoom()
+      onStep: async (_gameObject) => await this.onStepRoom(),
+      onDestroy: async (_gameObject) => await this.onDestroyRoom()
     }
     
     super(config)
@@ -61,6 +63,12 @@ export class GameRoom extends Room {
       this.game.updateGameRenderer()
     })
     
+    // Setup initial game content (enemies, items, etc.)
+    this.game.setupInitialContent()
+    
+    // Create game UI
+    this.createGameUI()
+    
     // Initial render
     this.game.updateGameRenderer()
   }
@@ -73,6 +81,90 @@ export class GameRoom extends Room {
     // Check for escape key to show menu (future feature)
     if (this.game.getEngine()?.isKeyJustPressed('Escape')) {
       console.log('Escape pressed - could show menu here')
+    }
+  }
+
+  /**
+   * Called when the game room is destroyed/deactivated
+   */
+  private async onDestroyRoom(): Promise<void> {
+    console.log('Game room destroyed!')
+    
+    // Remove game UI
+    this.removeGameUI()
+    
+    // Clear all game objects from the engine
+    const engine = this.game.getEngine()
+    if (engine) {
+      console.log('Clearing all game objects from engine...')
+      engine.getObjectManager().clear()
+    }
+    
+    // Clear the game board reference
+    this.game.setGameBoard(null)
+    this.game.setPlayer(null)
+  }
+
+  /**
+   * Create the in-game UI elements
+   */
+  private createGameUI(): void {
+    // Create UI container
+    this.gameUI = document.createElement('div')
+    this.gameUI.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+      z-index: 100;
+    `
+    
+    // Create back to menu button
+    const backButton = document.createElement('button')
+    backButton.textContent = 'Back to Menu'
+    backButton.style.cssText = `
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    `
+
+    backButton.addEventListener('mouseenter', () => {
+      backButton.style.backgroundColor = '#c0392b'
+    })
+
+    backButton.addEventListener('mouseleave', () => {
+      backButton.style.backgroundColor = '#e74c3c'
+    })
+
+    backButton.addEventListener('click', async () => {
+      console.log('Returning to menu...')
+      const success = await this.game.switchToRoom('menu')
+      console.log('Menu switch result:', success)
+    })
+
+    // Add button to UI
+    this.gameUI.appendChild(backButton)
+    
+    // Add to page
+    document.body.appendChild(this.gameUI)
+  }
+
+  /**
+   * Remove the in-game UI elements
+   */
+  private removeGameUI(): void {
+    if (this.gameUI && this.gameUI.parentNode) {
+      this.gameUI.parentNode.removeChild(this.gameUI)
+      this.gameUI = null
     }
   }
 }

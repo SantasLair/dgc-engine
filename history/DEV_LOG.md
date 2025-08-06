@@ -66,6 +66,13 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Technology**: Modular documentation + Zero-padded numbering + Cross-references
 - **Commits**: `TBD`
 
+### [Session 10: Menu System & Navigation (August 6, 2025)](./sessions/00010-menu-navigation.md) 🎮
+**User Interface & Navigation** - Complete menu system with proper room switching
+- **Key Achievement**: Professional game navigation with proper object lifecycle management
+- **Technology**: HTML-based menu system + Room lifecycle fixes + Game UI components
+- **Features**: Menu → Game → Menu navigation, object cleanup, proper room switching
+- **Critical Fix**: Engine object manager cleanup on room transitions
+
 ---
 
 ## Current State (August 6, 2025)

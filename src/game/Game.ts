@@ -7,7 +7,7 @@ import type { Position } from './types'
 
 /**
  * Turn-based movement game that extends the BaseGame class
- * Demonstrates how to use the GameEngine with GameMaker-style objects
+ * Demonstrates the capabilities of the GameEngine with GameMaker-style objects and rooms
  */
 export class Game extends BaseGame {
   private gameBoard: GameBoard | null = null
@@ -50,16 +50,15 @@ export class Game extends BaseGame {
     // Setup rooms
     this.setupRooms()
     
-    // Setup demo content to showcase the engine
-    this.setupDemo()
-    
-    // Add demo UI for development
-    if (import.meta.env.DEV) {
-      this.addDemoUI()
+    // Add development UI for debugging
+    if (false && import.meta.env.DEV) {
+      this.addDevUI()
+      // Wait a frame to ensure DOM elements are added
+      await new Promise(resolve => requestAnimationFrame(resolve))
     }
     
-    // Start with the main game room
-    await this.roomManager.switchToRoom('game')
+    // Start with the menu room
+    await this.roomManager.switchToRoom('menu')
   }
 
   /**
@@ -201,14 +200,14 @@ export class Game extends BaseGame {
   /**
    * Set the game board (for room-based creation)
    */
-  public setGameBoard(gameBoard: GameBoard): void {
+  public setGameBoard(gameBoard: GameBoard | null): void {
     this.gameBoard = gameBoard
   }
 
   /**
    * Set the player (for room-based creation)
    */
-  public setPlayer(player: Player): void {
+  public setPlayer(player: Player | null): void {
     this.player = player
   }
 
@@ -244,6 +243,13 @@ export class Game extends BaseGame {
   }
 
   /**
+   * Get the game canvas element
+   */
+  public getCanvas(): HTMLCanvasElement {
+    return this.canvas
+  }
+
+  /**
    * Get the room manager for advanced room operations
    */
   public getRoomManager(): RoomManager {
@@ -265,13 +271,13 @@ export class Game extends BaseGame {
   }
 
   /**
-   * Setup demo objects to showcase the engine
+   * Setup initial game content and objects
    */
-  private setupDemo(): void {
+  public setupInitialContent(): void {
     const engine = this.getEngine()
     
-    // ===== GRID DEMONSTRATION =====
-    console.log('🎮 Demonstrating both Grid approaches:')
+    // ===== GRID SYSTEM DEMONSTRATION =====
+    console.log('🎮 Grid system supports both coding approaches:')
     
     // Modern TypeScript approach
     console.log('--- Modern TypeScript Approach ---')
@@ -289,7 +295,7 @@ export class Game extends BaseGame {
     
     console.log('✅ Both approaches work! Developers can choose their preferred style.')
     
-    // Create some enemies using the new Enemy class
+    // Create initial enemies
     const enemy1 = new Enemy(10, 5, 'guard')
     const enemy2 = new Enemy(15, 8, 'scout')
     const enemy3 = new Enemy(5, 10, 'guard')
@@ -299,7 +305,7 @@ export class Game extends BaseGame {
     engine.getObjectManager().addExistingObject(enemy2)
     engine.getObjectManager().addExistingObject(enemy3)
     
-    // Create some collectible items using the new Item class
+    // Create initial collectible items
     const coin1 = Item.createCoin(3, 3, 15)
     const gem1 = Item.createGem(7, 7, 50)
     const coin2 = Item.createCoin(12, 4, 10)
@@ -313,17 +319,18 @@ export class Game extends BaseGame {
     engine.getObjectManager().addExistingObject(healthPotion)
     engine.getObjectManager().addExistingObject(key)
     
-    console.log('Demo objects created using class-based approach!')
+    console.log('Initial game content loaded!')
   }
 
   /**
-   * Add demo UI to showcase engine features (development only)
+   * Add development UI for debugging and testing (development only)
    */
-  private addDemoUI(): void {
+  public addDevUI(): void {
     const engine = this.getEngine()
     
     // Create UI container
     const uiContainer = document.createElement('div')
+    uiContainer.id = 'devUI'
     uiContainer.style.cssText = `
       position: absolute;
       top: 10px;
@@ -337,17 +344,16 @@ export class Game extends BaseGame {
       z-index: 1000;
     `
     
-    // Add controls info
+    // Add game info and controls
     uiContainer.innerHTML = `
-      <h3>GameMaker-Style Engine Demo</h3>
-      <p style="color: #ffcc00; font-style: italic; margin: 5px 0;">⚠️ This game is not yet fully playable, check back later</p>
+      <h3>DGC Engine Game</h3>
       <p><strong>Controls:</strong></p>
       <ul>
         <li>Click to move player</li>
         <li>WASD/Arrow keys for direct movement</li>
         <li>Space to cancel movement</li>
       </ul>
-      <p><strong>Features:</strong></p>
+      <p><strong>Engine Features:</strong></p>
       <ul>
         <li>Event-driven object system</li>
         <li>Collision detection</li>
@@ -407,9 +413,33 @@ export class Game extends BaseGame {
     
     document.getElementById('restartBtn')?.addEventListener('click', async () => {
       await this.restart()
-      this.setupDemo()
+      this.setupInitialContent()
       console.log('Game restarted!')
     })
+  }
+
+  /**
+   * Show/hide development UI based on room
+   */
+  public setDevUIVisible(visible: boolean): void {
+    if (!import.meta.env.DEV) return
+    
+    const devUI = document.getElementById('devUI')
+    if (devUI) {
+      devUI.style.display = visible ? 'block' : 'none'
+    }
+  }
+
+  /**
+   * Remove development UI completely
+   */
+  public removeDevUI(): void {
+    if (!import.meta.env.DEV) return
+    
+    const devUI = document.getElementById('devUI')
+    if (devUI && devUI.parentNode) {
+      devUI.parentNode.removeChild(devUI)
+    }
   }
 
   /**
