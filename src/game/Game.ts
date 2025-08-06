@@ -1,44 +1,79 @@
-import { GameEngine, GameObject, GameEvent, type GameEngineConfig, type IRenderer } from '../engine'
+import { BaseGame, GameObject, GameEvent, type GameEngineConfig } from '../engine'
 import { GameBoard } from './GameBoard'
 import { Player } from './Player'
 import type { Position } from './types'
 
 /**
- * Game class that uses the GameEngine with abstracted renderer
- * Main orchestrator for the turn-based movement game with GameMaker-style objects
+ * Turn-based movement game that extends the BaseGame class
+ * Demonstrates how to use the GameEngine with GameMaker-style objects
  */
-export class Game {
-  private canvas: HTMLCanvasElement
+export class Game extends BaseGame {
   private gameBoard: GameBoard
-  private engine: GameEngine
   private player: Player | null = null
-  private isInitialized: boolean = false
 
   constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas
+    super(canvas)
     
-    // Initialize game components
+    // Initialize game-specific components
     this.gameBoard = new GameBoard(20, 15) // 20x15 grid
-    
-    // Engine will be created in the start() method using the factory
-    this.engine = new GameEngine() // Temporary, will be replaced
-    
-    this.setupEngineIntegration()
   }
 
   /**
-   * Create and configure the game engine
+   * Get the engine configuration for this game
    */
-  private async createEngine(): Promise<GameEngine> {
-    const config: GameEngineConfig = {
+  protected getEngineConfig(): GameEngineConfig {
+    return {
       canvas: this.canvas,
       gridWidth: 20,
       gridHeight: 15,
       rendererType: 'pixi', // Could be configurable
       targetFPS: 60
     }
+  }
+
+  /**
+   * Setup game-specific logic after engine creation
+   */
+  protected async setupGame(): Promise<void> {
+    // Setup engine integration
+    this.setupEngineIntegration()
     
-    return await GameEngine.create(config)
+    // Setup input handlers
+    this.setupEventHandlers()
+    
+    // Create the player object
+    this.player = new Player(0, 0)
+    
+    // Add player to the engine
+    this.addObject(this.player)
+    
+    // Setup player-specific events
+    this.setupPlayerMovementIntegration()
+    
+    // Add custom draw event to trigger renderer updates
+    this.player.addEventScript(GameEvent.DRAW, () => {
+      this.updateGameRenderer()
+    })
+    
+    // Initial render
+    this.updateGameRenderer()
+  }
+
+  /**
+   * Update the game renderer with game-specific content
+   */
+  private updateGameRenderer(): void {
+    if (!this.isGameInitialized) return
+    
+    const renderer = this.getRenderer()
+    if (!renderer) return
+    
+    // Clear and redraw the grid (game-specific rendering)
+    renderer.clear()
+    renderer.drawGrid(this.gameBoard)
+    
+    // The engine will handle drawing all game objects automatically
+    // through its render() method in the game loop
   }
 
   /**
@@ -46,21 +81,21 @@ export class Game {
    */
   private setupEngineIntegration(): void {
     // Listen for engine events to trigger rendering updates
-    this.engine.addEventListener('object_moved', () => {
-      this.updateRenderer()
+    this.addEventListener('object_moved', () => {
+      this.updateGameRenderer()
     })
     
-    this.engine.addEventListener('object_created', () => {
-      this.updateRenderer()
+    this.addEventListener('object_created', () => {
+      this.updateGameRenderer()
     })
     
-    this.engine.addEventListener('object_destroyed', () => {
-      this.updateRenderer()
+    this.addEventListener('object_destroyed', () => {
+      this.updateGameRenderer()
     })
     
     // Setup global game events
-    this.engine.addEventListener('player_moved', (eventData) => {
-      const renderer = this.engine.getRenderer()
+    this.addEventListener('player_moved', (eventData) => {
+      const renderer = this.getRenderer()
       if (renderer && eventData?.path) {
         renderer.drawPath(eventData.path)
       }
@@ -69,51 +104,13 @@ export class Game {
       }
     })
     
-    this.engine.addEventListener('movement_complete', () => {
-      const renderer = this.engine.getRenderer()
+    this.addEventListener('movement_complete', () => {
+      const renderer = this.getRenderer()
       if (renderer) {
         renderer.clearPath()
         renderer.clearTarget()
       }
     })
-  }
-
-  /**
-   * Start the game
-   */
-  public async start(): Promise<void> {
-    // Create and configure the engine with renderer
-    this.engine = await this.createEngine()
-    
-    // Re-setup integration after engine creation
-    this.setupEngineIntegration()
-    
-    // Setup input handlers through the engine (already done in createEngine)
-    // No need to call setupInputHandlers again
-    
-    // Setup mouse event handling for compatibility
-    this.setupEventHandlers()
-    
-    // Create the player object using the new Player class
-    this.player = new Player(0, 0)
-    
-    // Register the player with the engine
-    this.engine.getObjectManager().addExistingObject(this.player)
-    
-    // Setup player-specific events for movement
-    this.setupPlayerMovementIntegration()
-    
-    // Add custom draw event to trigger renderer updates
-    this.player.addEventScript(GameEvent.DRAW, () => {
-      this.updateRenderer()
-    })
-    
-    // Start the engine
-    await this.engine.start()
-    
-    // Initial render
-    this.updateRenderer()
-    this.isInitialized = true
   }
 
   /**
@@ -125,7 +122,7 @@ export class Game {
     // Add click-to-move functionality
     this.player.addEventScript(GameEvent.MOUSE_LEFT_PRESSED, (self, eventData) => {
       if (eventData?.mousePosition) {
-        const renderer = this.engine.getRenderer()
+        const renderer = this.getRenderer()
         if (renderer) {
           const gridPos = renderer.screenToGridWithBoard(
             eventData.mousePosition.x,
@@ -155,7 +152,7 @@ export class Game {
       player.setVariable('movementSpeed', 200) // ms per step
       
       // Emit engine event for UI updates
-      this.engine.emitEvent('player_moved', { 
+      this.emitEvent('player_moved', { 
         path: [currentPos, ...path], 
         target: targetPos 
       })
@@ -178,7 +175,7 @@ export class Game {
       if (!isMoving || !targetPath || pathIndex >= targetPath.length) {
         // Movement complete
         player.setVariable('isMoving', false)
-        this.engine.emitEvent('movement_complete')
+        this.emitEvent('movement_complete')
         return
       }
       
@@ -188,7 +185,7 @@ export class Game {
       player.setVariable('pathIndex', pathIndex + 1)
       
       // Emit movement event
-      this.engine.emitEvent('object_moved')
+      this.emitEvent('object_moved')
       
       // Schedule next step
       setTimeout(moveStep, movementSpeed)
@@ -201,7 +198,7 @@ export class Game {
    * Setup event handlers for mouse interaction
    */
   private setupEventHandlers(): void {
-    const renderer = this.engine.getRenderer()
+    const renderer = this.getRenderer()
     if (!renderer) return
     
     // Setup input handlers through the renderer
@@ -209,7 +206,7 @@ export class Game {
       const gridPos = renderer.screenToGridWithBoard(position.x, position.y, this.gameBoard)
       
       // Emit engine event
-      this.engine.emitEvent('mouse_click', { 
+      this.emitEvent('mouse_click', { 
         mousePosition: { x: position.x, y: position.y },
         gridPosition: gridPos
       })
@@ -249,28 +246,10 @@ export class Game {
   }
 
   /**
-   * Update the renderer with current game state
-   * The engine now handles most rendering automatically
-   */
-  private updateRenderer(): void {
-    if (!this.isInitialized) return
-    
-    const renderer = this.engine.getRenderer()
-    if (!renderer) return
-    
-    // Clear and redraw the grid (game-specific rendering)
-    renderer.clear()
-    renderer.drawGrid(this.gameBoard)
-    
-    // The engine will handle drawing all game objects automatically
-    // through its render() method in the game loop
-  }
-
-  /**
    * Create an enemy at a specific position
    */
   public createEnemy(x: number, y: number): GameObject {
-    const enemy = this.engine.createObject('Enemy', x, y)
+    const enemy = this.createObject('Enemy', x, y)
     enemy.solid = true
     enemy.visible = true
     enemy.setVariable('health', 50)
@@ -305,27 +284,13 @@ export class Game {
    * Create an item at a specific position
    */
   public createItem(x: number, y: number, itemType: string = 'coin'): GameObject {
-    const item = this.engine.createObject('Item', x, y)
+    const item = this.createObject('Item', x, y)
     item.solid = false
     item.visible = true
     item.setVariable('itemType', itemType)
     item.setVariable('value', 10)
     
     return item
-  }
-
-  /**
-   * Get the game engine for advanced usage
-   */
-  public getEngine(): GameEngine {
-    return this.engine
-  }
-
-  /**
-   * Get the renderer
-   */
-  public getRenderer(): IRenderer | null {
-    return this.engine.getRenderer()
   }
 
   /**
@@ -336,26 +301,10 @@ export class Game {
   }
 
   /**
-   * Check if the game is initialized
-   */
-  public get isGameInitialized(): boolean {
-    return this.isInitialized
-  }
-
-  /**
-   * Stop the game
-   */
-  public async stop(): Promise<void> {
-    await this.engine.stop()
-  }
-
-  /**
-   * Restart the game
+   * Restart the game with game-specific logic
    */
   public async restart(): Promise<void> {
-    this.engine.restart()
-    this.player = new Player(0, 0)
-    this.engine.getObjectManager().addExistingObject(this.player)
-    this.updateRenderer()
+    await super.restart()
+    // Game-specific restart logic if needed
   }
 }

@@ -1,5 +1,5 @@
 import type { IRenderer } from './IRenderer'
-import { PixiRenderer } from '../game/PixiRenderer'
+import { PixiRenderer } from './renderers/PixiRenderer'
 import type { RendererConfig } from './index'
 
 /**
