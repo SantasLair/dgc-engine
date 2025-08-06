@@ -1,6 +1,5 @@
 import { BaseGame, GameObject, GameEvent, type GameEngineConfig, Room, RoomManager } from '../engine'
-import { GameBoard } from './GameBoard'
-import { Player } from './Player'
+import { GameBoard, Player } from './gameobjects'
 import { GameRoom, MenuRoom } from './rooms'
 import type { Position } from './types'
 

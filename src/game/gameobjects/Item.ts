@@ -1,4 +1,4 @@
-import { GameObject, GameEvent } from '../engine'
+import { GameObject, GameEvent } from '../../engine'
 
 /**
  * Item class that extends GameObject

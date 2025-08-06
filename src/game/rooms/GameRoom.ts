@@ -1,6 +1,5 @@
 import { Room, GameEvent, type RoomConfig } from '../../engine'
-import { GameBoard } from '../GameBoard'
-import { Player } from '../Player'
+import { GameBoard, Player } from '../gameobjects'
 import type { Game } from '../Game'
 
 /**

@@ -1,8 +1,8 @@
 import * as PIXI from 'pixi.js'
 import type { Position } from '../../game/types'
 import { CellType } from '../../game/types'
-import type { GameBoard } from '../../game/GameBoard'
-import type { Player } from '../../game/Player'
+import type { GameBoard } from '../../game/gameobjects/GameBoard'
+import type { Player } from '../../game/gameobjects/Player'
 import type { IRenderer, RendererConfig } from '../IRenderer'
 
 /**

@@ -1,7 +1,6 @@
 import './style.css'
 import { Game } from './game/Game'
-import { Enemy } from './game/Enemy'
-import { Item } from './game/Item'
+import { Enemy, Item } from './game/gameobjects'
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {

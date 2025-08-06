@@ -1,5 +1,5 @@
-import { CellType } from './types'
-import { GameObject, GameEvent } from '../engine'
+import { CellType } from '../types'
+import { GameObject, GameEvent } from '../../engine'
 
 /**
  * Represents the game board with grid-based layout
