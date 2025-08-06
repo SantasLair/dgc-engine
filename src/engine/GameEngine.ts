@@ -3,6 +3,9 @@ import { GameObjectManager } from './GameObjectManager'
 import { GameObject, GameEvent } from './GameObject'
 import type { IRenderer } from './IRenderer'
 import type { Position } from '../game/types'
+import { RendererFactory } from './RendererFactory'
+import type { GameEngineConfig } from './GameEngineConfig'
+import { createRendererConfig } from './GameEngineConfig'
 
 /**
  * Input manager for handling keyboard and mouse events
@@ -119,6 +122,37 @@ export class GameEngine {
     // Setup default global variables
     this.setGlobalVariable('fps', this.targetFPS)
     this.setGlobalVariable('room_speed', this.targetFPS)
+  }
+  
+  /**
+   * Create a GameEngine with automatically configured renderer
+   * This is the recommended way to create a game engine
+   */
+  static async create(config: GameEngineConfig): Promise<GameEngine> {
+    // Use default renderer type if not specified
+    const rendererType = config.rendererType || RendererFactory.getDefaultRendererType()
+    
+    // Create renderer configuration
+    const rendererConfig = createRendererConfig(config)
+    
+    // Create renderer instance
+    const renderer = RendererFactory.createRenderer(rendererType, rendererConfig)
+    
+    // Create engine with renderer
+    const engine = new GameEngine(renderer)
+    
+    // Set target FPS if specified
+    if (config.targetFPS) {
+      engine.targetFPS = config.targetFPS
+    }
+    
+    // Initialize the renderer
+    await renderer.initialize()
+    
+    // Setup input handlers
+    engine.setupInputHandlers()
+    
+    return engine
   }
   
   /**

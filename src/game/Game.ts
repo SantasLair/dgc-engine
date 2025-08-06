@@ -1,17 +1,15 @@
-import { GameEngine, GameObject, GameEvent, type RendererConfig } from '../engine'
-import { PixiRenderer } from './PixiRenderer'
+import { GameEngine, GameObject, GameEvent, type GameEngineConfig, type IRenderer } from '../engine'
 import { GameBoard } from './GameBoard'
 import { Player } from './Player'
 import type { Position } from './types'
 
 /**
- * Game class that integrates the GameEngine with the Pixi renderer
+ * Game class that uses the GameEngine with abstracted renderer
  * Main orchestrator for the turn-based movement game with GameMaker-style objects
  */
 export class Game {
   private canvas: HTMLCanvasElement
   private gameBoard: GameBoard
-  private renderer: PixiRenderer
   private engine: GameEngine
   private player: Player | null = null
   private isInitialized: boolean = false
@@ -22,20 +20,25 @@ export class Game {
     // Initialize game components
     this.gameBoard = new GameBoard(20, 15) // 20x15 grid
     
-    // Create renderer with new config interface
-    const rendererConfig: RendererConfig = {
-      canvas: this.canvas,
-      width: this.canvas.width,
-      height: this.canvas.height,
-      gridWidth: 20,
-      gridHeight: 15
-    }
-    this.renderer = new PixiRenderer(rendererConfig)
-    
-    // Create engine with the renderer
-    this.engine = new GameEngine(this.renderer)
+    // Engine will be created in the start() method using the factory
+    this.engine = new GameEngine() // Temporary, will be replaced
     
     this.setupEngineIntegration()
+  }
+
+  /**
+   * Create and configure the game engine
+   */
+  private async createEngine(): Promise<GameEngine> {
+    const config: GameEngineConfig = {
+      canvas: this.canvas,
+      gridWidth: 20,
+      gridHeight: 15,
+      rendererType: 'pixi', // Could be configurable
+      targetFPS: 60
+    }
+    
+    return await GameEngine.create(config)
   }
 
   /**
@@ -57,17 +60,21 @@ export class Game {
     
     // Setup global game events
     this.engine.addEventListener('player_moved', (eventData) => {
-      if (eventData?.path) {
-        this.renderer.drawPath(eventData.path)
+      const renderer = this.engine.getRenderer()
+      if (renderer && eventData?.path) {
+        renderer.drawPath(eventData.path)
       }
-      if (eventData?.target) {
-        this.renderer.drawTarget(eventData.target)
+      if (renderer && eventData?.target) {
+        renderer.drawTarget(eventData.target)
       }
     })
     
     this.engine.addEventListener('movement_complete', () => {
-      this.renderer.clearPath()
-      this.renderer.clearTarget()
+      const renderer = this.engine.getRenderer()
+      if (renderer) {
+        renderer.clearPath()
+        renderer.clearTarget()
+      }
     })
   }
 
@@ -75,17 +82,17 @@ export class Game {
    * Start the game
    */
   public async start(): Promise<void> {
-    // Initialize the renderer first
-    await this.renderer.initialize()
+    // Create and configure the engine with renderer
+    this.engine = await this.createEngine()
     
-    // Wait for Pixi to be ready
-    await this.renderer.waitForReady()
+    // Re-setup integration after engine creation
+    this.setupEngineIntegration()
     
-    // Now setup input handlers through the engine (after renderer is ready)
-    this.engine.setupInputHandlers()
+    // Setup input handlers through the engine (already done in createEngine)
+    // No need to call setupInputHandlers again
     
-    // Setup mouse event handling for Pixi (legacy approach for compatibility)
-    this.setupPixiEventHandlers()
+    // Setup mouse event handling for compatibility
+    this.setupEventHandlers()
     
     // Create the player object using the new Player class
     this.player = new Player(0, 0)
@@ -118,14 +125,17 @@ export class Game {
     // Add click-to-move functionality
     this.player.addEventScript(GameEvent.MOUSE_LEFT_PRESSED, (self, eventData) => {
       if (eventData?.mousePosition) {
-        const gridPos = this.renderer.screenToGridWithBoard(
-          eventData.mousePosition.x,
-          eventData.mousePosition.y,
-          this.gameBoard
-        )
-        
-        // Calculate path and start movement
-        this.handlePlayerMovement(self as Player, gridPos)
+        const renderer = this.engine.getRenderer()
+        if (renderer) {
+          const gridPos = renderer.screenToGridWithBoard(
+            eventData.mousePosition.x,
+            eventData.mousePosition.y,
+            this.gameBoard
+          )
+          
+          // Calculate path and start movement
+          this.handlePlayerMovement(self as Player, gridPos)
+        }
       }
     })
   }
@@ -188,27 +198,24 @@ export class Game {
   }
 
   /**
-   * Setup Pixi event handlers for mouse interaction
+   * Setup event handlers for mouse interaction
    */
-  private setupPixiEventHandlers(): void {
-    const app = this.renderer.getApp()
+  private setupEventHandlers(): void {
+    const renderer = this.engine.getRenderer()
+    if (!renderer) return
     
-    app.stage.eventMode = 'static'
-    app.stage.hitArea = app.screen
-    
-    app.stage.on('pointerdown', (event) => {
-      const globalPos = event.global
-      const gridPos = this.renderer.screenToGridWithBoard(globalPos.x, globalPos.y, this.gameBoard)
+    // Setup input handlers through the renderer
+    renderer.setupInputHandlers((position: Position) => {
+      const gridPos = renderer.screenToGridWithBoard(position.x, position.y, this.gameBoard)
       
       // Emit engine event
       this.engine.emitEvent('mouse_click', { 
-        mousePosition: { x: globalPos.x, y: globalPos.y },
+        mousePosition: { x: position.x, y: position.y },
         gridPosition: gridPos
       })
       
       // Move player if we have one
       if (this.player) {
-        const gridPos = this.renderer.screenToGridWithBoard(globalPos.x, globalPos.y, this.gameBoard)
         this.handlePlayerMovement(this.player, gridPos)
       }
     })
@@ -248,9 +255,12 @@ export class Game {
   private updateRenderer(): void {
     if (!this.isInitialized) return
     
+    const renderer = this.engine.getRenderer()
+    if (!renderer) return
+    
     // Clear and redraw the grid (game-specific rendering)
-    this.renderer.clear()
-    this.renderer.drawGrid(this.gameBoard)
+    renderer.clear()
+    renderer.drawGrid(this.gameBoard)
     
     // The engine will handle drawing all game objects automatically
     // through its render() method in the game loop
@@ -314,8 +324,8 @@ export class Game {
   /**
    * Get the renderer
    */
-  public getRenderer(): PixiRenderer {
-    return this.renderer
+  public getRenderer(): IRenderer | null {
+    return this.engine.getRenderer()
   }
 
   /**

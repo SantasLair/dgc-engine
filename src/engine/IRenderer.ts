@@ -46,6 +46,36 @@ export interface IRenderer {
   gridToScreen(gridX: number, gridY: number): Position
   
   /**
+   * Convert screen coordinates to game grid coordinates with board validation
+   */
+  screenToGridWithBoard(screenX: number, screenY: number, gameBoard: any): Position
+  
+  /**
+   * Draw a path on the renderer
+   */
+  drawPath(path: Position[]): void
+  
+  /**
+   * Draw a target indicator
+   */
+  drawTarget(target: Position): void
+  
+  /**
+   * Clear path visualization
+   */
+  clearPath(): void
+  
+  /**
+   * Clear target visualization
+   */
+  clearTarget(): void
+  
+  /**
+   * Draw the game grid
+   */
+  drawGrid(gameBoard: any): void
+  
+  /**
    * Set up mouse/touch event handling
    */
   setupInputHandlers(onPointerDown: (position: Position) => void): void
