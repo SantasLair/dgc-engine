@@ -1,6 +1,7 @@
-import { GameEngine, GameObject, GameEvent, createPlayerObject } from '../engine'
+import { GameEngine, GameObject, GameEvent } from '../engine'
 import { PixiRenderer } from './PixiRenderer'
 import { GameBoard } from './GameBoard'
+import { Player } from './Player'
 import type { Position } from './types'
 
 /**
@@ -12,7 +13,7 @@ export class EnhancedGame {
   private gameBoard: GameBoard
   private renderer: PixiRenderer
   private engine: GameEngine
-  private player: GameObject | null = null
+  private player: Player | null = null
   private isInitialized: boolean = false
 
   constructor(canvas: HTMLCanvasElement) {
@@ -30,23 +31,32 @@ export class EnhancedGame {
    * Setup integration between the engine and the renderer
    */
   private setupEngineIntegration(): void {
-    // Listen for draw events to update the renderer
-    this.engine.addEventListener('object_draw', (_eventData) => {
+    // Listen for engine events to trigger rendering updates
+    this.engine.addEventListener('object_moved', () => {
       this.updateRenderer()
     })
     
-    // Setup mouse click handling for grid-based movement
-    this.engine.addEventListener('mouse_click', (eventData) => {
-      if (eventData?.mousePosition && this.player) {
-        const gridPos = this.renderer.screenToGrid(
-          eventData.mousePosition.x, 
-          eventData.mousePosition.y, 
-          this.gameBoard
-        )
-        
-        // Show path preview
-        this.showMovementPath(this.player.getPosition(), gridPos)
+    this.engine.addEventListener('object_created', () => {
+      this.updateRenderer()
+    })
+    
+    this.engine.addEventListener('object_destroyed', () => {
+      this.updateRenderer()
+    })
+    
+    // Setup global game events
+    this.engine.addEventListener('player_moved', (eventData) => {
+      if (eventData?.path) {
+        this.renderer.drawPath(eventData.path)
       }
+      if (eventData?.target) {
+        this.renderer.drawTarget(eventData.target)
+      }
+    })
+    
+    this.engine.addEventListener('movement_complete', () => {
+      this.renderer.clearPath()
+      this.renderer.clearTarget()
     })
   }
 
@@ -62,12 +72,17 @@ export class EnhancedGame {
     // Setup mouse event handling for Pixi
     this.setupPixiEventHandlers()
     
-    // Create the player object using the new engine
-    this.player = createPlayerObject(this.engine, 0, 0)
+    // Create the player object using the new Player class
+    this.player = new Player(0, 0)
     
-    // Add custom draw event to the player for Pixi rendering
-    this.player.addEventScript(GameEvent.DRAW, (_self) => {
-      // This will trigger our renderer update
+    // Register the player with the engine
+    this.engine.getObjectManager().addExistingObject(this.player)
+    
+    // Setup player-specific events for movement
+    this.setupPlayerMovementIntegration()
+    
+    // Add custom draw event to trigger renderer updates
+    this.player.addEventScript(GameEvent.DRAW, () => {
       this.updateRenderer()
     })
     
@@ -79,6 +94,84 @@ export class EnhancedGame {
     this.isInitialized = true
     
     console.log('Enhanced game started successfully!')
+  }
+
+  /**
+   * Setup player movement integration with the engine
+   */
+  private setupPlayerMovementIntegration(): void {
+    if (!this.player) return
+    
+    // Add click-to-move functionality
+    this.player.addEventScript(GameEvent.MOUSE_LEFT_PRESSED, (self, eventData) => {
+      if (eventData?.mousePosition) {
+        const gridPos = this.renderer.screenToGrid(
+          eventData.mousePosition.x,
+          eventData.mousePosition.y,
+          this.gameBoard
+        )
+        
+        // Calculate path and start movement
+        this.handlePlayerMovement(self as Player, gridPos)
+      }
+    })
+  }
+
+  /**
+   * Handle player movement through the engine
+   */
+  private handlePlayerMovement(player: Player, targetPos: Position): void {
+    const currentPos = player.getPosition()
+    const path = this.calculatePath(currentPos, targetPos)
+    
+    if (path.length > 0) {
+      // Store movement data in player
+      player.setVariable('targetPath', path)
+      player.setVariable('pathIndex', 0)
+      player.setVariable('isMoving', true)
+      player.setVariable('movementSpeed', 200) // ms per step
+      
+      // Emit engine event for UI updates
+      this.engine.emitEvent('player_moved', { 
+        path: [currentPos, ...path], 
+        target: targetPos 
+      })
+      
+      // Start engine-driven movement
+      this.startEngineMovement(player)
+    }
+  }
+
+  /**
+   * Engine-driven movement animation
+   */
+  private startEngineMovement(player: Player): void {
+    const moveStep = () => {
+      const targetPath = player.getVariable('targetPath')
+      const pathIndex = player.getVariable('pathIndex') || 0
+      const isMoving = player.getVariable('isMoving')
+      const movementSpeed = player.getVariable('movementSpeed') || 200
+      
+      if (!isMoving || !targetPath || pathIndex >= targetPath.length) {
+        // Movement complete
+        player.setVariable('isMoving', false)
+        this.engine.emitEvent('movement_complete')
+        return
+      }
+      
+      // Move to next position
+      const nextPos = targetPath[pathIndex]
+      player.setPosition(nextPos.x, nextPos.y)
+      player.setVariable('pathIndex', pathIndex + 1)
+      
+      // Emit movement event
+      this.engine.emitEvent('object_moved')
+      
+      // Schedule next step
+      setTimeout(moveStep, movementSpeed)
+    }
+    
+    moveStep()
   }
 
   /**
@@ -102,34 +195,10 @@ export class EnhancedGame {
       
       // Move player if we have one
       if (this.player) {
-        this.movePlayerTo(gridPos)
+        const gridPos = this.renderer.screenToGrid(globalPos.x, globalPos.y, this.gameBoard)
+        this.handlePlayerMovement(this.player, gridPos)
       }
     })
-  }
-
-  /**
-   * Move player to a grid position with pathfinding
-   */
-  private movePlayerTo(targetPos: Position): void {
-    if (!this.player) return
-    
-    const currentPos = this.player.getPosition()
-    
-    // Simple pathfinding (can be enhanced with EasyStar later)
-    const path = this.calculatePath(currentPos, targetPos)
-    
-    if (path.length > 0) {
-      this.player.setVariable('targetPath', path)
-      this.player.setVariable('pathIndex', 0)
-      this.player.setVariable('isMoving', true)
-      
-      // Show path preview
-      this.renderer.drawPath(path)
-      this.renderer.drawTarget(targetPos)
-      
-      // Start moving along the path
-      this.startMovementAnimation()
-    }
   }
 
   /**
@@ -157,51 +226,6 @@ export class EnhancedGame {
     }
     
     return path
-  }
-
-  /**
-   * Start animated movement along the path
-   */
-  private startMovementAnimation(): void {
-    if (!this.player) return
-    
-    const animateMovement = () => {
-      const targetPath = this.player!.getVariable('targetPath')
-      const pathIndex = this.player!.getVariable('pathIndex') || 0
-      const isMoving = this.player!.getVariable('isMoving')
-      
-      if (!isMoving || !targetPath || pathIndex >= targetPath.length) {
-        // Movement complete
-        this.player!.setVariable('isMoving', false)
-        this.renderer.clearPath()
-        this.renderer.clearTarget()
-        return
-      }
-      
-      // Move to next position in path
-      const nextPos = targetPath[pathIndex]
-      this.player!.setPosition(nextPos.x, nextPos.y)
-      this.player!.setVariable('pathIndex', pathIndex + 1)
-      
-      // Update renderer
-      this.updateRenderer()
-      
-      // Continue animation
-      setTimeout(animateMovement, 200) // 200ms per step
-    }
-    
-    animateMovement()
-  }
-
-  /**
-   * Show movement path preview
-   */
-  private showMovementPath(start: Position, end: Position): void {
-    const path = this.calculatePath(start, end)
-    if (path.length > 0) {
-      this.renderer.drawPath([start, ...path])
-      this.renderer.drawTarget(end)
-    }
   }
 
   /**
@@ -328,6 +352,13 @@ export class EnhancedGame {
   }
 
   /**
+   * Check if the game is initialized
+   */
+  public get isGameInitialized(): boolean {
+    return this.isInitialized
+  }
+
+  /**
    * Stop the game
    */
   public async stop(): Promise<void> {
@@ -339,7 +370,8 @@ export class EnhancedGame {
    */
   public async restart(): Promise<void> {
     this.engine.restart()
-    this.player = createPlayerObject(this.engine, 0, 0)
+    this.player = new Player(0, 0)
+    this.engine.getObjectManager().addExistingObject(this.player)
     this.updateRenderer()
   }
 }

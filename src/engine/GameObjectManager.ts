@@ -41,7 +41,25 @@ export class GameObjectManager {
     
     return gameObject
   }
-  
+
+  /**
+   * Add an existing GameObject to the manager
+   */
+  public addExistingObject(gameObject: GameObject): void {
+    gameObject.setManagers(this.eventManager, this)
+    
+    // Add to collections
+    this.gameObjects.set(gameObject.id, gameObject)
+    
+    if (!this.objectsByType.has(gameObject.objectType)) {
+      this.objectsByType.set(gameObject.objectType, new Set())
+    }
+    this.objectsByType.get(gameObject.objectType)!.add(gameObject)
+    
+    // Queue create event
+    this.eventManager.queueObjectEvent(gameObject, GameEvent.CREATE)
+  }
+
   /**
    * Create a game object at a specific position
    */
