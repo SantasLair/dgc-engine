@@ -72,6 +72,7 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Technology**: HTML-based menu system + Room lifecycle fixes + Game UI components
 - **Features**: Menu → Game → Menu navigation, object cleanup, proper room switching
 - **Critical Fix**: Engine object manager cleanup on room transitions
+- **Commits**: `754a9ba`
 
 ---
 
