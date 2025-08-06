@@ -3,29 +3,68 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Pixi.js](https://img.shields.io/badge/Pixi.js-e91e63?logo=javascript&logoColor=white)](https://pixijs.com/)
+[![Work in Progress](https://img.shields.io/badge/Status-Work%20in%20Progress-orange)](https://github.com/SantasLair/TurnBasedMovement)
+[![AI Generated](https://img.shields.io/badge/AI%20Assisted-Professional%20Development-blue)](https://github.com/features/copilot)
 
-A professional GameMaker-style game engine built with **TypeScript**, **Pixi.js**, and modern web technologies. What started as a simple turn-based movement demo evolved into a comprehensive game engine with room management, event-driven GameObjects, and industry-standard architecture.
+A work-in-progress GameMaker-style game engine built with **TypeScript**, **Pixi.js**, and modern web technologies. This project aims to become a professional game engine with room management, event-driven GameObjects, and industry-standard architecture.
 
-## 🎮 Engine Features
+## 🤖 AI-Assisted Development Showcase
 
-### GameMaker-Style Architecture
-- **GameObject System**: Event-driven objects with CREATE, STEP, DRAW, DESTROY events
-- **Room Management**: Professional level/scene organization and transitions
-- **Event System**: Comprehensive event handling and script system
+This project serves as a **showcase for professional software development using AI code generation tools** (GitHub Copilot). It demonstrates:
+
+- **Professional Architecture**: How AI can assist in building complex, well-structured game engines
+- **Best Practices**: Modern TypeScript patterns, documentation, and project organization
+- **Rapid Prototyping**: Accelerated development from concept to working engine architecture
+- **Code Quality**: AI-assisted development while maintaining high standards and readability
+
+> **⚠️ Work in Progress**: This engine is actively being developed and is far from complete. It currently demonstrates core concepts and architecture but lacks many features expected in a production game engine.
+
+> **🎮 Prototype Game Implementation**: The current turn-based movement game is a **prototype/beta implementation** used to test and demonstrate the engine architecture. The game mechanics will be significantly improved and expanded as the engine develops.
+
+## 🎮 Current Features
+
+### Implemented ✅
+- **Basic GameObject System**: Event-driven objects with CREATE, STEP, DRAW, DESTROY events
+- **Room Management**: Basic level/scene organization and transitions
+- **Event System**: Foundation for event handling and script system
 - **Renderer Abstraction**: Pluggable rendering backends (currently Pixi.js)
+- **Grid-based Movement**: Turn-based movement mechanics with pathfinding
 
-### Game Features
-- **Grid-based movement system** with turn-based mechanics
+### Game Features (Prototype/Beta)
+- **Turn-based movement system** with click-to-move mechanics
 - **A* pathfinding** using EasyStar.js library
 - **Animated movement** along calculated paths
 - **Obstacle avoidance** with randomly generated obstacles
 - **Room-based organization** for levels and scenes
+
+> **Note**: Game mechanics are currently in prototype/beta stage and serve as a testing ground for engine features. Significant improvements planned.
 
 ### Technology Stack
 - **TypeScript** for type safety and modern development
 - **Pixi.js** for WebGL-accelerated 2D rendering
 - **Vite** for fast development and hot reload
 - **EasyStar.js** for pathfinding algorithms
+
+## 🚧 Planned Features
+
+### Engine Goals 🎯
+- **Complete GameObject System**: Full GameMaker-style object lifecycle
+- **Advanced Room System**: Transitions, persistence, and complex room interactions
+- **Asset Management**: Sprite, sound, and resource loading systems
+- **Physics Integration**: 2D physics engine integration
+- **Audio System**: Sound effects and music management
+- **Save/Load System**: Game state persistence
+- **Scripting System**: Visual or text-based scripting for game logic
+- **Performance Optimization**: Object pooling, efficient rendering
+- **Debug Tools**: Inspector, profiler, and debugging utilities
+
+### Additional Features 🔮
+- **Multiple Renderer Support**: Canvas 2D, WebGL, potentially WebGPU
+- **Mobile Support**: Touch controls and responsive design
+- **Multiplayer Foundation**: Network architecture for multiplayer games
+- **Asset Pipeline**: Build tools for asset optimization
+- **Editor Interface**: Visual editor for rooms and objects
+- **Plugin System**: Extensible architecture for custom functionality
 
 ## 🏗️ Project Structure
 
@@ -56,17 +95,21 @@ src/
 
 ### Quick Start
 - **[Getting Started](#getting-started)** - Setup and installation
-- **[Game Mechanics](#game-mechanics)** - How to play
+- **[Game Mechanics](#game-mechanics)** - How to play the current demo
 
-### Engine Documentation
-- **[📖 Complete Development History](./history/README.md)** - Full project evolution
+### Development Documentation
+- **[📖 Complete Development History](./history/README.md)** - Full project evolution and roadmap
 - **[🔥 Development Log](./history/DEV_LOG.md)** - Chronological development journey
-- **[🏗️ Engine Architecture](./history/ENGINE.md)** - Core engine documentation
+- **[🏗️ Engine Architecture](./history/ENGINE.md)** - Core engine documentation (current state)
 - **[🏠 Room System](./history/ROOM_SYSTEM.md)** - Room management guide
 
-## 🎮 Game Mechanics
+### Contributing
+- **[CONTRIBUTING.md](./CONTRIBUTING.md)** - How to contribute to this work-in-progress engine
+- **[Development Roadmap](#planned-features)** - Planned features and implementation priorities
 
-### Turn-Based Movement
+## 🎮 Current Demo Mechanics
+
+### Turn-Based Movement (Prototype Implementation)
 1. **First click** on any walkable cell shows the calculated path to that position
 2. **Second click** on the same target cell executes the movement
 3. The game calculates the shortest path using A* algorithm
@@ -74,10 +117,12 @@ src/
 5. Each movement sequence counts as one turn
 6. Obstacles block movement and pathfinding
 
-### Room System
+### Basic Room System
 - **Game Room**: Main gameplay area with player and obstacles
-- **Menu Room**: Navigation and game options
-- **Room Transitions**: Seamless switching between game areas
+- **Menu Room**: Basic navigation (work in progress)
+- **Room Transitions**: Basic switching between game areas
+
+> **Note**: The current demo showcases the foundational architecture but many GameMaker features are still in development. The game implementation is a **prototype/beta** used to test engine capabilities and will be significantly enhanced as the engine matures.
 
 ## Getting Started
 
@@ -152,15 +197,35 @@ The game follows a modular architecture:
 
 ## Future Enhancements
 
-Possible improvements for this demo:
+This work-in-progress engine has ambitious goals. Planned improvements include:
 
+### Core Engine Development
+- Complete GameObject event system implementation
+- Advanced room management with persistence
+- Asset loading and management system
+- Physics engine integration
+- Audio system implementation
+
+### Game Features
 - Multiple players or AI opponents
 - Different terrain types with movement costs
 - Power-ups and collectible items
+- Combat and interaction systems
 - Save/load game state
 - Sound effects and animations
 - Mobile touch support
 - Multiplayer functionality
+- **Enhanced turn-based mechanics** (current implementation is prototype)
+- **Improved user interface** and visual feedback
+- **Polished game balance** and progression systems
+
+### Development Tools
+- Visual room editor
+- GameObject inspector
+- Performance profiler
+- Asset pipeline tools
+
+> **Status**: This project demonstrates the architectural foundation and core concepts, but significant development is needed to achieve the full vision of a GameMaker-style engine.
 
 ## License
 
@@ -174,22 +239,37 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contributing
 
-Contributions are welcome! This project demonstrates:
-- Modern TypeScript game development
-- GameMaker-style architecture patterns  
-- Professional game engine design
+Contributions are welcome! This work-in-progress project demonstrates:
+- **AI-assisted professional development** patterns and workflows
+- Modern TypeScript game development patterns
+- GameMaker-style architecture foundation
+- Professional game engine design concepts
 - Comprehensive documentation practices
 
+This is an excellent project for:
+- **Learning AI-assisted development** techniques and best practices
+- **Learning game engine development** from architecture to implementation
+- **Contributing to open-source game tools** and seeing direct impact
+- **Experimenting with GameMaker-style patterns** in modern web development
+- **Building TypeScript/Pixi.js skills** in a real-world project
+
 Feel free to:
-- Report bugs and issues
-- Suggest new features
-- Submit pull requests
-- Use as learning material
-- Build your own games with it
+- Report bugs and issues in both engine and game implementation
+- Suggest new features and improvements for engine or prototype game
+- Submit pull requests for any aspect (engine, game, documentation)
+- Use as learning material or foundation for your own projects
+- Help implement planned features or improve prototype game mechanics
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## Acknowledgments
 
-- **GameMaker Studio** for the architectural inspiration
-- **Pixi.js** community for excellent 2D rendering
-- **TypeScript** team for type-safe development
+- **GitHub Copilot & AI Tools** for enabling rapid, professional-quality development
+- **GameMaker Studio** for the architectural inspiration and design patterns
+- **Pixi.js** community for excellent 2D rendering capabilities
+- **TypeScript** team for enabling type-safe game development
 - **Vite** for lightning-fast development experience
+
+> **Development Note**: This project showcases how AI-assisted development can accelerate complex software creation while maintaining professional standards and architectural quality.
+
+> **Disclaimer**: This is an independent project inspired by GameMaker Studio's architecture but is not affiliated with or endorsed by YoYo Games.
