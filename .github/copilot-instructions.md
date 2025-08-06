@@ -38,6 +38,7 @@ This is a turn-based movement game demo project built with:
 - Use minimal commit messages unless instructed otherwise
 - Keep commits focused and atomic
 - Follow conventional commit format when specified
+- Always push changes after committing
 
 ## Code Style
 
