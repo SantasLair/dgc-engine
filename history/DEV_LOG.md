@@ -377,6 +377,55 @@ ds_grid_set_region(grid, 0, 0, 2, 2, 99);
 
 ---
 
+### Main.ts Refactoring - Separation of Concerns ♻️
+**Architectural Improvement**: Clean engine initialization vs game setup
+
+**Problem Identified**: `main.ts` was doing too much
+- Contained game-specific demo setup functions
+- Mixed engine initialization with game content creation
+- Created demo UI and game objects directly
+- Violated single responsibility principle
+
+**Solution Implemented**: Clear separation of concerns
+- **main.ts** (40 lines): Generic engine bootstrap only
+  - Canvas setup and error handling
+  - Game instance creation and startup
+  - Development debugging helpers only
+- **Game.ts**: All game-specific logic moved here
+  - `setupDemo()`: Creates demo enemies, items, grid examples
+  - `addDemoUI()`: Development interface (dev mode only)
+  - Demo methods properly encapsulated as private
+
+**Architectural Benefits:**
+1. **Modularity**: main.ts is now truly generic and reusable
+2. **Maintainability**: Game-specific logic contained in Game class
+3. **Reusability**: main.ts could be template for other engine projects
+4. **Clear boundaries**: Engine initialization vs game setup clearly separated
+5. **Development features**: Demo UI only appears in development mode
+
+**Code Reduction:**
+- **Before**: main.ts = 206 lines (mixed concerns)
+- **After**: main.ts = 40 lines (pure engine bootstrap)
+- **Game.ts**: +120 lines (proper game-specific setup)
+
+**Architecture Flow:**
+```
+main.ts (generic engine bootstrap)
+├── Creates Game instance
+├── Calls game.start()
+└── Exposes debug helpers (dev only)
+
+Game.ts (game-specific implementation)
+├── Engine configuration
+├── Room setup
+├── Demo content (showcases both Grid approaches)
+└── Development UI (dev only)
+```
+
+**Result**: Clean architectural separation where engine bootstrap is generic and game implementation handles all game-specific concerns. The main.ts file can now serve as a template for any game built with this engine.
+
+---
+
 ## Technical Evolution Summary
 
 ### Architecture Progression

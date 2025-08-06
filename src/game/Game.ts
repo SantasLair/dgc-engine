@@ -1,6 +1,8 @@
 import { BaseGame, GameObject, GameEvent, type GameEngineConfig, Room, RoomManager } from '../engine'
-import { GameBoard, Player } from './gameobjects'
+import { GameBoard, Player, Enemy, Item } from './gameobjects'
 import { GameRoom, MenuRoom } from './rooms'
+import { Grid } from './Grid'
+import { ds_grid_create, ds_grid_get, ds_grid_set, ds_grid_width, ds_grid_height } from './gml'
 import type { Position } from './types'
 
 /**
@@ -47,6 +49,14 @@ export class Game extends BaseGame {
     
     // Setup rooms
     this.setupRooms()
+    
+    // Setup demo content to showcase the engine
+    this.setupDemo()
+    
+    // Add demo UI for development
+    if (import.meta.env.DEV) {
+      this.addDemoUI()
+    }
     
     // Start with the main game room
     await this.roomManager.switchToRoom('game')
@@ -252,6 +262,154 @@ export class Game extends BaseGame {
    */
   public getCurrentRoom(): Room | undefined {
     return this.roomManager.getCurrentRoom()
+  }
+
+  /**
+   * Setup demo objects to showcase the engine
+   */
+  private setupDemo(): void {
+    const engine = this.getEngine()
+    
+    // ===== GRID DEMONSTRATION =====
+    console.log('🎮 Demonstrating both Grid approaches:')
+    
+    // Modern TypeScript approach
+    console.log('--- Modern TypeScript Approach ---')
+    const modernGrid = new Grid<number>(5, 5, 0)
+    modernGrid.set(2, 2, 999)
+    console.log(`Modern grid value at (2,2): ${modernGrid.get(2, 2)}`)
+    console.log(`Modern grid dimensions: ${modernGrid.getWidth()} x ${modernGrid.getHeight()}`)
+    
+    // GameMaker style approach
+    console.log('--- GameMaker (GML) Style Approach ---')
+    var gmlGrid = ds_grid_create(5, 5)
+    ds_grid_set(gmlGrid, 2, 2, 999)
+    console.log(`GML grid value at (2,2): ${ds_grid_get(gmlGrid, 2, 2)}`)
+    console.log(`GML grid dimensions: ${ds_grid_width(gmlGrid)} x ${ds_grid_height(gmlGrid)}`)
+    
+    console.log('✅ Both approaches work! Developers can choose their preferred style.')
+    
+    // Create some enemies using the new Enemy class
+    const enemy1 = new Enemy(10, 5, 'guard')
+    const enemy2 = new Enemy(15, 8, 'scout')
+    const enemy3 = new Enemy(5, 10, 'guard')
+    
+    // Register enemies with the engine
+    engine.getObjectManager().addExistingObject(enemy1)
+    engine.getObjectManager().addExistingObject(enemy2)
+    engine.getObjectManager().addExistingObject(enemy3)
+    
+    // Create some collectible items using the new Item class
+    const coin1 = Item.createCoin(3, 3, 15)
+    const gem1 = Item.createGem(7, 7, 50)
+    const coin2 = Item.createCoin(12, 4, 10)
+    const healthPotion = Item.createHealthPotion(18, 12, 30)
+    const key = Item.createKey(1, 1)
+    
+    // Register items with the engine
+    engine.getObjectManager().addExistingObject(coin1)
+    engine.getObjectManager().addExistingObject(gem1)
+    engine.getObjectManager().addExistingObject(coin2)
+    engine.getObjectManager().addExistingObject(healthPotion)
+    engine.getObjectManager().addExistingObject(key)
+    
+    console.log('Demo objects created using class-based approach!')
+  }
+
+  /**
+   * Add demo UI to showcase engine features (development only)
+   */
+  private addDemoUI(): void {
+    const engine = this.getEngine()
+    
+    // Create UI container
+    const uiContainer = document.createElement('div')
+    uiContainer.style.cssText = `
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 14px;
+      z-index: 1000;
+    `
+    
+    // Add controls info
+    uiContainer.innerHTML = `
+      <h3>GameMaker-Style Engine Demo</h3>
+      <p style="color: #ffcc00; font-style: italic; margin: 5px 0;">⚠️ This game is not yet fully playable, check back later</p>
+      <p><strong>Controls:</strong></p>
+      <ul>
+        <li>Click to move player</li>
+        <li>WASD/Arrow keys for direct movement</li>
+        <li>Space to cancel movement</li>
+      </ul>
+      <p><strong>Features:</strong></p>
+      <ul>
+        <li>Event-driven object system</li>
+        <li>Collision detection</li>
+        <li>Pathfinding and movement</li>
+        <li>Custom variables and timers</li>
+      </ul>
+      <div id="gameStats">
+        <p>Objects: <span id="objectCount">0</span></p>
+        <p>FPS: <span id="fpsCounter">0</span></p>
+      </div>
+      <button id="createEnemyBtn">Create Enemy</button>
+      <button id="createItemBtn">Create Item</button>
+      <button id="restartBtn">Restart Game</button>
+    `
+    
+    document.body.appendChild(uiContainer)
+    
+    // Update stats periodically
+    setInterval(() => {
+      const objectCount = engine.getObjectManager().getObjectCount()
+      const fps = Math.round(engine.getFPS())
+      
+      const objectCountEl = document.getElementById('objectCount')
+      const fpsCounterEl = document.getElementById('fpsCounter')
+      
+      if (objectCountEl) objectCountEl.textContent = objectCount.toString()
+      if (fpsCounterEl) fpsCounterEl.textContent = fps.toString()
+    }, 100)
+    
+    // Add button event listeners
+    document.getElementById('createEnemyBtn')?.addEventListener('click', () => {
+      const x = Math.floor(Math.random() * 20)
+      const y = Math.floor(Math.random() * 15)
+      const enemy = new Enemy(x, y, 'random')
+      engine.getObjectManager().addExistingObject(enemy)
+      console.log('Enemy created at', { x, y })
+    })
+    
+    document.getElementById('createItemBtn')?.addEventListener('click', () => {
+      const x = Math.floor(Math.random() * 20)
+      const y = Math.floor(Math.random() * 15)
+      const itemTypes = ['coin', 'gem', 'health_potion', 'key']
+      const itemType = itemTypes[Math.floor(Math.random() * itemTypes.length)]
+      
+      let item: Item
+      switch (itemType) {
+        case 'coin': item = Item.createCoin(x, y); break
+        case 'gem': item = Item.createGem(x, y); break
+        case 'health_potion': item = Item.createHealthPotion(x, y); break
+        case 'key': item = Item.createKey(x, y); break
+        default: item = Item.createCoin(x, y)
+      }
+      
+      engine.getObjectManager().addExistingObject(item)
+      console.log('Item created at', { x, y })
+    })
+    
+    document.getElementById('restartBtn')?.addEventListener('click', async () => {
+      await this.restart()
+      this.setupDemo()
+      console.log('Game restarted!')
+    })
   }
 
   /**
