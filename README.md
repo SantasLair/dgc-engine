@@ -1,4 +1,4 @@
-# Turn-Based Movement Game Engine
+# DGC Engine (Dream Game Crafter)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -6,18 +6,19 @@
 [![Work in Progress](https://img.shields.io/badge/Status-Work%20in%20Progress-orange)](https://github.com/SantasLair/TurnBasedMovement)
 [![AI Generated](https://img.shields.io/badge/AI%20Assisted-Professional%20Development-blue)](https://github.com/features/copilot)
 
-A work-in-progress GameMaker-style game engine built with **TypeScript**, **Pixi.js**, and modern web technologies. This project aims to become a professional game engine with room management, event-driven GameObjects, and industry-standard architecture.
+**DGC Engine** - the Dream Game Crafter built for flexibility! A work-in-progress GameMaker-style game engine built with **TypeScript**, **Pixi.js**, and modern web technologies. This project aims to become a flexible game engine with room management, event-driven GameObjects, and industry-standard architecture while maintaining the familiar feel of a web-first GameMaker-style engine.
 
 ## 🤖 AI-Assisted Development Showcase
 
-This project serves as a **showcase for professional software development using AI code generation tools** (GitHub Copilot). It demonstrates:
+This project serves as a **showcase for professional software development using AI code generation tools** (GitHub Copilot). **DGC Engine** demonstrates:
 
-- **Professional Architecture**: How AI can assist in building complex, well-structured game engines
+- **Flexible Engine Architecture**: Building a game engine that adapts to different development styles
+- **Professional AI-Assisted Development**: How AI can assist in crafting complex, well-structured game engines
 - **Best Practices**: Modern TypeScript patterns, documentation, and project organization
 - **Rapid Prototyping**: Accelerated development from concept to working engine architecture
 - **Code Quality**: AI-assisted development while maintaining high standards and readability
 
-> **⚠️ Work in Progress**: This engine is actively being developed and is far from complete. It currently demonstrates core concepts and architecture but lacks many features expected in a production game engine.
+> **⚠️ Work in Progress**: DGC Engine is actively being developed and is far from complete. It currently demonstrates core concepts and architecture but lacks many features expected in a production game engine.
 
 > **🎮 Prototype Game Implementation**: The current turn-based movement game is a **prototype/beta implementation** used to test and demonstrate the engine architecture. The game mechanics will be significantly improved and expanded as the engine develops.
 
@@ -239,7 +240,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contributing
 
-Contributions are welcome! This work-in-progress project demonstrates:
+**🚧 Current Status**: This project is **not currently accepting public contributions** as it's in early development stages. Once the engine reaches a more mature state, public contributions will be welcomed.
+
+However, this work-in-progress project demonstrates:
 - **AI-assisted professional development** patterns and workflows
 - Modern TypeScript game development patterns
 - GameMaker-style architecture foundation
@@ -249,18 +252,17 @@ Contributions are welcome! This work-in-progress project demonstrates:
 This is an excellent project for:
 - **Learning AI-assisted development** techniques and best practices
 - **Learning game engine development** from architecture to implementation
-- **Contributing to open-source game tools** and seeing direct impact
-- **Experimenting with GameMaker-style patterns** in modern web development
-- **Building TypeScript/Pixi.js skills** in a real-world project
+- **Studying GameMaker-style patterns** in modern web development
+- **Building TypeScript/Pixi.js skills** through codebase analysis
+- **Educational use** as reference for your own projects
 
-Feel free to:
-- Report bugs and issues in both engine and game implementation
-- Suggest new features and improvements for engine or prototype game
-- Submit pull requests for any aspect (engine, game, documentation)
+While contributions aren't being accepted yet, you can:
+- Report bugs and issues for project improvement
+- Suggest features for future consideration
 - Use as learning material or foundation for your own projects
-- Help implement planned features or improve prototype game mechanics
+- Fork the project for your own development (MIT license)
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details about future contribution plans.
 
 ## Acknowledgments
 
