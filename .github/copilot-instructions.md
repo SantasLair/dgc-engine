@@ -31,6 +31,7 @@ This is a turn-based movement game demo project built with:
 - When suggesting terminal commands, use PowerShell syntax and conventions
 - Use `;` for command chaining when needed
 - Prefer PowerShell cmdlets and syntax over bash/cmd equivalents
+- Batch terminal commands together when possible to minimize user interactions
 
 ## Git Workflow
 
