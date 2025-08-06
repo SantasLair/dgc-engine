@@ -35,11 +35,35 @@ export class RoomGameExample {
       (window as any).getCurrentRoom = () => this.game.getCurrentRoom()?.name;
       (window as any).getRoomManager = () => this.game.getRoomManager();
       
+      // Add GameBoard testing commands
+      (window as any).getGameBoard = () => this.game.getGameBoard();
+      (window as any).clearObstacles = () => {
+        const board = this.game.getGameBoard();
+        if (board) {
+          board.clearObstacles();
+          return 'Obstacles cleared!';
+        }
+        return 'No GameBoard available';
+      };
+      (window as any).resetBoard = () => {
+        const board = this.game.getGameBoard();
+        if (board) {
+          board.resetBoard();
+          return 'Board reset!';
+        }
+        return 'No GameBoard available';
+      };
+      
       console.log('Room test commands available:')
       console.log('- switchToGame(): Switch to game room')
       console.log('- switchToMenu(): Switch to menu room') 
       console.log('- getCurrentRoom(): Get current room name')
       console.log('- getRoomManager(): Get room manager instance')
+      console.log('')
+      console.log('GameBoard test commands available:')
+      console.log('- getGameBoard(): Get GameBoard instance')
+      console.log('- clearObstacles(): Remove all obstacles from board')
+      console.log('- resetBoard(): Reset board to initial state')
     }
   }
 

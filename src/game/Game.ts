@@ -8,15 +8,14 @@ import type { Position } from './types'
  * Demonstrates how to use the GameEngine with GameMaker-style objects
  */
 export class Game extends BaseGame {
-  private gameBoard: GameBoard
+  private gameBoard: GameBoard | null = null
   private player: Player | null = null
   private roomManager: RoomManager
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
     
-    // Initialize game-specific components
-    this.gameBoard = new GameBoard(20, 15) // 20x15 grid
+    // Initialize room manager
     this.roomManager = new RoomManager()
   }
 
@@ -65,6 +64,10 @@ export class Game extends BaseGame {
       background: '#2c3e50',
       onCreate: async (_room) => {
         console.log('Game room created!')
+        
+        // Create the game board as a GameObject
+        this.gameBoard = new GameBoard(20, 15)
+        this.addObject(this.gameBoard)
         
         // Create the player object
         this.player = new Player(0, 0)
@@ -126,7 +129,7 @@ export class Game extends BaseGame {
     if (!this.isGameInitialized) return
     
     const renderer = this.getRenderer()
-    if (!renderer) return
+    if (!renderer || !this.gameBoard) return
     
     // Clear and redraw the grid (game-specific rendering)
     renderer.clear()
@@ -195,7 +198,7 @@ export class Game extends BaseGame {
     
     // Add click-to-move functionality
     this.player.addEventScript(GameEvent.MOUSE_LEFT_PRESSED, (self, eventData) => {
-      if (eventData?.mousePosition) {
+      if (eventData?.mousePosition && this.gameBoard) {
         const renderer = this.getRenderer()
         if (renderer) {
           const gridPos = renderer.screenToGridWithBoard(
@@ -277,6 +280,8 @@ export class Game extends BaseGame {
     
     // Setup input handlers through the renderer
     renderer.setupInputHandlers((position: Position) => {
+      if (!this.gameBoard) return
+      
       const gridPos = renderer.screenToGridWithBoard(position.x, position.y, this.gameBoard)
       
       // Emit engine event
@@ -296,27 +301,12 @@ export class Game extends BaseGame {
    * Calculate a simple path between two points
    */
   private calculatePath(start: Position, end: Position): Position[] {
-    const path: Position[] = []
-    let current = { ...start }
-    
-    while (current.x !== end.x || current.y !== end.y) {
-      // Move one step closer to target
-      if (current.x < end.x) current.x++
-      else if (current.x > end.x) current.x--
-      
-      if (current.y < end.y) current.y++
-      else if (current.y > end.y) current.y--
-      
-      // Check if the cell is walkable
-      if (this.gameBoard.isWalkable(current.x, current.y)) {
-        path.push({ ...current })
-      } else {
-        // Simple obstacle avoidance - try alternative paths
-        break
-      }
+    if (!this.gameBoard) {
+      console.warn('GameBoard not available for pathfinding')
+      return []
     }
     
-    return path
+    return this.gameBoard.calculatePath(start, end)
   }
 
   /**
@@ -345,7 +335,7 @@ export class Game extends BaseGame {
         }
         
         // Check bounds and walkability
-        if (this.gameBoard.isWalkable(newX, newY)) {
+        if (this.gameBoard && this.gameBoard.isWalkable(newX, newY)) {
           self.setPosition(newX, newY)
         }
       }
@@ -370,7 +360,7 @@ export class Game extends BaseGame {
   /**
    * Get the game board
    */
-  public getGameBoard(): GameBoard {
+  public getGameBoard(): GameBoard | null {
     return this.gameBoard
   }
 
