@@ -1,6 +1,7 @@
-import { BaseGame, GameObject, GameEvent, type GameEngineConfig, Room, RoomManager, type RoomConfig } from '../engine'
+import { BaseGame, GameObject, GameEvent, type GameEngineConfig, Room, RoomManager } from '../engine'
 import { GameBoard } from './GameBoard'
 import { Player } from './Player'
+import { GameRoom, MenuRoom } from './rooms'
 import type { Position } from './types'
 
 /**
@@ -56,87 +57,9 @@ export class Game extends BaseGame {
    * Setup all game rooms
    */
   private setupRooms(): void {
-    // Create main game room
-    const gameRoomConfig: RoomConfig = {
-      name: 'game',
-      width: 20,
-      height: 15,
-      background: '#2c3e50',
-      onCreate: async (_room) => {
-        console.log('Game room created!')
-        
-        // Create the game board as a GameObject
-        this.gameBoard = new GameBoard(20, 15)
-        this.addObject(this.gameBoard)
-        
-        // Create the player object
-        this.player = new Player(0, 0)
-        
-        // Add player to the engine
-        this.addObject(this.player)
-        
-        // Setup player-specific events
-        this.setupPlayerMovementIntegration()
-        
-        // Add custom draw event to trigger renderer updates
-        this.player.addEventScript(GameEvent.DRAW, () => {
-          this.updateGameRenderer()
-        })
-        
-        // Initial render
-        this.updateGameRenderer()
-      },
-      onStep: async (_room) => {
-        // Game room update logic
-        // Check for escape key to show menu (future feature)
-        if (this.getEngine()?.isKeyJustPressed('Escape')) {
-          console.log('Escape pressed - could show menu here')
-        }
-      }
-    }
-
-    // Create a simple menu room for future use
-    const menuRoomConfig: RoomConfig = {
-      name: 'menu',
-      width: 20,
-      height: 15,
-      background: '#34495e',
-      onCreate: async (_room) => {
-        console.log('Menu room created!')
-        
-        // Create menu items (simple approach for now)
-        const startButton = this.createObject('menu_button', 10, 7)
-        startButton.addEventScript(GameEvent.CREATE, (self) => {
-          self.setVariable('text', 'Start Game')
-          console.log('Start button created')
-        })
-        
-        startButton.addEventScript(GameEvent.MOUSE_LEFT_PRESSED, (_self) => {
-          this.roomManager.switchToRoom('game')
-        })
-      }
-    }
-
-    // Add rooms to manager
-    this.roomManager.addRoom(new Room(gameRoomConfig))
-    this.roomManager.addRoom(new Room(menuRoomConfig))
-  }
-
-  /**
-   * Update the game renderer with game-specific content
-   */
-  private updateGameRenderer(): void {
-    if (!this.isGameInitialized) return
-    
-    const renderer = this.getRenderer()
-    if (!renderer || !this.gameBoard) return
-    
-    // Clear and redraw the grid (game-specific rendering)
-    renderer.clear()
-    renderer.drawGrid(this.gameBoard)
-    
-    // The engine will handle drawing all game objects automatically
-    // through its render() method in the game loop
+    // Add room instances to the manager
+    this.roomManager.addRoom(new GameRoom(this))
+    this.roomManager.addRoom(new MenuRoom(this))
   }
 
   /**
@@ -191,87 +114,6 @@ export class Game extends BaseGame {
   }
 
   /**
-   * Setup player movement integration with the engine
-   */
-  private setupPlayerMovementIntegration(): void {
-    if (!this.player) return
-    
-    // Add click-to-move functionality
-    this.player.addEventScript(GameEvent.MOUSE_LEFT_PRESSED, (self, eventData) => {
-      if (eventData?.mousePosition && this.gameBoard) {
-        const renderer = this.getRenderer()
-        if (renderer) {
-          const gridPos = renderer.screenToGridWithBoard(
-            eventData.mousePosition.x,
-            eventData.mousePosition.y,
-            this.gameBoard
-          )
-          
-          // Calculate path and start movement
-          this.handlePlayerMovement(self as Player, gridPos)
-        }
-      }
-    })
-  }
-
-  /**
-   * Handle player movement through the engine
-   */
-  private handlePlayerMovement(player: Player, targetPos: Position): void {
-    const currentPos = player.getPosition()
-    const path = this.calculatePath(currentPos, targetPos)
-    
-    if (path.length > 0) {
-      // Store movement data in player
-      player.setVariable('targetPath', path)
-      player.setVariable('pathIndex', 0)
-      player.setVariable('isMoving', true)
-      player.setVariable('movementSpeed', 200) // ms per step
-      
-      // Emit engine event for UI updates
-      this.emitEvent('player_moved', { 
-        path: [currentPos, ...path], 
-        target: targetPos 
-      })
-      
-      // Start engine-driven movement
-      this.startEngineMovement(player)
-    }
-  }
-
-  /**
-   * Engine-driven movement animation
-   */
-  private startEngineMovement(player: Player): void {
-    const moveStep = () => {
-      const targetPath = player.getVariable('targetPath')
-      const pathIndex = player.getVariable('pathIndex') || 0
-      const isMoving = player.getVariable('isMoving')
-      const movementSpeed = player.getVariable('movementSpeed') || 200
-      
-      if (!isMoving || !targetPath || pathIndex >= targetPath.length) {
-        // Movement complete
-        player.setVariable('isMoving', false)
-        this.emitEvent('movement_complete')
-        return
-      }
-      
-      // Move to next position
-      const nextPos = targetPath[pathIndex]
-      player.setPosition(nextPos.x, nextPos.y)
-      player.setVariable('pathIndex', pathIndex + 1)
-      
-      // Emit movement event
-      this.emitEvent('object_moved')
-      
-      // Schedule next step
-      setTimeout(moveStep, movementSpeed)
-    }
-    
-    moveStep()
-  }
-
-  /**
    * Setup event handlers for mouse interaction
    */
   private setupEventHandlers(): void {
@@ -284,29 +126,12 @@ export class Game extends BaseGame {
       
       const gridPos = renderer.screenToGridWithBoard(position.x, position.y, this.gameBoard)
       
-      // Emit engine event
+      // Emit engine event for rooms to handle
       this.emitEvent('mouse_click', { 
         mousePosition: { x: position.x, y: position.y },
         gridPosition: gridPos
       })
-      
-      // Move player if we have one
-      if (this.player) {
-        this.handlePlayerMovement(this.player, gridPos)
-      }
     })
-  }
-
-  /**
-   * Calculate a simple path between two points
-   */
-  private calculatePath(start: Position, end: Position): Position[] {
-    if (!this.gameBoard) {
-      console.warn('GameBoard not available for pathfinding')
-      return []
-    }
-    
-    return this.gameBoard.calculatePath(start, end)
   }
 
   /**
@@ -362,6 +187,51 @@ export class Game extends BaseGame {
    */
   public getGameBoard(): GameBoard | null {
     return this.gameBoard
+  }
+
+  /**
+   * Set the game board (for room-based creation)
+   */
+  public setGameBoard(gameBoard: GameBoard): void {
+    this.gameBoard = gameBoard
+  }
+
+  /**
+   * Set the player (for room-based creation)
+   */
+  public setPlayer(player: Player): void {
+    this.player = player
+  }
+
+  /**
+   * Get the player
+   */
+  public getPlayer(): Player | null {
+    return this.player
+  }
+
+  /**
+   * Add object to the game engine (exposed for room access)
+   */
+  public addGameObject(gameObject: GameObject): void {
+    this.addObject(gameObject)
+  }
+
+  /**
+   * Update the game renderer - exposed for room access
+   */
+  public updateGameRenderer(): void {
+    if (!this.isGameInitialized) return
+    
+    const renderer = this.getRenderer()
+    if (!renderer || !this.gameBoard) return
+    
+    // Clear and redraw the grid (game-specific rendering)
+    renderer.clear()
+    renderer.drawGrid(this.gameBoard)
+    
+    // The engine will handle drawing all game objects automatically
+    // through its render() method in the game loop
   }
 
   /**
