@@ -5,10 +5,10 @@ import { Player } from './Player'
 import type { Position } from './types'
 
 /**
- * Enhanced Game class that integrates the new GameEngine with the existing renderer
- * This bridges the old turn-based system with the new object-oriented engine
+ * Game class that integrates the GameEngine with the Pixi renderer
+ * Main orchestrator for the turn-based movement game with GameMaker-style objects
  */
-export class EnhancedGame {
+export class Game {
   private canvas: HTMLCanvasElement
   private gameBoard: GameBoard
   private renderer: PixiRenderer
@@ -61,10 +61,10 @@ export class EnhancedGame {
   }
 
   /**
-   * Start the enhanced game
+   * Start the game
    */
   public async start(): Promise<void> {
-    console.log('Starting enhanced game with new engine...')
+    console.log('Starting game with GameMaker-style engine...')
     
     // Wait for Pixi to initialize
     await this.renderer.waitForReady()
@@ -93,7 +93,7 @@ export class EnhancedGame {
     this.updateRenderer()
     this.isInitialized = true
     
-    console.log('Enhanced game started successfully!')
+    console.log('Game started successfully!')
   }
 
   /**

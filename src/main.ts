@@ -1,9 +1,9 @@
 import './style.css'
-import { EnhancedGame } from './game/EnhancedGame'
+import { Game } from './game/Game'
 import { Enemy } from './game/Enemy'
 import { Item } from './game/Item'
 
-// Initialize the enhanced game when the DOM is loaded
+// Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('DOM loaded, initializing GameMaker-style engine...')
   const canvas = document.querySelector<HTMLCanvasElement>('#gameCanvas')
@@ -14,13 +14,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     return
   }
   
-  console.log('Canvas found, initializing enhanced game...')
+  console.log('Canvas found, initializing game...')
   try {
-    const game = new EnhancedGame(canvas)
+    const game = new Game(canvas)
     
     // Start the game and wait for initialization
     await game.start()
-    console.log('Enhanced game started successfully!')
+    console.log('Game started successfully!')
     
     // Expose game instance for testing (development only)
     if (import.meta.env.DEV) {
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     addDemoUI(game)
     
   } catch (error) {
-    console.error('Error starting enhanced game:', error)
+    console.error('Error starting game:', error)
     document.body.innerHTML = `<h1>Error starting game: ${error}</h1>`
   }
 })
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 /**
  * Setup demo objects to showcase the engine
  */
-function setupDemo(game: EnhancedGame): void {
+function setupDemo(game: Game): void {
   const engine = game.getEngine()
   
   // Create some enemies using the new Enemy class
@@ -76,7 +76,7 @@ function setupDemo(game: EnhancedGame): void {
 /**
  * Add demo UI to showcase engine features
  */
-function addDemoUI(game: EnhancedGame): void {
+function addDemoUI(game: Game): void {
   const engine = game.getEngine()
   
   // Create UI container
