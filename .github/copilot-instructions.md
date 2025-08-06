@@ -17,6 +17,27 @@ This is a turn-based movement game demo project built with:
 - Keep rendering logic separate from game logic
 - Use proper TypeScript typing throughout the codebase
 
+## Project Context
+
+- Always reference the `.ai-context.md` file in the workspace root for comprehensive project context
+- This file contains important project information, architecture decisions, and development guidelines
+- Use the information in `.ai-context.md` to inform code suggestions and maintain consistency with project patterns
+
+## Development Environment
+
+- **Operating System**: Windows
+- **Shell**: PowerShell (use PowerShell syntax for all terminal commands)
+- **Package Manager**: npm
+- When suggesting terminal commands, use PowerShell syntax and conventions
+- Use `;` for command chaining when needed
+- Prefer PowerShell cmdlets and syntax over bash/cmd equivalents
+
+## Git Workflow
+
+- Use minimal commit messages unless instructed otherwise
+- Keep commits focused and atomic
+- Follow conventional commit format when specified
+
 ## Code Style
 
 - Use descriptive variable and function names
