@@ -86,8 +86,8 @@ When ready, contributions will be welcomed in:
 1. **Fork the repository** on GitHub (when contributions are open)
 2. **Clone your fork**:
    ```bash
-   git clone https://github.com/your-username/TurnBasedMovement.git
-   cd TurnBasedMovement
+   git clone https://github.com/your-username/dgc-engine.git
+   cd dgc-engine
    ```
 3. **Install dependencies**:
    ```bash

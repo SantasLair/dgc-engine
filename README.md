@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Pixi.js](https://img.shields.io/badge/Pixi.js-e91e63?logo=javascript&logoColor=white)](https://pixijs.com/)
-[![Work in Progress](https://img.shields.io/badge/Status-Work%20in%20Progress-orange)](https://github.com/SantasLair/TurnBasedMovement)
+[![Work in Progress](https://img.shields.io/badge/Status-Work%20in%20Progress-orange)](https://github.com/SantasLair/dgc-engine)
 [![AI Generated](https://img.shields.io/badge/AI%20Assisted-Professional%20Development-blue)](https://github.com/features/copilot)
 
 **DGC Engine** - the Dream Game Crafter built for flexibility! A work-in-progress GameMaker-style game engine built with **TypeScript**, **Pixi.js**, and modern web technologies. This project aims to become a flexible game engine with room management, event-driven GameObjects, and industry-standard architecture while maintaining the familiar feel of a web-first GameMaker-style engine.
