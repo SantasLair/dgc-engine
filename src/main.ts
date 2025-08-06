@@ -111,6 +111,7 @@ function addDemoUI(game: Game): void {
   // Add controls info
   uiContainer.innerHTML = `
     <h3>GameMaker-Style Engine Demo</h3>
+    <p style="color: #ffcc00; font-style: italic; margin: 5px 0;">⚠️ This game is not yet fully playable, check back later</p>
     <p><strong>Controls:</strong></p>
     <ul>
       <li>Click to move player</li>
