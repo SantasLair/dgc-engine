@@ -1,6 +1,8 @@
 import './style.css'
 import { Game } from './game/Game'
 import { Enemy, Item } from './game/gameobjects'
+import { Grid } from './game/Grid'
+import { ds_grid_create, ds_grid_get, ds_grid_set, ds_grid_width, ds_grid_height } from './game/gml'
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
@@ -59,6 +61,25 @@ document.addEventListener('DOMContentLoaded', async () => {
  */
 function setupDemo(game: Game): void {
   const engine = game.getEngine()
+  
+  // ===== GRID DEMONSTRATION =====
+  console.log('🎮 Demonstrating both Grid approaches:')
+  
+  // Modern TypeScript approach
+  console.log('--- Modern TypeScript Approach ---')
+  const modernGrid = new Grid<number>(5, 5, 0)
+  modernGrid.set(2, 2, 999)
+  console.log(`Modern grid value at (2,2): ${modernGrid.get(2, 2)}`)
+  console.log(`Modern grid dimensions: ${modernGrid.getWidth()} x ${modernGrid.getHeight()}`)
+  
+  // GameMaker style approach
+  console.log('--- GameMaker (GML) Style Approach ---')
+  var gmlGrid = ds_grid_create(5, 5)
+  ds_grid_set(gmlGrid, 2, 2, 999)
+  console.log(`GML grid value at (2,2): ${ds_grid_get(gmlGrid, 2, 2)}`)
+  console.log(`GML grid dimensions: ${ds_grid_width(gmlGrid)} x ${ds_grid_height(gmlGrid)}`)
+  
+  console.log('✅ Both approaches work! Developers can choose their preferred style.')
   
   // Create some enemies using the new Enemy class
   const enemy1 = new Enemy(10, 5, 'guard')

@@ -38,6 +38,10 @@ export class GameBoard extends GameObject {
 
   /**
    * Initialize the grid with default values and some obstacles
+   * 
+   * Note: This could also be written in GameMaker style:
+   * const grid = ds_grid_create(this.boardWidth, this.boardHeight, CellType.EMPTY)
+   * See src/examples/GridExamples.ts for GML-style alternatives
    */
   private initializeGrid(): Grid<CellType> {
     const grid = new Grid<CellType>(this.boardWidth, this.boardHeight, CellType.EMPTY)
