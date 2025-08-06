@@ -1,19 +1,68 @@
-# Turn-Based Movement Game Demo
+# Turn-Based Movement Game Engine
 
-A 2D turn-based movement game demo built with **Vite**, **TypeScript**, **Pixi.js**, and **EasyStar.js** for pathfinding.
+A professional GameMaker-style game engine built with **TypeScript**, **Pixi.js**, and modern web technologies. What started as a simple turn-based movement demo evolved into a comprehensive game engine with room management, event-driven GameObjects, and industry-standard architecture.
 
-## Features
+## 🎮 Engine Features
 
+### GameMaker-Style Architecture
+- **GameObject System**: Event-driven objects with CREATE, STEP, DRAW, DESTROY events
+- **Room Management**: Professional level/scene organization and transitions
+- **Event System**: Comprehensive event handling and script system
+- **Renderer Abstraction**: Pluggable rendering backends (currently Pixi.js)
+
+### Game Features
 - **Grid-based movement system** with turn-based mechanics
 - **A* pathfinding** using EasyStar.js library
 - **Animated movement** along calculated paths
 - **Obstacle avoidance** with randomly generated obstacles
-- **TypeScript** for type safety and better development experience
+- **Room-based organization** for levels and scenes
+
+### Technology Stack
+- **TypeScript** for type safety and modern development
 - **Pixi.js** for WebGL-accelerated 2D rendering
-- **Vite** for fast development and building
+- **Vite** for fast development and hot reload
+- **EasyStar.js** for pathfinding algorithms
 
-## Game Mechanics
+## 🏗️ Project Structure
 
+```
+src/
+├── engine/                    # Core game engine
+│   ├── GameObject.ts          # Base GameObject class with events
+│   ├── GameEngine.ts          # Main engine core
+│   ├── Room.ts                # Room management system
+│   ├── EventManager.ts        # Event system
+│   └── renderers/             # Rendering backends
+│       └── PixiRenderer.ts    # Pixi.js renderer
+├── game/                      # Game implementation
+│   ├── gameobjects/           # GameMaker-style GameObjects
+│   │   ├── Player.ts          # Player character
+│   │   ├── Enemy.ts           # AI enemies
+│   │   ├── Item.ts            # Collectible items
+│   │   └── GameBoard.ts       # Grid-based board
+│   ├── rooms/                 # GameMaker-style Rooms
+│   │   ├── GameRoom.ts        # Main gameplay room
+│   │   └── MenuRoom.ts        # Menu/navigation room
+│   ├── Game.ts                # Main game class
+│   └── types.ts               # Type definitions
+└── main.ts                    # Application entry point
+```
+
+## 📚 Documentation
+
+### Quick Start
+- **[Getting Started](#getting-started)** - Setup and installation
+- **[Game Mechanics](#game-mechanics)** - How to play
+
+### Engine Documentation
+- **[📖 Complete Development History](./history/README.md)** - Full project evolution
+- **[🔥 Development Log](./history/DEV_LOG.md)** - Chronological development journey
+- **[🏗️ Engine Architecture](./history/ENGINE.md)** - Core engine documentation
+- **[🏠 Room System](./history/ROOM_SYSTEM.md)** - Room management guide
+
+## 🎮 Game Mechanics
+
+### Turn-Based Movement
 1. **First click** on any walkable cell shows the calculated path to that position
 2. **Second click** on the same target cell executes the movement
 3. The game calculates the shortest path using A* algorithm
@@ -21,19 +70,10 @@ A 2D turn-based movement game demo built with **Vite**, **TypeScript**, **Pixi.j
 5. Each movement sequence counts as one turn
 6. Obstacles block movement and pathfinding
 
-## Project Structure
-
-```
-src/
-├── game/
-│   ├── Game.ts          # Main game controller
-│   ├── GameBoard.ts     # Grid-based game board
-│   ├── Player.ts        # Player character class
-│   ├── Renderer.ts      # Canvas rendering system
-│   └── types.ts         # TypeScript type definitions
-├── main.ts              # Application entry point
-└── style.css            # Game styling
-```
+### Room System
+- **Game Room**: Main gameplay area with player and obstacles
+- **Menu Room**: Navigation and game options
+- **Room Transitions**: Seamless switching between game areas
 
 ## Getting Started
 
