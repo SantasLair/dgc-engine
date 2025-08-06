@@ -57,7 +57,6 @@ export class PixiRenderer implements IRenderer {
       
       this.setupContainers()
       this.isInitialized = true
-      console.log('Pixi.js initialized successfully')
     } catch (error) {
       console.error('Failed to initialize Pixi.js:', error)
       throw error

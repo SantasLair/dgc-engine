@@ -19,98 +19,70 @@ export class Game {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     
-    try {
-      console.log('Game constructor: Starting initialization...')
-      
-      // Initialize game components
-      this.gameBoard = new GameBoard(20, 15) // 20x15 grid
-      console.log('Game constructor: GameBoard created')
-      
-      // Create renderer with new config interface
-      const rendererConfig: RendererConfig = {
-        canvas: this.canvas,
-        width: this.canvas.width,
-        height: this.canvas.height,
-        gridWidth: 20,
-        gridHeight: 15
-      }
-      console.log('Game constructor: RendererConfig created:', rendererConfig)
-      
-      this.renderer = new PixiRenderer(rendererConfig)
-      console.log('Game constructor: PixiRenderer created')
-      
-      // Create engine with the renderer
-      this.engine = new GameEngine(this.renderer)
-      console.log('Game constructor: GameEngine created')
-      
-      this.setupEngineIntegration()
-      console.log('Game constructor: Engine integration setup complete')
-      
-    } catch (error) {
-      console.error('Error in Game constructor:', error)
-      throw error
+    // Initialize game components
+    this.gameBoard = new GameBoard(20, 15) // 20x15 grid
+    
+    // Create renderer with new config interface
+    const rendererConfig: RendererConfig = {
+      canvas: this.canvas,
+      width: this.canvas.width,
+      height: this.canvas.height,
+      gridWidth: 20,
+      gridHeight: 15
     }
+    this.renderer = new PixiRenderer(rendererConfig)
+    
+    // Create engine with the renderer
+    this.engine = new GameEngine(this.renderer)
+    
+    this.setupEngineIntegration()
   }
 
   /**
    * Setup integration between the engine and the renderer
    */
   private setupEngineIntegration(): void {
-    try {
-      console.log('Setting up engine integration...')
-      
-      // Listen for engine events to trigger rendering updates
-      this.engine.addEventListener('object_moved', () => {
-        this.updateRenderer()
-      })
-      
-      this.engine.addEventListener('object_created', () => {
-        this.updateRenderer()
-      })
-      
-      this.engine.addEventListener('object_destroyed', () => {
-        this.updateRenderer()
-      })
-      
-      // Setup global game events
-      this.engine.addEventListener('player_moved', (eventData) => {
-        if (eventData?.path) {
-          this.renderer.drawPath(eventData.path)
-        }
-        if (eventData?.target) {
-          this.renderer.drawTarget(eventData.target)
-        }
-      })
-      
-      this.engine.addEventListener('movement_complete', () => {
-        this.renderer.clearPath()
-        this.renderer.clearTarget()
-      })
-      
-      console.log('Engine integration setup complete')
-    } catch (error) {
-      console.error('Error setting up engine integration:', error)
-      throw error
-    }
+    // Listen for engine events to trigger rendering updates
+    this.engine.addEventListener('object_moved', () => {
+      this.updateRenderer()
+    })
+    
+    this.engine.addEventListener('object_created', () => {
+      this.updateRenderer()
+    })
+    
+    this.engine.addEventListener('object_destroyed', () => {
+      this.updateRenderer()
+    })
+    
+    // Setup global game events
+    this.engine.addEventListener('player_moved', (eventData) => {
+      if (eventData?.path) {
+        this.renderer.drawPath(eventData.path)
+      }
+      if (eventData?.target) {
+        this.renderer.drawTarget(eventData.target)
+      }
+    })
+    
+    this.engine.addEventListener('movement_complete', () => {
+      this.renderer.clearPath()
+      this.renderer.clearTarget()
+    })
   }
 
   /**
    * Start the game
    */
   public async start(): Promise<void> {
-    console.log('Starting game with GameMaker-style engine...')
-    
     // Initialize the renderer first
     await this.renderer.initialize()
-    console.log('Renderer initialized')
     
     // Wait for Pixi to be ready
     await this.renderer.waitForReady()
-    console.log('Renderer ready')
     
     // Now setup input handlers through the engine (after renderer is ready)
     this.engine.setupInputHandlers()
-    console.log('Input handlers setup')
     
     // Setup mouse event handling for Pixi (legacy approach for compatibility)
     this.setupPixiEventHandlers()
@@ -135,8 +107,6 @@ export class Game {
     // Initial render
     this.updateRenderer()
     this.isInitialized = true
-    
-    console.log('Game started successfully!')
   }
 
   /**
