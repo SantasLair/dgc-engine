@@ -1,4 +1,4 @@
-# Session 7: GameMaker Organization (January 5, 2025)
+# Milestone 7: GameMaker Organization (January 5, 2025)
 
 > Perfect GameMaker Studio folder structure and conventions
 

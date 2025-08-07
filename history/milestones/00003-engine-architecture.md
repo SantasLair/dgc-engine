@@ -1,4 +1,4 @@
-# Session 3: Engine Architecture (January 5, 2025)
+# Milestone 3: Engine Architecture (January 5, 2025)
 
 > The paradigm shift from simple game to comprehensive game engine
 

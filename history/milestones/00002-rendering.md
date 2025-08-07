@@ -1,4 +1,4 @@
-# Session 2: Rendering Revolution (January 4, 2025)
+# Milestone 2: Rendering Revolution (January 4, 2025)
 
 > Upgrading from Canvas 2D to professional Pixi.js rendering
 

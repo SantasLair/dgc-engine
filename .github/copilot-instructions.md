@@ -23,6 +23,14 @@ This is a turn-based movement game demo project built with:
 - This file contains important project information, architecture decisions, and development guidelines
 - Use the information in `.ai-context.md` to inform code suggestions and maintain consistency with project patterns
 
+## Project History & Milestones
+
+- **Milestone Documentation**: Located in `history/milestones/` - detailed logs of major project achievements and technical evolution
+- **Development History**: `history/DEV_LOG.md` contains the complete chronological development journey
+- **Architecture Guides**: `history/ENGINE.md` and `history/ROOM_SYSTEM.md` document core system designs
+- **Progress Tracking**: Use `history/PENDING_COMMITS.md` to track minor commits between milestones
+- When making significant changes, consider documenting them as part of milestone progression
+
 ## Development Environment
 
 - **Operating System**: Windows
@@ -39,7 +47,7 @@ This is a turn-based movement game demo project built with:
 - Keep commits focused and atomic
 - Follow conventional commit format when specified
 - Always push changes after committing
-- Track minor commits in `history/PENDING_COMMITS.md` for session grouping
+- Track minor commits in `history/PENDING_COMMITS.md` for milestone grouping
 
 ## Code Style
 

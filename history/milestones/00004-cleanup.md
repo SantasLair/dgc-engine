@@ -1,4 +1,4 @@
-# Session 4: Architecture Cleanup (January 5, 2025)
+# Milestone 4: Architecture Cleanup (January 5, 2025)
 
 > Codebase hygiene and organization improvements
 

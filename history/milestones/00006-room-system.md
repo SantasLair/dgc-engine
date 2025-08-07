@@ -1,4 +1,4 @@
-# Session 6: Room System Revolution (January 5, 2025)
+# Milestone 6: Room System Revolution (January 5, 2025)
 
 > Professional game organization with GameMaker-style room management
 

@@ -1,4 +1,4 @@
-# Session 5: Engine Abstraction (January 5, 2025)
+# Milestone 5: Engine Abstraction (January 5, 2025)
 
 > Advanced architectural patterns and production readiness
 

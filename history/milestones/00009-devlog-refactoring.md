@@ -1,4 +1,4 @@
-# Session 9: Dev-Log Refactoring (August 6, 2025)
+# Milestone 9: Dev-Log Refactoring (August 6, 2025)
 
 > Restructuring development documentation for improved maintainability and navigation
 
@@ -6,21 +6,21 @@
 **Goal**: Transform monolithic dev-log into modular, maintainable documentation system
 
 **What was restructured:**
-- Split single `DEV_LOG.md` into main summary + individual session documents
-- Created dedicated `sessions/` subfolder for detailed documentation
+- Split single `DEV_LOG.md` into main summary + individual milestone documents
+- Created dedicated `milestones/` subfolder for detailed documentation
 - Implemented zero-padded numbering system (00001-00008)
-- Established consistent session documentation structure
+- Established consistent milestone documentation structure
 
 **Key Files Created:**
-- `history/sessions/00001-foundation.md` - Foundation session details
-- `history/sessions/00002-rendering.md` - Rendering upgrade documentation
-- `history/sessions/00003-engine-architecture.md` - Engine framework development
-- `history/sessions/00004-cleanup.md` - Codebase organization session
-- `history/sessions/00005-abstraction.md` - Advanced architectural patterns
-- `history/sessions/00006-room-system.md` - Professional game organization
-- `history/sessions/00007-gamemaker-organization.md` - Perfect folder structure
-- `history/sessions/00008-gml-compatibility.md` - Dual paradigm support
-- `history/sessions/README.md` - Session navigation and overview
+- `history/milestones/00001-foundation.md` - Foundation milestone details
+- `history/milestones/00002-rendering.md` - Rendering upgrade documentation
+- `history/milestones/00003-engine-architecture.md` - Engine framework development
+- `history/milestones/00004-cleanup.md` - Codebase organization milestone
+- `history/milestones/00005-abstraction.md` - Advanced architectural patterns
+- `history/milestones/00006-room-system.md` - Professional game organization
+- `history/milestones/00007-gamemaker-organization.md` - Perfect folder structure
+- `history/milestones/00008-gml-compatibility.md` - Dual paradigm support
+- `history/milestones/README.md` - Milestone navigation and overview
 
 **Architecture**: Modular documentation with centralized navigation and cross-references
 

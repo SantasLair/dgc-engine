@@ -1,4 +1,4 @@
-# Session 8: GML Compatibility Layer (August 6, 2025)
+# Milestone 8: GML Compatibility Layer (August 6, 2025)
 
 > Dual coding paradigm support - Modern TypeScript + Classic GameMaker Language
 

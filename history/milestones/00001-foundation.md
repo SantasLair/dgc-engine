@@ -1,4 +1,4 @@
-# Session 1: Foundation (January 4-5, 2025)
+# Milestone 1: Foundation (January 4-5, 2025)
 
 > Establishing the basic turn-based movement game prototype
 
