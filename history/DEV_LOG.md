@@ -81,7 +81,7 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Features**: Auto-detection of project context, batched terminal commands, standardized commit patterns
 - **Commits**: `8e719fd` to `a3c5ac1`
 
-### [Session 12: Basic Movement System Fix (August 6, 2025)](./sessions/00012-movement-fix.md) 🎮
+### [Session 12: Basic Movement System Fix (August 6, 2025)](./milestones/00012-movement-fix.md) 🎮
 **Input System Resolution** - Fixed critical keyboard input timing bug for player movement
 - **Key Achievement**: Resolved keyboard input pipeline issue preventing player movement
 - **Technology**: GameEngine update loop timing fix + Event processing order + Debug pipeline

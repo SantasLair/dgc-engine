@@ -11,14 +11,11 @@
 ### Format: `commit_hash` - Brief description (Date)
 *Use this format to track commits until they're grouped into a milestone*
 
-### 🐛 Bug Fixes & Core Functionality
-- `TBD` - Fixed critical GameEngine input processing timing bug (August 6, 2025)
-- `TBD` - Player movement system now fully functional with WASD/arrow keys (August 6, 2025)
-- `TBD` - Added R key reset functionality for player state debugging (August 6, 2025)
-- `TBD` - Updated dev log with Session 12: Basic Movement System Fix (August 6, 2025)
+### � Documentation  
+- `TBD` - Created Milestone 12: Basic Movement System Fix documentation (August 6, 2025)
 
 ### Notes
-**Major Achievement**: Resolved keyboard input pipeline issue where InputManager was clearing state before GameEngine could process events. Critical fix involved swapping the order of `processInputEvents()` and `inputManager.update()` in the GameEngine update loop.
+**Previous commits grouped**: Movement system fix commits from Session 12 have been documented in [Milestone 12](./milestones/00012-movement-fix.md).
 
 ---
 
