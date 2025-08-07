@@ -41,9 +41,6 @@ h1 {
 }
 
 #gameCanvas {
-  border: 2px solid #646cff;
-  border-radius: 8px;
-  background-color: #333;
   cursor: crosshair;
 }
 

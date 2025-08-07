@@ -1,16 +1,16 @@
-import { BaseGame, GameObject, GameEvent, type GameEngineConfig, Room, RoomManager } from '../engine'
+import { DGCGame, GameObject, GameEvent, type DGCEngineConfig, Room, RoomManager } from '../engine'
 import { GameBoard, Player, Enemy, Item } from './gameobjects'
-import { GameRoom, MenuRoom } from './rooms'
+import { GameRoom, MenuRoom, SpriteTestRoom } from './rooms'
 import { Grid } from './Grid'
 import { ds_grid_create, ds_grid_get, ds_grid_set, ds_grid_width, ds_grid_height, gml_set_game_instance } from './gml'
 import type { Position } from './types'
 import { TurnManager } from './TurnManager'
 
 /**
- * Turn-based movement game that extends the BaseGame class
- * Demonstrates the capabilities of the GameEngine with GameMaker-style objects and rooms
+ * Turn-based movement game that extends the DGCGame class
+ * Demonstrates the capabilities of the DGC Engine with GameMaker-style objects and rooms
  */
-export class Game extends BaseGame {
+export class Game extends DGCGame {
   private gameBoard: GameBoard | null = null
   private player: Player | null = null
   private roomManager: RoomManager
@@ -28,13 +28,18 @@ export class Game extends BaseGame {
   /**
    * Get the engine configuration for this game
    */
-  protected getEngineConfig(): GameEngineConfig {
+  protected getEngineConfig(): DGCEngineConfig {
     return {
       canvas: this.canvas,
-      gridWidth: 20,
-      gridHeight: 15,
-      rendererType: 'pixi', // Could be configurable
-      targetFPS: 60
+      gridWidth: 12,  // Narrower for portrait
+      gridHeight: 20, // Taller for portrait
+      targetFPS: 60,
+      cellSize: 30,
+      gridOffset: { x: 50, y: 50 },
+      pixiConfig: {
+        backgroundColor: 0x333333,
+        antialias: true
+      }
     }
   }
 
@@ -48,9 +53,6 @@ export class Game extends BaseGame {
     // Setup engine integration
     this.setupEngineIntegration()
     
-    // Setup input handlers
-    this.setupEventHandlers()
-    
     // Initialize room manager
     this.roomManager.initialize()
     
@@ -63,8 +65,8 @@ export class Game extends BaseGame {
       console.log('💡 Dev UI available! Press F12 or Ctrl+D to toggle visibility')
     }
     
-    // Start with the menu room
-    await this.roomManager.goToRoom('menu')
+    // Start with the sprite test room
+    await this.roomManager.goToRoom('sprite_test')
   }
 
   /**
@@ -74,10 +76,11 @@ export class Game extends BaseGame {
     // Add room instances to the manager
     this.roomManager.addRoom(new GameRoom(this))
     this.roomManager.addRoom(new MenuRoom(this))
+    this.roomManager.addRoom(new SpriteTestRoom(this))
   }
 
   /**
-   * Setup integration between the engine and the renderer
+   * Setup integration between the DGC engine and the game systems
    */
   private setupEngineIntegration(): void {
     // Create a system object to handle room manager updates
@@ -94,66 +97,23 @@ export class Game extends BaseGame {
       await this.roomManager.draw()
     })
     
-    // Listen for engine events to trigger rendering updates
-    this.addEventListener('object_moved', () => {
-      this.updateGameRenderer()
-    })
+    // Setup event handlers for input using the DGC engine's input system
+    this.setupInputHandlers()
     
-    this.addEventListener('object_created', () => {
-      this.updateGameRenderer()
-    })
-    
-    this.addEventListener('object_destroyed', () => {
-      this.updateGameRenderer()
-    })
-    
-    // Setup global game events
-    this.addEventListener('player_moved', (eventData) => {
-      const renderer = this.getRenderer()
-      if (renderer && eventData?.path) {
-        renderer.drawPath(eventData.path)
-      }
-      if (renderer && eventData?.target) {
-        renderer.drawTarget(eventData.target)
-      }
-    })
-
-    this.addEventListener('movement_complete', () => {
-      const renderer = this.getRenderer()
-      if (renderer) {
-        renderer.clearPath()
-        renderer.clearTarget()
-      }
-    })
-
-    // Handle mouse clicks for turn-based movement
-    this.addEventListener('mouse_click', (eventData) => {
-      this.handleMouseClick(eventData)
-    })
-  }  /**
-   * Setup event handlers for mouse interaction
-   */
-  private setupEventHandlers(): void {
-    const renderer = this.getRenderer()
-    if (!renderer) return
-    
-    // Setup input handlers through the renderer
-    renderer.setupInputHandlers((position: Position) => {
-      if (!this.gameBoard) return
-      
-      const gridPos = renderer.screenToGridWithBoard(position.x, position.y, this.gameBoard)
-      
-      // Emit engine event for rooms to handle
-      this.emitEvent('mouse_click', { 
-        mousePosition: { x: position.x, y: position.y },
-        gridPosition: gridPos
-      })
-    })
-    
-    // Setup keyboard handlers for dev UI toggle
-    this.setupKeyboardHandlers()
+    console.log('🔧 DGC Engine integration setup complete')
   }
 
+  /**
+   * Setup input handlers for the game
+   */
+  private setupInputHandlers(): void {
+    // Input handling will be done through PIXI event system in rooms
+    // or through the DGC engine's input manager
+    console.log('🎮 Input handlers ready')
+  }
+
+  // TODO: These methods need to be refactored for the DGC engine
+  /*
   /**
    * Handle mouse click for turn-based movement
    */
