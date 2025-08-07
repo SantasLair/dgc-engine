@@ -39,6 +39,7 @@ This is a turn-based movement game demo project built with:
 - Keep commits focused and atomic
 - Follow conventional commit format when specified
 - Always push changes after committing
+- Track minor commits in `history/PENDING_COMMITS.md` for session grouping
 
 ## Code Style
 

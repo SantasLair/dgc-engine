@@ -6,6 +6,7 @@ This folder contains the complete evolution history and technical documentation 
 
 ### 🔥 Development Journey
 - **[DEV_LOG.md](./DEV_LOG.md)** - Complete chronological development log from simple game to GameMaker-style engine
+- **[PENDING_COMMITS.md](./PENDING_COMMITS.md)** - Track minor commits between sessions for easier grouping
 
 ### 🏗️ Architecture Documentation
 - **[ENGINE.md](./ENGINE.md)** - Core game engine architecture and GameObject system
