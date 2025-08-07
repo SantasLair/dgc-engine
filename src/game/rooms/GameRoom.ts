@@ -8,6 +8,7 @@ import type { Game } from '../Game'
 export class GameRoom extends Room {
   private game: Game
   private gameUI: HTMLElement | null = null
+  private resizeHandler: (() => void) | null = null
 
   constructor(game: Game) {
     const config: RoomConfig = {
@@ -29,6 +30,9 @@ export class GameRoom extends Room {
    */
   private async onCreateRoom(): Promise<void> {
     console.log('🏠 GameRoom: onCreateRoom() called')
+    
+    // Enter full-screen game mode (hide HTML elements, scale canvas)
+    this.enterFullScreenMode()
     
     // Create the game board as a GameObject within this room
     console.log('🏠 GameRoom: Creating GameBoard...')
@@ -76,9 +80,10 @@ export class GameRoom extends Room {
    */
   private async onStepRoom(): Promise<void> {
     // Game room update logic
-    // Check for escape key to show menu (future feature)
+    // Check for escape key to return to menu
     if (this.game.getEngine()?.isKeyJustPressed('Escape')) {
-      console.log('Escape pressed - could show menu here')
+      console.log('Escape pressed - returning to menu')
+      await this.game.goToRoom('menu')
     }
   }
 
@@ -87,6 +92,9 @@ export class GameRoom extends Room {
    */
   private async onDestroyRoom(): Promise<void> {
     console.log('Game room destroyed!')
+    
+    // Exit full-screen mode (restore HTML elements, reset canvas)
+    this.exitFullScreenMode()
     
     // Remove game UI
     this.removeGameUI()
@@ -104,6 +112,147 @@ export class GameRoom extends Room {
   }
 
   /**
+   * Enter full-screen game mode - hide HTML page elements and scale canvas
+   */
+  private enterFullScreenMode(): void {
+    console.log('🖥️ Entering full-screen game mode...')
+    
+    // Hide all page content except the canvas
+    const app = document.getElementById('app')
+    if (app) {
+      // Hide all children except the game-container
+      Array.from(app.children).forEach(child => {
+        if (!child.classList.contains('game-container')) {
+          (child as HTMLElement).style.display = 'none'
+        }
+      })
+      
+      // Hide controls within game-container
+      const controls = document.querySelector('.controls')
+      if (controls) {
+        (controls as HTMLElement).style.display = 'none'
+      }
+    }
+    
+    // Get the canvas and apply full-screen styling
+    const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
+    if (canvas) {
+      // Store original styles for restoration
+      if (!canvas.dataset.originalStyles) {
+        canvas.dataset.originalStyles = JSON.stringify({
+          position: canvas.style.position || '',
+          top: canvas.style.top || '',
+          left: canvas.style.left || '',
+          width: canvas.style.width || '',
+          height: canvas.style.height || '',
+          zIndex: canvas.style.zIndex || '',
+          border: canvas.style.border || '',
+          borderRadius: canvas.style.borderRadius || ''
+        })
+      }
+      
+      // Apply Phaser-style full-screen scaling
+      this.applyFullScreenCanvasStyles(canvas)
+    }
+    
+    // Hide body scrollbars and padding
+    document.body.style.overflow = 'hidden'
+    document.body.style.margin = '0'
+    document.body.style.padding = '0'
+    
+    // Add resize handler to maintain full-screen scaling
+    this.resizeHandler = () => this.handleResize()
+    window.addEventListener('resize', this.resizeHandler)
+    
+    console.log('✅ Full-screen mode activated')
+  }
+
+  /**
+   * Apply full-screen styles to canvas
+   */
+  private applyFullScreenCanvasStyles(canvas: HTMLCanvasElement): void {
+    canvas.style.position = 'fixed'
+    canvas.style.top = '0'
+    canvas.style.left = '0'
+    canvas.style.width = '100vw'
+    canvas.style.height = '100vh'
+    canvas.style.zIndex = '1000'
+    canvas.style.border = 'none'
+    canvas.style.borderRadius = '0'
+    canvas.style.objectFit = 'contain' // Maintain aspect ratio
+    canvas.style.backgroundColor = '#000'
+  }
+
+  /**
+   * Handle window resize in full-screen mode
+   */
+  private handleResize(): void {
+    const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
+    if (canvas && canvas.style.position === 'fixed') {
+      // Reapply full-screen styles to ensure proper scaling
+      this.applyFullScreenCanvasStyles(canvas)
+    }
+  }
+
+  /**
+   * Exit full-screen game mode - restore HTML page elements and canvas
+   */
+  private exitFullScreenMode(): void {
+    console.log('🖥️ Exiting full-screen game mode...')
+    
+    // Remove resize handler
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler)
+      this.resizeHandler = null
+    }
+    
+    // Restore all page content
+    const app = document.getElementById('app')
+    if (app) {
+      // Show all hidden children
+      Array.from(app.children).forEach(child => {
+        (child as HTMLElement).style.display = ''
+      })
+      
+      // Show controls within game-container
+      const controls = document.querySelector('.controls')
+      if (controls) {
+        (controls as HTMLElement).style.display = ''
+      }
+    }
+    
+    // Restore canvas original styling
+    const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
+    if (canvas && canvas.dataset.originalStyles) {
+      try {
+        const originalStyles = JSON.parse(canvas.dataset.originalStyles)
+        canvas.style.position = originalStyles.position
+        canvas.style.top = originalStyles.top
+        canvas.style.left = originalStyles.left
+        canvas.style.width = originalStyles.width
+        canvas.style.height = originalStyles.height
+        canvas.style.zIndex = originalStyles.zIndex
+        canvas.style.border = originalStyles.border
+        canvas.style.borderRadius = originalStyles.borderRadius
+        canvas.style.objectFit = ''
+        canvas.style.backgroundColor = ''
+        
+        // Clear the stored styles
+        delete canvas.dataset.originalStyles
+      } catch (e) {
+        console.warn('Failed to restore canvas original styles:', e)
+      }
+    }
+    
+    // Restore body styling
+    document.body.style.overflow = ''
+    document.body.style.margin = ''
+    document.body.style.padding = ''
+    
+    console.log('✅ Full-screen mode deactivated')
+  }
+
+  /**
    * Create the in-game UI elements
    */
   private createGameUI(): void {
@@ -111,23 +260,26 @@ export class GameRoom extends Room {
     this.gameUI = document.createElement('div')
     this.gameUI.style.cssText = `
       position: fixed;
-      top: 10px;
-      right: 10px;
-      background: rgba(0, 0, 0, 0.7);
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.8);
       color: white;
       padding: 15px;
       border-radius: 8px;
       font-family: Arial, sans-serif;
-      z-index: 100;
+      z-index: 1001;
       min-width: 200px;
+      border: 2px solid #646cff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     `
     
     // Add turn information
     const turnInfo = document.createElement('div')
     turnInfo.innerHTML = `
-      <h3 style="margin: 0 0 10px 0; color: #4CAF50;">Turn-Based Game</h3>
+      <h3 style="margin: 0 0 10px 0; color: #646cff;">Turn-Based Game</h3>
       <p style="margin: 5px 0;"><span id="turnStatus">Your Turn</span></p>
       <p style="margin: 5px 0;">Turn: <span id="currentTurn">1</span></p>
+      <p style="margin: 5px 0; font-size: 12px; color: #ccc;">Press ESC to exit</p>
       <hr style="margin: 10px 0; border: 1px solid #555;">
     `
     this.gameUI.appendChild(turnInfo)
