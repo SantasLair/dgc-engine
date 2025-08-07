@@ -2,23 +2,22 @@ import { Room, type RoomConfig } from '../../engine'
 import type { Game } from '../Game'
 
 /**
- * Simplified Game Room for basic functionality testing
+ * Simplified Menu Room for basic functionality testing
  */
-export class GameRoom extends Room {
+export class MenuRoom extends Room {
   constructor(_game: Game) {
     const config: RoomConfig = {
-      name: 'game',
+      name: 'MenuRoom',
       width: 800,
       height: 600
     }
     super(config)
     // Store game reference for future use
-    console.log('GameRoom initialized with game instance')
+    console.log('MenuRoom initialized with game instance')
   }
 
   public async onRoomStart(): Promise<void> {
-    console.log('🎮 Game Room Started')
-    // Basic initialization without complex game logic
+    console.log('🏠 Menu Room Started')
   }
 
   public async onRoomUpdate(): Promise<void> {
@@ -26,6 +25,6 @@ export class GameRoom extends Room {
   }
 
   public onRoomEnd(): void {
-    console.log('🎮 Game Room Ended')
+    console.log('🏠 Menu Room Ended')
   }
 }

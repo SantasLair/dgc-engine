@@ -1,16 +1,16 @@
-import { DGCEngine } from './DGCEngine'
-import type { DGCEngineConfig } from './DGCEngineConfig'
-import { createDGCEngineConfig } from './DGCEngineConfig'
+import { DGCRapidEngine } from './DGCRapidEngine'
+import type { DGCRapidEngineConfig } from './DGCRapidEngineConfig'
+import { createDGCRapidEngineConfig } from './DGCRapidEngineConfig'
 import { GameObject } from './GameObject'
-import * as PIXI from 'pixi.js'
+import type { Rapid } from 'rapid-render'
 
 /**
- * Base Game class that provides a foundation for DGC games
+ * Base Game class that provides a foundation for DGC games using Rapid.js
  * Games should extend this class to implement their specific logic
  */
-export abstract class DGCGame {
+export abstract class DGCRapidGame {
   protected canvas: HTMLCanvasElement
-  protected engine: DGCEngine
+  protected engine: DGCRapidEngine
   protected isInitialized: boolean = false
 
   constructor(canvas: HTMLCanvasElement) {
@@ -18,7 +18,7 @@ export abstract class DGCGame {
     
     // Create the DGC engine with the game's configuration
     const userConfig = this.getEngineConfig()
-    const config = createDGCEngineConfig(userConfig)
+    const config = createDGCRapidEngineConfig(userConfig, canvas)
     
     // Calculate and set canvas dimensions based on grid configuration
     const canvasWidth = config.gridWidth * config.cellSize + (config.gridOffset.x * 2)
@@ -32,14 +32,14 @@ export abstract class DGCGame {
     console.log(`🎮 Grid: ${config.gridWidth}x${config.gridHeight}, Cell: ${config.cellSize}px, Offset: ${config.gridOffset.x}x${config.gridOffset.y}`)
     console.log(`🎮 Actual canvas element size: ${this.canvas.width}x${this.canvas.height}`)
     
-    this.engine = new DGCEngine(config)
+    this.engine = new DGCRapidEngine(config)
   }
 
   /**
    * Get the engine configuration
    * Override this method to customize the engine settings
    */
-  protected abstract getEngineConfig(): DGCEngineConfig
+  protected abstract getEngineConfig(): DGCRapidEngineConfig
 
   /**
    * Setup game-specific logic after engine creation
@@ -48,104 +48,80 @@ export abstract class DGCGame {
   protected abstract setupGame(): Promise<void>
 
   /**
-   * Start the game
+   * Initialize the game
    */
-  public async start(): Promise<void> {
-    if (this.isInitialized) {
-      console.warn('Game is already initialized')
-      return
-    }
-
+  public async initialize(): Promise<void> {
     try {
-      console.log('🎮 Starting DGC game...')
+      console.log('🎮 Starting DGC Game initialization...')
       
-      // Initialize the DGC engine
+      // Initialize the engine
       await this.engine.initialize()
       
       // Setup game-specific logic
       await this.setupGame()
       
-      // Start the engine
-      this.engine.start()
-      
       this.isInitialized = true
-      console.log('🎮 DGC game started successfully!')
-      
+      console.log('✅ DGC Game initialized successfully')
     } catch (error) {
-      console.error('Failed to start game:', error)
+      console.error('❌ Failed to initialize DGC Game:', error)
       throw error
     }
+  }
+
+  /**
+   * Start the game
+   */
+  public start(): void {
+    if (!this.isInitialized) {
+      throw new Error('Game must be initialized before starting')
+    }
+    
+    console.log('🚀 Starting DGC Game')
+    this.engine.start()
   }
 
   /**
    * Stop the game
    */
   public stop(): void {
-    if (!this.isInitialized) {
-      console.warn('Game is not initialized')
-      return
-    }
-    
+    console.log('⏹️ Stopping DGC Game')
     this.engine.stop()
-    this.isInitialized = false
-    console.log('🎮 Game stopped')
   }
 
   /**
-   * Get direct access to the PIXI Application
-   * This allows games to leverage the full power of PIXI.js
+   * Get the game engine
    */
-  public getPixiApp(): PIXI.Application {
-    return this.engine.getPixiApp()
-  }
-
-  /**
-   * Get access to the rendering layers
-   */
-  public getLayers() {
-    return this.engine.getLayers()
-  }
-
-  /**
-   * Create a new game object
-   */
-  public createObject(objectType: string, x: number = 0, y: number = 0): GameObject {
-    return this.engine.createGameObject(objectType, x, y)
-  }
-
-  /**
-   * Remove a game object
-   */
-  public removeObject(gameObject: GameObject): void {
-    this.engine.removeGameObject(gameObject)
-  }
-
-  /**
-   * Get all game objects
-   */
-  public getGameObjects(): GameObject[] {
-    return this.engine.getGameObjects()
-  }
-
-  /**
-   * Get the game engine instance
-   */
-  public getEngine(): DGCEngine {
+  public getEngine(): DGCRapidEngine {
     return this.engine
   }
 
   /**
-   * Convert screen coordinates to grid coordinates
+   * Get the canvas element
    */
-  public screenToGrid(screenX: number, screenY: number) {
-    return this.engine.screenToGrid(screenX, screenY)
+  public getCanvas(): HTMLCanvasElement {
+    return this.canvas
   }
 
   /**
-   * Convert grid coordinates to screen coordinates
+   * Add a GameObject to the game
    */
-  public gridToScreen(gridX: number, gridY: number) {
-    return this.engine.gridToScreen(gridX, gridY)
+  public addGameObject(gameObject: GameObject): void {
+    this.engine.addGameObject(gameObject)
+  }
+
+  /**
+   * Remove a GameObject from the game
+   */
+  public removeGameObject(gameObject: GameObject): void {
+    this.engine.removeGameObject(gameObject)
+  }
+
+  /**
+   * Create a new GameObject and add it to the game
+   */
+  public createGameObject(objectType: string, x: number = 0, y: number = 0, properties: any = {}): GameObject {
+    const objectManager = this.engine['gameObjectManager'] // Access private member
+    return objectManager.createObject(objectType, x, y, properties)
   }
 
   /**
@@ -170,9 +146,9 @@ export abstract class DGCGame {
   }
 
   /**
-   * Get current mouse position
+   * Get the current mouse position
    */
-  public getMousePosition() {
+  public getMousePosition(): { x: number; y: number } {
     return this.engine.getInputManager().getMousePosition()
   }
 
@@ -195,5 +171,47 @@ export abstract class DGCGame {
    */
   public isMouseButtonJustReleased(button: number): boolean {
     return this.engine.getInputManager().isMouseButtonJustReleased(button)
+  }
+
+  /**
+   * Convert grid coordinates to screen coordinates
+   */
+  public gridToScreen(gridX: number, gridY: number): { x: number; y: number } {
+    return this.engine.gridToScreen(gridX, gridY)
+  }
+
+  /**
+   * Convert screen coordinates to grid coordinates
+   */
+  public screenToGrid(screenX: number, screenY: number): { x: number; y: number } {
+    return this.engine.screenToGrid(screenX, screenY)
+  }
+
+  /**
+   * Get the engine configuration
+   */
+  public getConfig(): DGCRapidEngineConfig {
+    return this.engine.getConfig()
+  }
+
+  /**
+   * Get the renderer (Rapid.js renderer)
+   */
+  public getRenderer(): Rapid {
+    return this.engine.getRapidRenderer()
+  }
+
+  /**
+   * Add a game object to the engine
+   */
+  public addObject(gameObject: GameObject): void {
+    this.engine.addGameObject(gameObject)
+  }
+
+  /**
+   * Check if the game is initialized (backward compatibility)
+   */
+  public get isGameInitialized(): boolean {
+    return this.isInitialized
   }
 }

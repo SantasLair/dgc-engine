@@ -26,18 +26,28 @@ export interface RoomConfig {
 /**
  * Represents a game room/level/scene
  * Manages game objects within a specific area and handles room-level events
- * Follows GameMaker-style room architecture
+ * Core room management component for the DGC Engine.
+ * 
+ * Rooms are containers for game objects, providing:
+ * - Object lifecycle management (create, step, draw, destroy)
+ * - Persistent vs temporary rooms
+ * - Event-driven architecture
+ * 
+ * Follows GameMaker-style room architecture with Rapid.js immediate mode rendering
  */
 export class Room {
   /** Room identifier */
   public readonly name: string
   
-  /** Room dimensions */
+  /** Room dimensions (logical game units) */
   public readonly width: number
   public readonly height: number
   
   /** Background configuration */
   public background?: string | HTMLImageElement
+  
+  /** Rendering handled by immediate mode Rapid.js drawing system */
+  // Rapid.js uses immediate mode rendering - no retained containers needed
   
   /** Room event scripts */
   private eventScripts: Map<string, EventScript> = new Map()

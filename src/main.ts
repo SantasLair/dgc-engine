@@ -29,8 +29,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const game = new Game(canvas)
     
-    // Start the game and wait for initialization
-    await game.start()
+    // Initialize the game first
+    await game.initialize()
+    console.log('Game initialized successfully!')
+    
+    // Now start the game
+    game.start()
     console.log('Game started successfully!')
     
     // Expose game instance for development/debugging (development only)
@@ -41,6 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Expose room functionality for testing
       ;(window as any).goToGame = async () => await game.goToRoom('game')
       ;(window as any).goToMenu = async () => await game.goToRoom('menu')
+      ;(window as any).goToSpriteTest = async () => await game.goToRoom('sprite_test')
       ;(window as any).getCurrentRoom = () => game.getCurrentRoom()?.name
       ;(window as any).getRoomManager = () => game.getRoomManager()
       

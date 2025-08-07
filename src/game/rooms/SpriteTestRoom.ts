@@ -1,13 +1,12 @@
-import { Room, type RoomConfig } from '../../engine'
+import { Room, type RoomConfig, GameEvent } from '../../engine'
 import type { Game } from '../Game'
-import * as PIXI from 'pixi.js'
 
 /**
- * Sprite test room for testing sprite functionality with direct PIXI access via DGC Engine
+ * Sprite test room for testing Rapid.js drawing functionality
  */
 export class SpriteTestRoom extends Room {
   private game: Game
-  private testSprites: PIXI.Container | null = null
+  private animationFrame: number = 0
 
   constructor(game: Game) {
     const config: RoomConfig = {
@@ -29,121 +28,103 @@ export class SpriteTestRoom extends Room {
   private async onCreateRoom(): Promise<void> {
     console.log('🏠 SpriteTestRoom: onCreateRoom() called')
     
-    // Get direct access to PIXI for advanced sprite functionality through DGC Engine
-    const pixiApp = this.game.getPixiApp()
-    const layers = this.game.getLayers()
+    // Create a test object to demonstrate Rapid.js drawing
+    const testObject = this.game.createGameObject('sprite_test_object', 0, 0)
     
-    // Create a container for our test sprites
-    this.testSprites = new PIXI.Container()
-    this.testSprites.name = 'SpriteTestContainer'
-    
-    // Add to the game layer
-    layers.game.addChild(this.testSprites)
-    
-    // Create some test sprites using PIXI directly
-    await this.createTestSprites(pixiApp)
-    
-    console.log('🏠 SpriteTestRoom: Sprite test room created with PIXI sprites!')
-  }
-
-  /**
-   * Create various test sprites to demonstrate PIXI capabilities
-   */
-  private async createTestSprites(pixiApp: PIXI.Application): Promise<void> {
-    if (!this.testSprites) return
-
-    // Get canvas dimensions for debugging
-    const canvasWidth = pixiApp.canvas.width
-    const canvasHeight = pixiApp.canvas.height
-    console.log(`🎯 SpriteTestRoom: Canvas size is ${canvasWidth}x${canvasHeight} (mobile portrait)`)
-
-    // Test 1: Simple colored rectangle (upper area)
-    const rect = new PIXI.Graphics()
-    rect.rect(80, 120, 100, 60)
-    rect.fill(0x66CCFF)
-    rect.stroke({ width: 2, color: 0x4444CC })
-    this.testSprites.addChild(rect)
-    console.log(`🎯 Blue rect at (80, 120)`)
-
-    // Test 2: Circle with gradient (upper right)
-    const circle = new PIXI.Graphics()
-    circle.circle(200, 180, 35)
-    circle.fill(0xFF6666)
-    this.testSprites.addChild(circle)
-    console.log(`🎯 Red circle at (200, 180)`)
-
-    // Test 3: Text sprite (top center)
-    const text = new PIXI.Text({
-      text: 'PIXI.js Mobile Portrait!',
-      style: {
-        fontFamily: 'Arial',
-        fontSize: 20,
-        fill: 0xFFFFFF,
-        align: 'center'
-      }
+    // Add step event for animation
+    testObject.addEventScript(GameEvent.STEP, (_self) => {
+      this.animationFrame += 1
     })
-    text.x = 60
-    text.y = 80
-    this.testSprites.addChild(text)
-    console.log(`🎯 Text at (60, 80)`)
-
-    // Test 4: Animated sprite (middle area)
-    const animatedRect = new PIXI.Graphics()
-    animatedRect.rect(150, 300, 50, 50)
-    animatedRect.fill(0x00FF00)
-    this.testSprites.addChild(animatedRect)
-    console.log(`🎯 Green animated rect at (150, 300)`)
-
-    // Add animation using PIXI's ticker
-    let rotation = 0
-    pixiApp.ticker.add(() => {
-      rotation += 0.02
-      animatedRect.rotation = rotation
+    
+    // Add draw event to demonstrate Rapid.js immediate mode rendering
+    testObject.addEventScript(GameEvent.DRAW, (_self) => {
+      const drawingSystem = this.game.getEngine().getDrawingSystem()
       
-      // Pulsing effect
-      const scale = 1 + Math.sin(rotation * 2) * 0.2
-      animatedRect.scale.set(scale)
+      // Test 1: Draw rectangles
+      drawingSystem.drawRectangle(50, 50, 150, 100, true, 0xFF0000, 1) // Red filled rectangle
+      drawingSystem.drawRectangle(160, 50, 260, 100, false, 0x00FF00, 1) // Green outline rectangle
+      
+      // Test 2: Draw circles
+      drawingSystem.drawCircle(100, 150, 30, true, 0x0000FF, 1) // Blue filled circle
+      drawingSystem.drawCircle(200, 150, 30, false, 0xFFFF00, 1) // Yellow outline circle (note: Rapid.js doesn't support outline circles natively)
+      
+      // Test 3: Draw lines
+      drawingSystem.drawLine(50, 200, 250, 200, 0xFFFFFF, 2) // White horizontal line
+      drawingSystem.drawLine(150, 180, 150, 220, 0xFFFFFF, 2) // White vertical line
+      
+      // Test 4: Draw text
+      drawingSystem.drawText(50, 250, 'Rapid.js Rendering Test!', 0xFFFFFF, 16, 'Arial')
+      drawingSystem.drawText(50, 280, `Frame: ${this.animationFrame}`, 0x00FFFF, 14, 'Arial')
+      
+      // Test 5: Draw animated sprite (simple colored rectangle)
+      const time = this.animationFrame * 0.1
+      const x = 300 + Math.sin(time) * 50
+      const y = 150 + Math.cos(time) * 30
+      drawingSystem.drawSprite(x, y, 1, 1, time * 180 / Math.PI, 0xFF00FF, 1)
+      
+      // Test 6: Draw arrow
+      drawingSystem.drawArrow(50, 320, 200, 350, 15, 0x00FF00)
+      
+      // Test 7: Draw health bar
+      const healthPercent = (Math.sin(time) + 1) / 2 // Animate between 0 and 1
+      drawingSystem.drawHealthbar(50, 380, 250, 400, healthPercent, 0x333333, 0xFF0000, 0x00FF00)
+      
+      // Add health percentage text
+      drawingSystem.drawText(260, 385, `${Math.round(healthPercent * 100)}%`, 0xFFFFFF, 12, 'Arial')
     })
-
-    // Test 5: Interactive sprite (lower area)
-    const interactiveSprite = new PIXI.Graphics()
-    interactiveSprite.rect(100, 450, 80, 40)
-    interactiveSprite.fill(0xFFAA00)
-    interactiveSprite.eventMode = 'static'
-    interactiveSprite.cursor = 'pointer'
     
-    interactiveSprite.on('pointerdown', () => {
-      interactiveSprite.tint = 0xFF0000
-      console.log('🎯 Interactive sprite clicked!')
-    })
-    
-    interactiveSprite.on('pointerup', () => {
-      interactiveSprite.tint = 0xFFFFFF
-    })
-    
-    this.testSprites.addChild(interactiveSprite)
-    console.log(`🎯 Orange interactive rect at (100, 450)`)
-
-    console.log('✨ Created test sprites for mobile portrait layout with PIXI features')
+    console.log('✅ SpriteTestRoom: Test objects created with Rapid.js rendering')
   }
 
   /**
-   * Called when the room is being destroyed/deactivated
+   * Called when the room is destroyed/deactivated
    */
   private async onDestroyRoom(): Promise<void> {
-    console.log('🏠 SpriteTestRoom: onDestroyRoom() called')
+    console.log('� SpriteTestRoom: onDestroyRoom() called')
     
-    // Clean up PIXI sprites
-    if (this.testSprites) {
-      // Remove from parent and destroy
-      this.testSprites.parent?.removeChild(this.testSprites)
-      this.testSprites.destroy({
-        children: true,
-        texture: false // Keep textures for reuse
-      })
-      this.testSprites = null
+    // Reset animation frame
+    this.animationFrame = 0
+    
+    console.log('✅ SpriteTestRoom: Cleanup completed')
+  }
+
+  /**
+   * Handle room-specific input (override from base Room class)
+   */
+  public handleInput(): void {
+    // Space key to reset animation
+    if (this.game.isKeyJustPressed('Space')) {
+      this.animationFrame = 0
+      console.log('🔄 SpriteTestRoom: Animation reset')
     }
     
-    console.log('🏠 SpriteTestRoom: Sprite test room destroyed and cleaned up')
+    // R key to restart room
+    if (this.game.isKeyJustPressed('KeyR')) {
+      console.log('🔄 SpriteTestRoom: Restarting room...')
+      // Restart logic would go here
+    }
+  }
+
+  /**
+   * Get instructions for this room
+   */
+  public getInstructions(): string[] {
+    return [
+      'Sprite Test Room - Rapid.js Rendering Demo',
+      '',
+      'This room demonstrates Rapid.js immediate mode rendering:',
+      '• Red/Green rectangles (filled/outline)',
+      '• Blue circle (filled)',
+      '• White cross lines',
+      '• Text rendering with animation counter',
+      '• Animated rotating sprite',
+      '• Arrow drawing',
+      '• Animated health bar',
+      '',
+      'Controls:',
+      'SPACE - Reset animation',
+      'R - Restart room',
+      'ESC - Return to menu'
+    ]
   }
 }
