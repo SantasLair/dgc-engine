@@ -1,4 +1,20 @@
-# Pending Commits for Next Milestone
+# Pendin## Pending Commits
+
+### Format: `commit_hash` - Brief description (Date)
+*Use this format to track commits until they're grouped into a milestone*
+
+### 📚 Documentation  
+- `9c6e17b` - Created Milestone 12: Basic Movement System Fix documentation (August 6, 2025)
+
+### ✨ Minor Features
+- `e3b605f` - Added Phaser-style full-screen game mode to GameRoom (August 6, 2025)
+
+### Notes
+**Previous commits grouped**: Movement system fix commits from Session 12 have been documented in [Milestone 12](./milestones/00012-movement-fix.md).
+
+**Full-Screen Mode**: GameRoom now hides HTML page elements and scales canvas to fill viewport like Phaser games, with ESC key to exit and automatic layout restoration.
+
+---r Next Milestone
 
 > Track minor commits and improvements between major development milestones for easier grouping and documentation.
 
