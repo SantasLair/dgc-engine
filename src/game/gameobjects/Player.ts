@@ -5,8 +5,12 @@ import { GameObject, GameEvent } from '../../engine'
  * Provides a more traditional class-based approach while leveraging the engine
  */
 export class Player extends GameObject {
+  private gameInstance: any // Reference to Game instance for turn management
+  
   constructor(x: number, y: number) {
     super('Player', { x, y })
+    
+    console.log('🎮 Player constructor called at position:', x, y)
     
     // Set player-specific properties
     this.solid = true
@@ -15,8 +19,27 @@ export class Player extends GameObject {
     this.setVariable('maxHealth', 100)
     this.setVariable('speed', 1)
     this.setVariable('canMove', true)
+    this.setVariable('isMoving', false) // Explicitly set this to false initially
     
     this.setupPlayerEvents()
+    console.log('🎮 Player setup complete')
+  }
+
+  /**
+   * Set reference to the game instance for turn management
+   */
+  public setGameInstance(game: any): void {
+    this.gameInstance = game
+    this.resetPlayerState()
+  }
+
+  /**
+   * Reset player to a known good state
+   */
+  public resetPlayerState(): void {
+    this.setVariable('isMoving', false)
+    this.setVariable('canMove', true)
+    console.log('✅ Player state reset: Ready for movement')
   }
 
   /**
@@ -27,17 +50,44 @@ export class Player extends GameObject {
     this.addEventScript(GameEvent.CREATE, (self) => {
       console.log('Player created at', self.getPosition())
       self.setVariable('score', 0)
+      self.setVariable('isMoving', false)
+      self.setVariable('canMove', true)
     })
 
-    // Movement input handling - use for immediate movement only
+    // Movement input handling - turn-based single-step movement
     this.addEventScript(GameEvent.KEY_PRESSED, (self, eventData) => {
-      if (!self.getVariable('canMove')) return
-      if (self.getVariable('isMoving')) return // Don't interrupt pathfinding movement
+      if (!self.getVariable('canMove')) {
+        console.log('❌ Player cannot move (canMove = false) - Press R to reset')
+        return
+      }
+      if (self.getVariable('isMoving')) {
+        console.log('❌ Player is already moving - Press R to reset')
+        return // Don't interrupt pathfinding movement
+      }
+      
+      // Check if we have game instance and if it's player's turn
+      if (!this.gameInstance) {
+        console.log('❌ No game instance set for player')
+        return
+      }
+      const turnManager = this.gameInstance.getTurnManager()
+      const gameBoard = this.gameInstance.getGameBoard()
+      
+      if (!turnManager || !gameBoard) {
+        console.log('❌ Missing turnManager or gameBoard')
+        return
+      }
+      if (!turnManager.isPlayersTurn()) {
+        console.log('❌ Not your turn! Wait for enemies to finish moving.')
+        return
+      }
 
       const speed = self.getVariable('speed')
       const currentPos = self.getPosition()
       let newX = currentPos.x
       let newY = currentPos.y
+
+      console.log('Processing key movement for key:', eventData?.key) // Debug
 
       switch (eventData?.key) {
         case 'KeyW': case 'ArrowUp':
@@ -61,12 +111,29 @@ export class Player extends GameObject {
             this.performAction()
           }
           return
+        case 'KeyR':
+          // Force reset player state (debug/fix key)
+          console.log('🔧 Force resetting player state...')
+          this.resetPlayerState()
+          return
+        default:
+          console.log('Key not handled:', eventData?.key)
+          return // Ignore other keys
       }
 
-      // Boundary checking (assuming 20x15 grid)
-      if (newX >= 0 && newX < 20 && newY >= 0 && newY < 15) {
-        self.setPosition(newX, newY)
-        console.log('Player moved to', { x: newX, y: newY })
+      // Round to ensure grid alignment
+      newX = Math.floor(newX)
+      newY = Math.floor(newY)
+
+      console.log(`Attempting to move from (${currentPos.x}, ${currentPos.y}) to (${newX}, ${newY})`) // Debug
+
+      // Check if the new position is valid and walkable
+      if (gameBoard.isValidPosition(newX, newY) && gameBoard.isWalkable(newX, newY)) {
+        // Execute single-step movement with enemy response
+        console.log('Executing movement to:', newX, newY) // Debug
+        this.executeSingleStepMovement(newX, newY)
+      } else {
+        console.log(`Cannot move to (${newX}, ${newY}) - blocked or out of bounds!`)
       }
     })
 
@@ -158,6 +225,79 @@ export class Player extends GameObject {
   // Maintain compatibility with old API
   public move(deltaX: number, deltaY: number): void {
     super.move(deltaX, deltaY)
+  }
+
+  /**
+   * Execute single-step movement with turn-based enemy response
+   */
+  private executeSingleStepMovement(newX: number, newY: number): void {
+    if (!this.gameInstance) return
+    
+    // Move player to new position
+    this.setPosition(newX, newY)
+    console.log(`Player moved to (${newX}, ${newY}) via keyboard`)
+    
+    // Execute player's turn
+    const turnManager = this.gameInstance.getTurnManager()
+    turnManager.executePlayerMove()
+    
+    // Execute one enemy step in response
+    setTimeout(() => {
+      this.gameInstance.executeEnemyStep()
+      
+      // Complete the turn
+      setTimeout(() => {
+        turnManager.completeEnemyTurn()
+        this.gameInstance.updateGameRenderer()
+      }, 100)
+    }, 150) // Small delay for visual feedback
+  }
+
+  /**
+   * Animate movement along a path
+   */
+  public animateAlongPath(
+    path: { x: number, y: number }[], 
+    onStepComplete?: (stepIndex: number) => void,
+    onComplete?: () => void
+  ): void {
+    if (path.length === 0) {
+      onComplete?.()
+      return
+    }
+
+    // Mark player as moving to prevent interruption
+    this.setVariable('isMoving', true)
+    this.setVariable('canMove', false)
+
+    let currentIndex = 0
+    const moveInterval = setInterval(() => {
+      if (currentIndex >= path.length) {
+        clearInterval(moveInterval)
+        this.setVariable('isMoving', false)
+        this.setVariable('canMove', true)
+        onComplete?.()
+        return
+      }
+
+      const targetPos = path[currentIndex]
+      this.setPosition(targetPos.x, targetPos.y)
+      console.log(`Player moved to (${targetPos.x}, ${targetPos.y}) - step ${currentIndex + 1}/${path.length}`)
+      
+      // Call step completion callback
+      onStepComplete?.(currentIndex)
+      
+      currentIndex++
+    }, 300) // 300ms between moves for smooth animation
+
+    // Safety timeout to prevent getting stuck
+    setTimeout(() => {
+      clearInterval(moveInterval)
+      if (this.getVariable('isMoving')) {
+        console.log('⚠️ Animation timeout - force resetting player state')
+        this.resetPlayerState()
+      }
+    }, path.length * 300 + 5000) // Give extra time beyond expected animation duration
   }
 
   public getX(): number {

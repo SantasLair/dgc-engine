@@ -4,6 +4,7 @@ import { GameRoom, MenuRoom } from './rooms'
 import { Grid } from './Grid'
 import { ds_grid_create, ds_grid_get, ds_grid_set, ds_grid_width, ds_grid_height, gml_set_game_instance } from './gml'
 import type { Position } from './types'
+import { TurnManager } from './TurnManager'
 
 /**
  * Turn-based movement game that extends the BaseGame class
@@ -14,6 +15,8 @@ export class Game extends BaseGame {
   private player: Player | null = null
   private roomManager: RoomManager
   private devUIVisible: boolean = false // Track dev UI visibility state
+  private turnManager: TurnManager = new TurnManager()
+  private lastClickTarget: { x: number, y: number } | null = null
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
@@ -114,7 +117,7 @@ export class Game extends BaseGame {
         renderer.drawTarget(eventData.target)
       }
     })
-    
+
     this.addEventListener('movement_complete', () => {
       const renderer = this.getRenderer()
       if (renderer) {
@@ -122,9 +125,12 @@ export class Game extends BaseGame {
         renderer.clearTarget()
       }
     })
-  }
 
-  /**
+    // Handle mouse clicks for turn-based movement
+    this.addEventListener('mouse_click', (eventData) => {
+      this.handleMouseClick(eventData)
+    })
+  }  /**
    * Setup event handlers for mouse interaction
    */
   private setupEventHandlers(): void {
@@ -149,17 +155,185 @@ export class Game extends BaseGame {
   }
 
   /**
+   * Handle mouse click for turn-based movement
+   */
+  private handleMouseClick(eventData: any): void {
+    if (!this.gameBoard || !this.player) return
+    
+    // Prevent new moves while player is already moving
+    if (this.player.getVariable('isMoving')) {
+      console.log('Player is already moving! Wait for current movement to complete.')
+      return
+    }
+    
+    const gridPos = eventData.gridPosition
+    if (!gridPos || !this.gameBoard.isValidPosition(gridPos.x, gridPos.y)) return
+    
+    // Only allow clicks during player's turn
+    if (!this.turnManager.isPlayersTurn()) {
+      console.log('Not your turn! Wait for enemies to finish moving.')
+      return
+    }
+
+    const renderer = this.getRenderer()
+    if (!renderer) return
+
+    // Check if clicking on the same target
+    if (this.lastClickTarget && 
+        this.lastClickTarget.x === gridPos.x && 
+        this.lastClickTarget.y === gridPos.y) {
+      
+      // Second click on same target - execute movement
+      if (this.gameBoard.isWalkable(gridPos.x, gridPos.y)) {
+        this.executePlayerMovement(gridPos)
+      } else {
+        console.log('Cannot move to that position - blocked!')
+        this.clearTargetAndPath()
+      }
+    } else {
+      // First click or different target - show path
+      if (this.gameBoard.isWalkable(gridPos.x, gridPos.y)) {
+        this.showMovementPath(gridPos)
+      } else {
+        console.log('Cannot target that position - blocked!')
+      }
+    }
+  }
+
+  /**
+   * Show the movement path to the target
+   */
+  private showMovementPath(target: { x: number, y: number }): void {
+    if (!this.gameBoard || !this.player) return
+
+    const playerPos = { x: Math.floor(this.player.x), y: Math.floor(this.player.y) }
+    const path = this.gameBoard.calculatePath(playerPos, target)
+    
+    this.lastClickTarget = target
+    
+    const renderer = this.getRenderer()
+    if (renderer) {
+      renderer.drawPath(path)
+      renderer.drawTarget(target)
+    }
+    
+    console.log(`Click again on (${target.x}, ${target.y}) to move there`)
+  }
+
+  /**
+   * Execute the player movement and start enemy turn
+   */
+  private executePlayerMovement(target: { x: number, y: number }): void {
+    if (!this.player || !this.gameBoard) return
+
+    // Calculate the full path from current position to target
+    const playerPos = { x: Math.floor(this.player.x), y: Math.floor(this.player.y) }
+    const path = this.gameBoard.calculatePath(playerPos, target)
+    
+    // Clear path and target visuals immediately
+    this.clearTargetAndPath()
+    
+    // Execute player's turn
+    this.turnManager.executePlayerMove()
+    
+    // Animate player movement along the path with enemy steps
+    this.player.animateAlongPath(
+      path,
+      (stepIndex: number) => {
+        // For each player step, execute one enemy step
+        console.log(`Player step ${stepIndex + 1} complete, executing enemy steps...`)
+        this.executeEnemyStep()
+      },
+      () => {
+        console.log(`Player movement complete: reached (${target.x}, ${target.y})`)
+        
+        // Complete the turn sequence after all movement is done
+        setTimeout(() => {
+          this.turnManager.completeEnemyTurn()
+          this.updateGameRenderer()
+        }, 200) // Small delay for visual feedback
+      }
+    )
+  }
+
+  /**
+   * Execute one step of movement for all enemies
+   */
+  public executeEnemyStep(): void {
+    if (!this.gameBoard || !this.player) return
+
+    const engine = this.getEngine()
+    if (!engine) return
+
+    // Get all enemy objects
+    const enemies: Enemy[] = []
+    const allObjects = engine.getObjectManager().getAllObjects()
+    
+    for (const obj of allObjects) {
+      if (obj.objectType === 'Enemy' && obj instanceof Enemy) {
+        enemies.push(obj)
+      }
+    }
+
+    // Update enemy targets (check for player in range)
+    const playerPos = { x: Math.floor(this.player.x), y: Math.floor(this.player.y) }
+    
+    for (const enemy of enemies) {
+      const enemyPos = { x: Math.floor(enemy.x), y: Math.floor(enemy.y) }
+      const distance = Math.sqrt(
+        Math.pow(playerPos.x - enemyPos.x, 2) + 
+        Math.pow(playerPos.y - enemyPos.y, 2)
+      )
+      
+      const detectionRange = enemy.getVariable('detectionRange') || 5
+      
+      if (distance <= detectionRange) {
+        enemy.setTarget(playerPos.x, playerPos.y)
+      } else {
+        enemy.clearTarget()
+      }
+    }
+
+    // Execute one step of movement for each enemy
+    let enemiesMoved = 0
+    for (const enemy of enemies) {
+      if (enemy.executeTurn(this.gameBoard)) {
+        enemiesMoved++
+      }
+    }
+
+    if (enemiesMoved > 0) {
+      console.log(`${enemiesMoved} enemies moved one step`)
+    }
+    
+    // Update renderer to show enemy movements
+    this.updateGameRenderer()
+  }
+
+  /**
+   * Clear target and path visuals
+   */
+  private clearTargetAndPath(): void {
+    this.lastClickTarget = null
+    const renderer = this.getRenderer()
+    if (renderer) {
+      renderer.clearPath()
+      renderer.clearTarget()
+    }
+  }
+
+  /**
    * Setup keyboard event handlers
    */
   private setupKeyboardHandlers(): void {
     if (!import.meta.env.DEV) return
     
     document.addEventListener('keydown', (event) => {
-      // Toggle dev UI with F12 key
-      if (event.key === 'F12') {
-        event.preventDefault()
-        this.toggleDevUI()
-      }
+      // Toggle dev UI with F12 key - TEMPORARILY DISABLED FOR DEBUGGING
+      // if (event.key === 'F12') {
+      //   event.preventDefault()
+      //   this.toggleDevUI()
+      // }
       
       // Alternative: Toggle dev UI with Ctrl+D
       if (event.ctrlKey && event.key === 'd') {
@@ -263,6 +437,10 @@ export class Game extends BaseGame {
    */
   public setPlayer(player: Player | null): void {
     this.player = player
+    // Set game instance reference for turn-based keyboard movement
+    if (player) {
+      player.setGameInstance(this)
+    }
   }
 
   /**
@@ -277,6 +455,21 @@ export class Game extends BaseGame {
    */
   public addGameObject(gameObject: GameObject): void {
     this.addObject(gameObject)
+  }
+
+  /**
+   * Get the turn manager
+   */
+  public getTurnManager(): TurnManager {
+    return this.turnManager
+  }
+
+  /**
+   * Reset the turn manager (called when starting a new game)
+   */
+  public resetTurnManager(): void {
+    this.turnManager.reset()
+    this.lastClickTarget = null
   }
 
   /**

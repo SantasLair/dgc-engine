@@ -6,7 +6,8 @@ import { GameObject, GameEvent } from '../../engine'
  */
 export class Enemy extends GameObject {
   constructor(x: number, y: number, enemyType: string = 'guard') {
-    super('Enemy', { x, y })
+    // Ensure enemies are placed on grid positions
+    super('Enemy', { x: Math.floor(x), y: Math.floor(y) })
     
     // Set enemy properties
     this.solid = true
@@ -15,7 +16,7 @@ export class Enemy extends GameObject {
     this.setVariable('maxHealth', 50)
     this.setVariable('attackPower', 15)
     this.setVariable('detectionRange', 5)
-    this.setVariable('moveSpeed', 0.5)
+    this.setVariable('moveSpeed', 1) // Grid-based movement
     this.setVariable('enemyType', enemyType)
     this.setVariable('patrolDirection', Math.floor(Math.random() * 4))
     this.setVariable('patrolTimer', 0)
@@ -33,7 +34,7 @@ export class Enemy extends GameObject {
       self.setTimer('changeDirection', 2000 + Math.random() * 3000)
     })
 
-    // AI behavior in step event
+    // AI behavior in step event - only update AI state, don't move
     this.addEventScript(GameEvent.STEP, (self) => {
       this.updateAI(self)
     })
@@ -61,63 +62,115 @@ export class Enemy extends GameObject {
   }
 
   private updateAI(self: GameObject): void {
-    // Simple AI: patrol or chase player
+    // Only update AI during enemy turn (turn-based movement)
+    // The actual movement will be triggered by the turn manager
     const players = this.getPlayersInRange(self)
     
     if (players.length > 0) {
-      this.chasePlayer(self, players[0])
+      self.setVariable('chasing', true)
+      self.setVariable('targetX', Math.floor(players[0].x))
+      self.setVariable('targetY', Math.floor(players[0].y))
     } else {
-      this.patrol(self)
+      self.setVariable('chasing', false)
     }
   }
 
   private getPlayersInRange(_self: GameObject): GameObject[] {
-    // This would normally use the engine's object query system
-    // For now, we'll simulate it - in a full implementation,
-    // you'd query the engine for nearby players
+    // For now, return empty array - in a turn-based game, 
+    // enemy detection will be handled by the turn manager
+    // which will provide player positions when needed
     return []
   }
 
-  private chasePlayer(self: GameObject, player: GameObject): void {
-    self.setVariable('chasing', true)
+  /**
+   * Execute one turn of movement for this enemy
+   * Called by the turn manager during enemy turn
+   */
+  public executeTurn(gameBoard: any): boolean {
+    const isChasing = this.getVariable('chasing')
     
-    const dx = Math.sign(player.x - self.x)
-    const dy = Math.sign(player.y - self.y)
-    const speed = self.getVariable('moveSpeed')
-    
-    const newX = self.x + dx * speed
-    const newY = self.y + dy * speed
-    
-    // Boundary checking
-    if (newX >= 0 && newX < 20 && newY >= 0 && newY < 15) {
-      self.setPosition(newX, newY)
+    if (isChasing) {
+      return this.moveTowardsTarget(gameBoard)
+    } else {
+      return this.executePatrolMove(gameBoard)
     }
   }
 
-  private patrol(self: GameObject): void {
-    self.setVariable('chasing', false)
+  private moveTowardsTarget(gameBoard: any): boolean {
+    const targetX = this.getVariable('targetX')
+    const targetY = this.getVariable('targetY')
     
-    const direction = self.getVariable('patrolDirection')
-    const speed = 0.3
-    let dx = 0, dy = 0
+    if (targetX === undefined || targetY === undefined) return false
     
+    // Calculate one step towards target (grid-based)
+    const currentX = Math.floor(this.x)
+    const currentY = Math.floor(this.y)
+    
+    let newX = currentX
+    let newY = currentY
+    
+    // Move one grid cell towards target
+    if (currentX < targetX) newX++
+    else if (currentX > targetX) newX--
+    else if (currentY < targetY) newY++
+    else if (currentY > targetY) newY--
+    
+    // Check if the move is valid
+    if (this.isValidMove(newX, newY, gameBoard)) {
+      this.setPosition(newX, newY)
+      console.log(`Enemy chasing: moved to (${newX}, ${newY})`)
+      return true
+    }
+    
+    return false
+  }
+
+  private executePatrolMove(gameBoard: any): boolean {
+    const direction = this.getVariable('patrolDirection')
+    const currentX = Math.floor(this.x)
+    const currentY = Math.floor(this.y)
+    
+    let newX = currentX
+    let newY = currentY
+    
+    // Move one grid cell in patrol direction
     switch (direction) {
-      case 0: dy = -speed; break // Up
-      case 1: dx = speed; break  // Right
-      case 2: dy = speed; break  // Down
-      case 3: dx = -speed; break // Left
+      case 0: newY--; break // Up
+      case 1: newX++; break // Right
+      case 2: newY++; break // Down
+      case 3: newX--; break // Left
     }
     
-    const newX = self.x + dx
-    const newY = self.y + dy
-    
-    // Boundary checking and direction change on collision
-    if (newX >= 0 && newX < 20 && newY >= 0 && newY < 15) {
-      self.setPosition(newX, newY)
+    // Check if the move is valid
+    if (this.isValidMove(newX, newY, gameBoard)) {
+      this.setPosition(newX, newY)
+      console.log(`Enemy patrolling: moved to (${newX}, ${newY})`)
+      return true
     } else {
-      // Hit boundary, change direction
-      self.setVariable('patrolDirection', (direction + 1) % 4)
+      // Hit obstacle or boundary, change direction
+      this.setVariable('patrolDirection', (direction + 1) % 4)
+      return false
     }
+  }
+
+  private isValidMove(x: number, y: number, gameBoard: any): boolean {
+    // Check bounds
+    if (x < 0 || x >= 20 || y < 0 || y >= 15) {
+      return false
+    }
+    
+    // Check if position is walkable on the game board
+    if (gameBoard && typeof gameBoard.isWalkable === 'function') {
+      if (!gameBoard.isWalkable(x, y)) {
+        return false
+      }
+    }
+
+    // TODO: Check if another enemy is already at this position
+    // This would require access to the game engine to query other objects
+    // For now, enemies can overlap but this could be improved
+    
+    return true
   }
 
   private attackPlayer(self: GameObject, player: GameObject): void {
@@ -125,7 +178,13 @@ export class Enemy extends GameObject {
     const lastAttackTime = self.getVariable('lastAttackTime')
     const attackCooldown = 1000 // 1 second cooldown
     
-    if (currentTime - lastAttackTime >= attackCooldown) {
+    // Check if enemies are on the same grid cell as player
+    const enemyX = Math.floor(self.x)
+    const enemyY = Math.floor(self.y)
+    const playerX = Math.floor(player.x)
+    const playerY = Math.floor(player.y)
+    
+    if (enemyX === playerX && enemyY === playerY && currentTime - lastAttackTime >= attackCooldown) {
       const damage = self.getVariable('attackPower')
       console.log(`Enemy attacks player for ${damage} damage!`)
       
@@ -161,5 +220,23 @@ export class Enemy extends GameObject {
 
   public getEnemyType(): string {
     return this.getVariable('enemyType') || 'guard'
+  }
+
+  /**
+   * Set the target position for this enemy (called by turn manager)
+   */
+  public setTarget(targetX: number, targetY: number): void {
+    this.setVariable('chasing', true)
+    this.setVariable('targetX', targetX)
+    this.setVariable('targetY', targetY)
+  }
+
+  /**
+   * Clear the target (no player in range)
+   */
+  public clearTarget(): void {
+    this.setVariable('chasing', false)
+    this.setVariable('targetX', undefined)
+    this.setVariable('targetY', undefined)
   }
 }

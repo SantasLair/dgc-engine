@@ -369,8 +369,8 @@ export class PixiRenderer implements IRenderer {
     
     this.app.stage.on('pointerdown', (event: any) => {
       const globalPos = event.global
-      const gridPos = this.screenToGrid(globalPos.x, globalPos.y)
-      onPointerDown(gridPos)
+      // Pass screen coordinates to the callback, let Game handle conversion
+      onPointerDown({ x: globalPos.x, y: globalPos.y })
     })
   }
 

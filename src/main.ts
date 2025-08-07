@@ -15,6 +15,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   
   console.log('Canvas found, initializing game...')
+  
+  // Ensure the page can receive keyboard events
+  document.body.tabIndex = 0
+  canvas.tabIndex = 0
+  document.body.focus()
+  
+  // Add click handler to ensure focus for keyboard events
+  canvas.addEventListener('click', () => {
+    canvas.focus()
+  })
+  
   try {
     const game = new Game(canvas)
     

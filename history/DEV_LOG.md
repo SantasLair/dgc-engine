@@ -81,6 +81,15 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Features**: Auto-detection of project context, batched terminal commands, standardized commit patterns
 - **Commits**: `8e719fd` to `a3c5ac1`
 
+### [Session 12: Basic Movement System Fix (August 6, 2025)](./sessions/00012-movement-fix.md) 🎮
+**Input System Resolution** - Fixed critical keyboard input timing bug for player movement
+- **Key Achievement**: Resolved keyboard input pipeline issue preventing player movement
+- **Technology**: GameEngine update loop timing fix + Event processing order + Debug pipeline
+- **Critical Fix**: InputManager state clearing before event processing - order corrected
+- **Features**: WASD/Arrow key movement, R key reset, turn-based mechanics fully functional
+- **Debugging**: Systematic pipeline analysis revealing timing bug in update loop
+- **Commits**: `TBD`
+
 ---
 
 ## Current State (August 6, 2025)
@@ -96,6 +105,8 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - ✅ **GameMaker Conventions**: Familiar structure and patterns
 - ✅ **GML Compatibility Layer**: Copy-paste GameMaker ds_grid code support
 - ✅ **Dual Coding Paradigms**: Modern TypeScript + Classic GML syntax
+- ✅ **Player Movement System**: WASD/Arrow key controls with turn-based mechanics
+- ✅ **Input Processing**: Keyboard and mouse input handling with proper event timing
 
 **Coding Approaches Available:**
 1. **Modern TypeScript**: `grid.set(x, y, value)` with full type safety
@@ -155,7 +166,8 @@ Single File → Modular → Engine Framework → GameMaker Conventions → GML C
 6. **Developer Choice**: Providing options increases adoption and developer comfort
 
 ### Success Metrics ✅
-- **Functionality**: Full turn-based game operational with comprehensive features
+- **Functionality**: Full turn-based game operational with working player movement controls
+- **Input System**: Keyboard controls (WASD/arrows) and mouse input fully functional
 - **Architecture**: Professional, extensible engine with enterprise patterns
 - **Documentation**: Comprehensive guides covering all aspects and phases
 - **Organization**: Perfect GameMaker-style structure and conventions
@@ -163,6 +175,7 @@ Single File → Modular → Engine Framework → GameMaker Conventions → GML C
 - **Performance**: Hardware-accelerated Pixi.js rendering with optimization
 - **Compatibility**: GameMaker ds_grid code copy-paste support
 - **Developer Choice**: Multiple coding paradigms supported simultaneously
+- **Debugging**: Robust debugging pipeline for input and timing issues
 
 ---
 

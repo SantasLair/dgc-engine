@@ -28,34 +28,27 @@ export class GameRoom extends Room {
    * Called when the room is created/activated
    */
   private async onCreateRoom(): Promise<void> {
-    console.log('Game room created!')
+    console.log('🏠 GameRoom: onCreateRoom() called')
     
     // Create the game board as a GameObject within this room
+    console.log('🏠 GameRoom: Creating GameBoard...')
     const gameBoard = new GameBoard(20, 15)
     this.game.addGameObject(gameBoard)
     this.game.setGameBoard(gameBoard)
+    console.log('🏠 GameRoom: GameBoard created and set')
     
     // Create the player at starting position
+    console.log('🏠 GameRoom: Creating Player at (0, 0)...')
     const player = new Player(0, 0)
+    console.log('🏠 GameRoom: Player instance created, adding to game...')
     this.game.addGameObject(player)
     this.game.setPlayer(player)
+    console.log('🏠 GameRoom: Player added and set successfully')
     
-    // Set up player input handling
-    player.addEventScript(GameEvent.STEP, (self) => {
-      const engine = this.game.getEngine()
-      if (!engine) return
-
-      const playerObj = self as Player
-      
-      if (engine.isKeyJustPressed('ArrowUp') || engine.isKeyJustPressed('w')) {
-        playerObj.move(0, -1)
-      } else if (engine.isKeyJustPressed('ArrowDown') || engine.isKeyJustPressed('s')) {
-        playerObj.move(0, 1)
-      } else if (engine.isKeyJustPressed('ArrowLeft') || engine.isKeyJustPressed('a')) {
-        playerObj.move(-1, 0)
-      } else if (engine.isKeyJustPressed('ArrowRight') || engine.isKeyJustPressed('d')) {
-        playerObj.move(1, 0)
-      }
+    // Set up player for turn-based movement (no keyboard controls)
+    player.addEventScript(GameEvent.STEP, (_self) => {
+      // Player logic here (if needed)
+      // No movement controls - movement is handled by mouse clicks in turn-based system
     })
     
     // Add custom draw event to trigger renderer updates
@@ -65,12 +58,17 @@ export class GameRoom extends Room {
     
     // Setup initial game content (enemies, items, etc.)
     this.game.setupInitialContent()
+
+    // Initialize turn manager for turn-based gameplay
+    this.game.resetTurnManager()
     
     // Create game UI
     this.createGameUI()
     
     // Initial render
     this.game.updateGameRenderer()
+    
+    console.log('Turn-based system initialized! Click to move player.')
   }
 
   /**
@@ -121,7 +119,18 @@ export class GameRoom extends Room {
       border-radius: 8px;
       font-family: Arial, sans-serif;
       z-index: 100;
+      min-width: 200px;
     `
+    
+    // Add turn information
+    const turnInfo = document.createElement('div')
+    turnInfo.innerHTML = `
+      <h3 style="margin: 0 0 10px 0; color: #4CAF50;">Turn-Based Game</h3>
+      <p style="margin: 5px 0;"><span id="turnStatus">Your Turn</span></p>
+      <p style="margin: 5px 0;">Turn: <span id="currentTurn">1</span></p>
+      <hr style="margin: 10px 0; border: 1px solid #555;">
+    `
+    this.gameUI.appendChild(turnInfo)
     
     // Create back to menu button
     const backButton = document.createElement('button')
@@ -135,6 +144,7 @@ export class GameRoom extends Room {
       border-radius: 5px;
       cursor: pointer;
       transition: background-color 0.3s;
+      width: 100%;
     `
 
     backButton.addEventListener('mouseenter', () => {
@@ -156,6 +166,39 @@ export class GameRoom extends Room {
     
     // Add to page
     document.body.appendChild(this.gameUI)
+    
+    // Update turn info periodically
+    setInterval(() => {
+      this.updateTurnDisplay()
+    }, 100)
+  }
+
+  /**
+   * Update the turn display in the UI
+   */
+  private updateTurnDisplay(): void {
+    const turnManager = this.game.getTurnManager()
+    const player = this.game.getPlayer()
+    const turnStatus = document.getElementById('turnStatus')
+    const currentTurn = document.getElementById('currentTurn')
+    
+    if (turnStatus) {
+      // Check if player is currently moving
+      if (player && player.getVariable('isMoving')) {
+        turnStatus.textContent = 'Player Moving...'
+        turnStatus.style.color = '#2196F3' // Blue color for player movement
+      } else if (turnManager.isPlayersTurn()) {
+        turnStatus.textContent = 'Your Turn'
+        turnStatus.style.color = '#4CAF50'
+      } else {
+        turnStatus.textContent = 'Enemies Moving...'
+        turnStatus.style.color = '#ff9800'
+      }
+    }
+    
+    if (currentTurn) {
+      currentTurn.textContent = turnManager.getTurnNumber().toString()
+    }
   }
 
   /**

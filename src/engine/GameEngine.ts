@@ -26,6 +26,11 @@ class InputManager {
   private setupEventListeners(): void {
     // Keyboard events
     window.addEventListener('keydown', (e) => {
+      // Prevent default behavior for game control keys
+      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        e.preventDefault()
+      }
+      
       if (!this.keysPressed.has(e.code)) {
         this.keysJustPressed.add(e.code)
       }
@@ -33,6 +38,11 @@ class InputManager {
     })
     
     window.addEventListener('keyup', (e) => {
+      // Prevent default behavior for game control keys
+      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        e.preventDefault()
+      }
+      
       this.keysPressed.delete(e.code)
       this.keysJustReleased.add(e.code)
     })
@@ -257,11 +267,11 @@ export class GameEngine {
    * Update all engine systems
    */
   private async update(): Promise<void> {
-    // Update input
-    this.inputManager.update()
-    
-    // Process input events
+    // Process input events BEFORE clearing the input state
     this.processInputEvents()
+    
+    // Update input (this clears the "just pressed" states)
+    this.inputManager.update()
     
     // Update game objects
     this.gameObjectManager.update(this.deltaTime)
@@ -285,12 +295,13 @@ export class GameEngine {
    */
   private processInputEvents(): void {
     // Check for key events
-    for (const key of ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']) {
+    for (const key of ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']) {
       if (this.inputManager.isKeyJustPressed(key)) {
         this.eventManager.emitGlobalEvent('key_pressed', { key })
         
         // Send to all objects with key event handlers
-        for (const obj of this.gameObjectManager.getAllObjects()) {
+        const objects = this.gameObjectManager.getAllObjects()
+        for (const obj of objects) {
           this.eventManager.queueObjectEvent(obj, GameEvent.KEY_PRESSED, { key })
         }
       }
