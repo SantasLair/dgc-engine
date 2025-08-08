@@ -22,17 +22,8 @@ export abstract class DGCGame {
     const userConfig = this.getEngineConfig()
     const config = createDGCEngineConfig(userConfig, canvas)
     
-    // Calculate and set canvas dimensions based on grid configuration
-    const canvasWidth = config.gridWidth * config.cellSize + (config.gridOffset.x * 2)
-    const canvasHeight = config.gridHeight * config.cellSize + (config.gridOffset.y * 2)
-    
-    // Set canvas dimensions for proper scaling reference
-    this.canvas.width = canvasWidth
-    this.canvas.height = canvasHeight
-    
-    console.log(`🎮 Canvas dimensions set to ${canvasWidth}x${canvasHeight}`)
-    console.log(`🎮 Grid: ${config.gridWidth}x${config.gridHeight}, Cell: ${config.cellSize}px, Offset: ${config.gridOffset.x}x${config.gridOffset.y}`)
-    console.log(`🎮 Actual canvas element size: ${this.canvas.width}x${this.canvas.height}`)
+    // Let the game configure canvas dimensions
+    this.configureCanvas(config)
     
     this.engine = new DGCEngine(config)
     
@@ -55,6 +46,18 @@ export abstract class DGCGame {
   protected abstract getEngineConfig(): DGCEngineConfig
 
   /**
+   * Configure canvas dimensions - can be overridden by subclasses
+   */
+  protected configureCanvas(_config: Required<DGCEngineConfig>): void {
+    // Default implementation - set canvas to a reasonable size if not specified
+    if (!this.canvas.width || !this.canvas.height) {
+      this.canvas.width = 800
+      this.canvas.height = 600
+    }
+    console.log(`🎮 Canvas dimensions: ${this.canvas.width}x${this.canvas.height}`)
+  }
+
+  /**
    * Setup game-specific logic after engine creation
    * Override this method to add your game objects, event handlers, etc.
    */
@@ -67,9 +70,7 @@ export abstract class DGCGame {
     try {
       console.log('🎮 Starting DGC Game initialization...')
       
-      // Initialize the engine
-      await this.engine.initialize()
-      
+      // Engine is already initialized in constructor
       // Setup game-specific logic
       await this.setupGame()
       
@@ -199,34 +200,6 @@ export abstract class DGCGame {
    */
   public isMouseButtonJustReleased(button: number): boolean {
     return this.engine.getInputManager().isMouseButtonJustReleased(button)
-  }
-
-  /**
-   * Convert grid X coordinate to screen X coordinate - GameMaker style
-   */
-  public gridToScreenX(gridX: number): number {
-    return this.engine.gridToScreenX(gridX)
-  }
-
-  /**
-   * Convert grid Y coordinate to screen Y coordinate - GameMaker style
-   */
-  public gridToScreenY(gridY: number): number {
-    return this.engine.gridToScreenY(gridY)
-  }
-
-  /**
-   * Convert screen X coordinate to grid X coordinate - GameMaker style
-   */
-  public screenToGridX(screenX: number): number {
-    return this.engine.screenToGridX(screenX)
-  }
-
-  /**
-   * Convert screen Y coordinate to grid Y coordinate - GameMaker style
-   */
-  public screenToGridY(screenY: number): number {
-    return this.engine.screenToGridY(screenY)
   }
 
   /**

@@ -1,17 +1,18 @@
-import { DGCGame, type DGCEngineConfig } from '../engine'
+import { GridGame } from './GridGame'
+import type { GridGameConfig } from './GridGameConfig'
 import { GameRoom, MenuRoom } from './rooms'
 
 /**
  * Main game class with room management functionality
  */
-export class Game extends DGCGame {
+export class Game extends GridGame {
   private currentRoomName: string = 'game'
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
   }
 
-  public getEngineConfig(): DGCEngineConfig {
+  public getGridConfig(): GridGameConfig {
     return {
       gridWidth: 20,
       gridHeight: 15,

@@ -5,18 +5,19 @@
  * traditional custom room classes.
  */
 
-import { DGCGame, type DGCEngineConfig } from '../engine'
+import { GridGame } from './GridGame'
+import type { GridGameConfig } from './GridGameConfig'
 import { GameRoom, MenuRoom } from './rooms'
 import { Player, Enemy, GameBoard } from './gameobjects'
 
-export class EnhancedGame extends DGCGame {
+export class EnhancedGame extends GridGame {
   private currentRoomName: string = 'sprite_demo' // Changed to test sprite demo directly
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
   }
 
-  public getEngineConfig(): DGCEngineConfig {
+  public getGridConfig(): GridGameConfig {
     return {
       gridWidth: 20,
       gridHeight: 15,
