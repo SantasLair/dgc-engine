@@ -1,92 +1,125 @@
-# GameMaker-Style Object Instance Access
+# Accessing Object Instances
 
-The DGC Engine now supports GameMaker's exact behavior for accessing instance properties through object references.
+Learn how to find and modify specific objects in your game, using the same syntax as GameMaker Studio.
 
-## GameMaker Behavior
+## What This Lets You Do
 
-In GameMaker Studio:
-```gml
-// Access instance property through object reference
-var menu_x = obj_menu.x;  // Gets the first instance's x position
-obj_menu.y = 100;         // Sets the first instance's y position
-```
+Sometimes you need to check or change properties of objects from other parts of your game. For example:
+- Check where the player is from an enemy's code
+- Move all enemies when the player does something special  
+- Get the health of the boss enemy from the UI
 
-## DGC Engine Equivalent
+DGC Engine lets you do this exactly like GameMaker Studio.
+
+## Basic Usage
+
+### Get an Object's Property
+Find out information about any object in your game:
 
 ```typescript
-// GameMaker: obj_menu.x
+// GameMaker style: obj_menu.x
 const menuX = GameObject.getInstanceProperty('Menu', 'x')
+const playerHealth = GameObject.getInstanceProperty('Player', 'health')
+const bossPosition = GameObject.getInstanceProperty('Boss', 'y')
+```
 
-// GameMaker: obj_menu.y = 100
+### Change an Object's Property  
+Modify any object from anywhere in your code:
+
+```typescript
+// GameMaker style: obj_menu.y = 100
 GameObject.setInstanceProperty('Menu', 'y', 100)
+GameObject.setInstanceProperty('Player', 'health', 50)
+GameObject.setInstanceProperty('Enemy', 'speed', 0) // Stop all enemies
 ```
 
-## Exact GameMaker Behavior Matching
+## How It Works with Multiple Objects
 
-### ❌ **Zero Instances**
-- **GameMaker**: Throws "Unable to find instance for object index" error
-- **DGC Engine**: Throws "Unable to find instance for object type" error
-
-### ✅ **One Instance** 
-- **GameMaker**: Returns that instance's property value
-- **DGC Engine**: Returns that instance's property value
-
-### 📋 **Multiple Instances**
-- **GameMaker**: Returns the **first instance's** property value
-- **DGC Engine**: Returns the **first instance's** property value
-
-## Supported Properties
-
-All GameMaker built-in instance properties are supported:
-
-### Built-in Properties
-- `x`, `y` - Position coordinates
-- `visible` - Visibility state
-- `active` - Active state
-- `depth` - Rendering depth
-- `solid` - Collision solid state
-- `persistent` - Room persistence
-- `sprite` - Sprite reference
-- `imageIndex`, `imageSpeed`, `imageAngle` - Image properties
-- `imageXScale`, `imageYScale`, `imageAlpha` - Transform properties
-
-### Custom Variables
-- Any custom variable set with `setVariable()` can be accessed
-
-## Usage Examples
-
+### One Object = Simple
+If there's only one Player object, you get that player's health:
 ```typescript
-// Create instances
-const menu1 = gameObjectManager.createObject('Menu', 100, 50)
-const menu2 = gameObjectManager.createObject('Menu', 200, 100)
-
-menu1.setVariable('title', 'Main Menu')
-menu2.setVariable('title', 'Settings')
-
-// Access first instance through object reference (GameMaker style)
-const x = GameObject.getInstanceProperty('Menu', 'x')          // 100 (menu1's x)
-const title = GameObject.getInstanceProperty('Menu', 'title')  // "Main Menu" (menu1's title)
-
-// Modify first instance through object reference
-GameObject.setInstanceProperty('Menu', 'x', 150)               // Changes menu1.x to 150
-GameObject.setInstanceProperty('Menu', 'title', 'Updated')     // Changes menu1's title
-
-console.log(menu1.x)  // 150 (changed)
-console.log(menu2.x)  // 200 (unchanged - not the first instance)
+const health = GameObject.getInstanceProperty('Player', 'health') // Gets THE player's health
 ```
 
-## Error Handling
-
-Just like GameMaker, trying to access properties when no instances exist throws an error:
-
+### Multiple Objects = Gets the First One
+If there are multiple Enemy objects, you get the first enemy's position:
 ```typescript
-// No Menu instances exist
-try {
-    const x = GameObject.getInstanceProperty('Menu', 'x')
-} catch (error) {
-    // "Unable to find instance for object type 'Menu'"
-    console.log(error.message)
+const enemyX = GameObject.getInstanceProperty('Enemy', 'x') // Gets the FIRST enemy's x
+```
+
+This matches GameMaker's behavior exactly!
+
+## What Properties You Can Access
+
+### Built-in Object Properties
+These are the basic properties every object has:
+- **Position**: `x`, `y` - Where the object is located
+- **Visibility**: `visible` - Whether you can see the object  
+- **Activity**: `active` - Whether the object is doing anything
+- **Rendering**: `depth` - Which objects appear in front/behind
+- **Collision**: `solid` - Whether other objects can move through this one
+- **Persistence**: `persistent` - Whether object survives room changes
+- **Sprite Info**: `sprite`, `imageIndex`, `imageSpeed`, `imageAngle` - How it looks
+- **Scaling**: `imageXScale`, `imageYScale`, `imageAlpha` - Size and transparency
+
+### Your Custom Variables
+Any variables you created with `setVariable()` can also be accessed this way!
+
+## 💡 Practical Examples
+
+### Checking Player Status from Enemy Code
+```typescript
+// Enemy wants to know where the player is
+const playerX = GameObject.getInstanceProperty('Player', 'x')
+const playerY = GameObject.getInstanceProperty('Player', 'y')
+const playerHealth = GameObject.getInstanceProperty('Player', 'health')
+
+// Now enemy can react to player's condition
+if (playerHealth < 25) {
+    // Player is weak - attack more aggressively!
 }
 ```
 
-This provides **100% compatible behavior** with GameMaker Studio's object instance access patterns!
+### UI Reading Game State
+```typescript
+// Health bar needs to show current player health
+const currentHealth = GameObject.getInstanceProperty('Player', 'health')
+const maxHealth = GameObject.getInstanceProperty('Player', 'maxHealth')
+
+// Update health bar display
+updateHealthBar(currentHealth, maxHealth)
+```
+
+### Boss Fight Controller
+```typescript
+// Check if boss still exists
+try {
+    const bossHealth = GameObject.getInstanceProperty('Boss', 'health')
+    if (bossHealth <= 0) {
+        // Boss defeated - start victory sequence!
+        room_goto('victory')
+    }
+} catch (error) {
+    // No boss exists - maybe already defeated
+    console.log('Boss not found')
+}
+```
+
+## ⚠️ Important Notes
+
+### No Objects = Error (Just Like GameMaker!)
+If you try to access an object that doesn't exist, you'll get an error:
+
+```typescript
+// If no Menu objects exist in the room
+try {
+    const x = GameObject.getInstanceProperty('Menu', 'x')
+} catch (error) {
+    console.log('No Menu found!') // "Unable to find instance for object type 'Menu'"
+}
+```
+
+### Multiple Objects = First One Wins
+This is exactly how GameMaker works - if you have 5 enemies, you'll always get the first enemy's properties.
+
+This system gives you **100% GameMaker-compatible** object access!

@@ -1,68 +1,127 @@
-# GameMaker Object Variable Access Patterns
+# Object Variables
 
-In GameMaker, you can access object variables directly from the object type, not just from instances.
+Learn how to create shared variables that affect all objects of the same type, just like in GameMaker Studio.
 
-## GameMaker GML Examples
+## What Are Object Variables?
 
-```gml
-// Set object variable (affects ALL Player instances)
-obj_Player.max_level = 50;
-obj_Player.base_speed = 5;
+Object variables are shared settings that apply to **all** objects of the same type. Think of them as "rules" or "settings" for an entire object type.
 
-// Read object variable directly from object
-var player_max = obj_Player.max_level;  // Returns 50
-var undefined_var = obj_Player.some_undefined_var;  // Returns undefined/0
+**Examples of when to use object variables:**
+- Maximum health that applies to all players
+- Movement speed limit for all enemies  
+- Damage amount for all bullets
+- Game rules that affect all objects of a type
 
-// From within an instance, you can still access object variables
-// (Inside a Player instance's Step event)
-if (level > obj_Player.max_level) {
-    // Do something when instance level exceeds object max_level
-}
-```
+## How Object Variables Work
 
-## DGC Engine Equivalent
+### Setting Object Variables
+Create a shared value that ALL objects of that type will use:
 
 ```typescript
-// Set object variables (affects ALL Player instances)
+// All Player objects will share these values
 GameObject.setObjectVariable('Player', 'maxLevel', 50)
 GameObject.setObjectVariable('Player', 'baseSpeed', 5)
 
-// Read object variable directly from object type
+// All Enemy objects will share these values  
+GameObject.setObjectVariable('Enemy', 'attackDamage', 25)
+GameObject.setObjectVariable('Enemy', 'detectionRange', 100)
+```
+
+### Reading Object Variables
+Any object can check the shared values for its type:
+
+```typescript
+// Get shared values (works from anywhere in your code)
 const playerMax = GameObject.getObjectVariable('Player', 'maxLevel')  // 50
-const undefinedVar = GameObject.getObjectVariable('Player', 'someUndefinedVar')  // undefined
+const enemyDamage = GameObject.getObjectVariable('Enemy', 'attackDamage')  // 25
+```
 
-// Check if object variable exists
-const hasMaxLevel = GameObject.hasObjectVariable('Player', 'maxLevel')  // true
-const hasUndefined = GameObject.hasObjectVariable('Player', 'someUndefinedVar')  // false
+### From Inside an Object
+Objects can access their own type's shared variables:
 
-// From within an instance, you can access both ways
+```typescript
+// Inside a Player object's code
 const player = new GameObject('Player')
 player.setVariable('level', 25)
 
-// Access object variable from instance (GameMaker style)
-const maxLevelFromInstance = player.getObjectVariable('maxLevel')  // 50
-
-// Or use the fallback behavior (instance first, then object)
-const maxLevelFallback = player.getVariable('maxLevel')  // 50 (falls back to object)
-
-// Instance variable overrides object variable
-player.setVariable('maxLevel', 100)  // Instance-specific override
-const instanceMax = player.getVariable('maxLevel')  // 100 (instance override)
-const objectMax = player.getObjectVariable('maxLevel')  // 50 (still the object value)
+// Check against the shared maximum level
+const maxLevel = player.getObjectVariable('maxLevel')  // 50
+if (player.getVariable('level') > maxLevel) {
+    // Player exceeded the shared maximum!
+}
 ```
+## Personal Variables Override Object Variables
 
-## Key Differences from GameMaker
+If an object has both a personal variable and an object variable with the same name, the personal one is used:
 
-### GameMaker Syntax:
-```gml
-obj_Player.max_level = 50;        // Set object variable
-var value = obj_Player.max_level; // Get object variable
-```
-
-### DGC Engine Syntax:
 ```typescript
-GameObject.setObjectVariable('Player', 'maxLevel', 50)      // Set object variable
-const value = GameObject.getObjectVariable('Player', 'maxLevel')  // Get object variable
+// Set shared value for all Players
+GameObject.setObjectVariable('Player', 'maxLevel', 50)
+
+// Give one specific player a different max level
+player.setVariable('maxLevel', 100)  // Personal override
+
+// Now that player uses their personal value
+const personalMax = player.getVariable('maxLevel')  // 100 (personal)
+const objectMax = player.getObjectVariable('maxLevel')  // 50 (shared)
 ```
+
+## 💡 Practical Examples
+
+### Game Balance Settings
+```typescript
+// Set damage values for all weapon types
+GameObject.setObjectVariable('Sword', 'baseDamage', 10)
+GameObject.setObjectVariable('Bow', 'baseDamage', 8)
+GameObject.setObjectVariable('Magic', 'baseDamage', 15)
+
+// Easy to rebalance the entire game
+GameObject.setObjectVariable('Sword', 'baseDamage', 12)  // Buff all swords
+```
+
+### Enemy AI Settings
+```typescript
+// All zombies share the same behavior rules
+GameObject.setObjectVariable('Zombie', 'detectionRange', 100)
+GameObject.setObjectVariable('Zombie', 'moveSpeed', 2)
+GameObject.setObjectVariable('Zombie', 'attackDamage', 20)
+
+// Individual zombies can have different health
+zombie1.setVariable('health', 50)
+zombie2.setVariable('health', 75)
+```
+
+### Player Progression System
+```typescript
+// Shared level progression rules
+GameObject.setObjectVariable('Player', 'maxLevel', 100)
+GameObject.setObjectVariable('Player', 'xpPerLevel', 1000)
+
+// Each player tracks their own progress
+player.setVariable('currentLevel', 5)
+player.setVariable('currentXP', 250)
+
+// Check if player can level up
+const currentXP = player.getVariable('currentXP')
+const xpNeeded = player.getObjectVariable('xpPerLevel')
+if (currentXP >= xpNeeded) {
+    // Level up!
+}
+```
+
+## Different Object Types Are Separate
+
+Each object type has its own set of object variables:
+
+```typescript
+GameObject.setObjectVariable('Player', 'maxHealth', 100)
+GameObject.setObjectVariable('Enemy', 'maxHealth', 50)
+
+// These don't affect each other
+const playerHealth = GameObject.getObjectVariable('Player', 'maxHealth')  // 100
+const enemyHealth = GameObject.getObjectVariable('Enemy', 'maxHealth')    // 50
+```
+
+This works exactly like GameMaker Studio's object variable system!
 
 The behavior is the same, but our syntax is more explicit about the object type since TypeScript doesn't have GameMaker's object naming conventions.

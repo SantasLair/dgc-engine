@@ -1,73 +1,94 @@
-# Options Button Implementation
+# Menu System Guide
 
-The MenuRoom now supports two different styles for the Options button to handle the "coming soon" state gracefully.
+Learn how to create game menus with options buttons and settings screens.
 
-## Available Styles
+## What You Can Do
 
-### 1. Interactive Popup (`'popup'`)
-- **Appearance**: Blue button with hover effects
-- **Behavior**: Opens a detailed options popup with placeholder settings
-- **Features**: 
-  - Comprehensive options sections (Audio, Graphics, Controls)
-  - Disabled controls with "Coming Soon" notice
-  - Professional-looking modal dialog
-  - Click outside to close functionality
+The DGC Engine menu system lets you create professional-looking game menus with options buttons. You can choose between two different styles depending on whether your options are ready or still being developed.
 
-### 2. Grayed Out (`'grayed'`)
-- **Appearance**: Gray/disabled styling with reduced opacity
-- **Behavior**: Button is disabled and shows tooltip on hover
-- **Features**:
-  - Clearly indicates unavailability
-  - Tooltip explains "Options are not available yet"
-  - Non-interactive (cursor: not-allowed)
+## Options Button Styles
 
-## Configuration
+### 1. Interactive Options (`'popup'`)
+**When to use**: Your game options are ready and functional
 
-To switch between styles, modify the `optionsStyle` property in `MenuRoom.ts`:
+- **Look**: Blue button that highlights when you hover over it
+- **Behavior**: Opens a detailed options popup with all your game settings
+- **What's included**: 
+  - Audio settings (Master Volume, Sound Effects, Music)
+  - Graphics settings (Resolution, Fullscreen, VSync)
+  - Control settings
+  - Professional modal dialog that closes when you click outside
+
+### 2. Coming Soon Style (`'grayed'`)
+**When to use**: Your options aren't ready yet but you want to show the button
+
+- **Look**: Gray/disabled button that clearly shows it's not available
+- **Behavior**: Shows "Options are not available yet" when you hover over it
+- **What happens**: Button can't be clicked (cursor shows "not allowed")
+
+## How to Set It Up
+
+In your menu room file, find this line and change it to the style you want:
 
 ```typescript
-// For interactive popup
+// For working options popup
 private optionsStyle: 'popup' | 'grayed' = 'popup'
 
-// For grayed-out button
+// For "coming soon" button
 private optionsStyle: 'popup' | 'grayed' = 'grayed'
 ```
 
-## Popup Features
+## What's in the Options Popup
 
-When using the `'popup'` style, the options dialog includes:
+When you use the `'popup'` style, players get a full options screen with:
 
 ### Audio Settings
 - Master Volume (0-100%)
 - Sound Effects Volume (0-100%)
 - Music Volume (0-100%)
 
+### Audio Settings
+- **Master Volume**: Control overall game volume (0-100%)
+- **Sound Effects**: Control sound effects volume (0-100%)  
+- **Music Volume**: Control background music volume (0-100%)
+
 ### Graphics Settings
-- Resolution dropdown (1920x1080, 1366x768, 1280x720)
-- Fullscreen toggle
-- VSync toggle
+- **Resolution**: Choose screen resolution (1920x1080, 1366x768, 1280x720)
+- **Fullscreen**: Toggle between windowed and fullscreen mode
+- **VSync**: Enable/disable vertical sync for smoother graphics
 
 ### Control Settings
-- Mouse Sensitivity (0-100%)
-- Invert Y-Axis toggle
+- **Mouse Sensitivity**: Adjust how fast the mouse moves (0-100%)
+- **Invert Y-Axis**: Flip mouse up/down movement
 
-All settings are currently disabled with a "Coming Soon" notice, but the UI framework is ready for future implementation.
+## 💡 Tips for Developers
 
-## Implementation Notes
+### Starting with "Coming Soon"
+If you're just starting development, use the `'grayed'` style first. This lets players know options will be available later without showing empty functionality.
 
-- The popup uses high z-index (3000) to appear above all other content
-- All styles use `!important` to prevent CSS conflicts
-- The popup is fully accessible with keyboard navigation
-- Mobile-responsive design with percentage-based widths
-- Clean, modern styling that matches the game's aesthetic
+### Making Options Work
+When you're ready to add real functionality:
 
-## Future Development
+1. Switch to `'popup'` style
+2. Connect each setting to your game's settings system
+3. The popup framework is already built - just add your functionality!
 
-When implementing actual options functionality:
+### Customizing the Look
+The options popup is designed to match your game's style. All the styling is ready to customize with your game's colors and fonts.
 
-1. Remove the `disabled: true` flags from option controls
-2. Add event handlers for each control
-3. Connect to game settings system
+## 🎮 Example Usage
+
+```typescript
+// In your MenuRoom.ts file:
+
+// Show working options
+private optionsStyle: 'popup' | 'grayed' = 'popup'
+
+// Show "coming soon" options  
+private optionsStyle: 'popup' | 'grayed' = 'grayed'
+```
+
+The menu system handles everything automatically - just choose your style and you're ready to go!
 4. Remove the "Coming Soon" notice
 5. Add save/cancel functionality
 

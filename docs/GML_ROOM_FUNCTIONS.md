@@ -1,114 +1,109 @@
-# GML Room Functions
+# Room Navigation Guide
 
-The DGC Engine includes a GameMaker Language (GML) compatibility layer for room management. This allows GameMaker developers to use familiar room navigation functions.
+Learn how to move between different areas (rooms) in your game, just like in GameMaker Studio.
 
-## Available Functions
+## What are Rooms?
 
-### room_goto(room)
-Switch to a different room by name or index.
+Rooms are different areas or screens in your game - like a main menu, game level, or settings screen. The DGC Engine lets you switch between rooms using the same functions you know from GameMaker.
+
+## Moving Between Rooms
+
+### Go to a Specific Room
+Switch to any room by using its name:
 
 ```typescript
-// Switch by room name
-await room_goto('game')
-await room_goto('menu')
-
-// Switch by room index (0 = menu, 1 = game, etc.)
-await room_goto(0)  // Go to menu
-await room_goto(1)  // Go to game
+await room_goto('game')    // Go to the game room
+await room_goto('menu')    // Go to the menu room
+await room_goto('level1')  // Go to level 1
 ```
 
-### room_restart()
-Restart the current room (reload it from scratch).
+You can also use room numbers if you prefer:
+```typescript
+await room_goto(0)  // Go to the first room (usually menu)
+await room_goto(1)  // Go to the second room (usually game)
+```
+
+### Restart the Current Room
+Need to reset everything in the current room? Use this to start fresh:
 
 ```typescript
 await room_restart()
 ```
+This is perfect for when the player dies and wants to try the level again.
 
-### room_get_name()
-Get the name of the current room.
+### Find Out Which Room You're In
+Get the name of the current room:
 
 ```typescript
 const currentRoom = room_get_name()
-console.log('Current room:', currentRoom)
+console.log('Current room:', currentRoom)  // Shows: "game" or "menu" etc.
 ```
 
-### room_goto_next()
-Switch to the next room in the sequence.
+### Navigate Room Sequences
+Move through rooms in order:
 
 ```typescript
+// Go to the next room in sequence
 const success = await room_goto_next()
 if (success) {
     console.log('Moved to next room')
 } else {
-    console.log('No next room available')
+    console.log('You're already at the last room')
 }
 ```
-
-### room_goto_previous()
-Switch to the previous room in the sequence.
-
 ```typescript
+// Go back to the previous room
 const success = await room_goto_previous()
 if (success) {
     console.log('Moved to previous room')
 } else {
-    console.log('No previous room available')
+    console.log('You're already at the first room')
 }
 ```
 
-## Setup
+## 💡 Tips for Using Rooms
 
-The GML functions require the game instance to be set up. This happens automatically when the game initializes:
+### Common Use Cases
+- **Main Menu → Game**: `room_goto('game')`
+- **Game Over → Restart**: `room_restart()`
+- **Pause Menu → Resume**: Stay in current room
+- **Level Complete → Next Level**: `room_goto_next()`
 
-```typescript
-// This is done automatically in Game.ts
-import { gml_set_game_instance } from './gml'
-
-// In your game setup
-gml_set_game_instance(this)
-```
-
-## Error Handling
-
-All room navigation functions return `Promise<boolean>` indicating success:
+### Error Handling
+All room functions tell you if they worked:
 
 ```typescript
 const success = await room_goto('some_room')
 if (!success) {
-    console.log('Failed to switch to room')
+    console.log('That room doesn\'t exist!')
 }
 ```
 
-## Room Sequence Configuration
+### Setting Up Room Order
+You can customize which rooms come next/previous by editing the room sequence in your game settings. The default order is: menu → game → settings → credits.
 
-The room sequence for `room_goto_next()` and `room_goto_previous()` can be customized by modifying the `roomSequence` array in `gml.ts`:
+## 🎮 Examples
+
+Try these in your game:
 
 ```typescript
-// In gml.ts - modify this array to change room order
-const roomSequence = ['menu', 'game', 'settings', 'credits']
+// Create a "Next Level" button
+button.onClick = async () => {
+    await room_goto_next()
+}
+
+// Create a "Restart" button  
+restartButton.onClick = async () => {
+    await room_restart()
+}
+
+// Check if player is in the game room
+if (room_get_name() === 'game') {
+    // Show game-specific UI
+}
 ```
 
-## Integration with Game Engine
-
-These GML functions work seamlessly with the DGC Engine's room system:
-
-- They use the same `goToRoom()` method internally
-- They respect room lifecycle events (onCreate, onDestroy, etc.)
-- They integrate with the existing RoomManager
-
-## Examples
-
-See `src/examples/GMLRoomExample.ts` for comprehensive usage examples, or try these functions in the browser console when running in development mode.
-
-## GameMaker Compatibility
-
-These functions are designed to match GameMaker Studio's room navigation behavior:
-
-| GameMaker Function | DGC Engine Equivalent |
-|-------------------|---------------------|
-| `room_goto(room)` | `room_goto(room)` |
-| `room_restart()` | `room_restart()` |
-| `room` (variable) | `room_get_name()` |
+These functions work similarly to GameMaker Studio.
 | `room_goto_next()` | `room_goto_next()` |
 | `room_goto_previous()` | `room_goto_previous()` |
 

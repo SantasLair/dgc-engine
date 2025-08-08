@@ -1,82 +1,128 @@
-# GameMaker-Style Variable System
+# Working with Variables
 
-The DGC Engine now implements GameMaker's distinction between **instance variables** and **object variables**.
+Learn how to store and use information in your game objects, just like in GameMaker Studio.
 
-## Instance Variables vs Object Variables
+## Two Types of Variables
 
-### Instance Variables
-- **Unique to each instance** of an object
-- Set with: `instance.setVariable(name, value)`
-- Get with: `instance.getVariable(name)`
+In DGC Engine, there are two kinds of variables you can use:
 
-### Object Variables  
-- **Shared across ALL instances** of the same object type
-- Set with: `GameObject.setObjectVariable(objectType, name, value)` or `instance.setObjectVariable(name, value)`
-- Get with: `instance.getVariable(name)` (falls back to object variable if instance variable doesn't exist)
+### Instance Variables (Unique to Each Object)
+Each copy of an object has its own personal variables. Perfect for things like:
+- Player health (each player has different health)
+- Enemy speed (each enemy moves at different speeds)
+- Object position (each object is in a different place)
 
-## Usage Examples
+### Object Variables (Shared by All Objects of the Same Type)  
+All objects of the same type share these variables. Great for:
+- Maximum health (all players have the same max health)
+- Movement speed limits (all enemies have the same speed limit)
+- Game rules (all objects follow the same rules)
+
+## How to Use Variables
+
+### Setting Personal Variables (Instance Variables)
+Give each object its own unique values:
 
 ```typescript
-// Create instances
+// Create two players
 const player1 = new GameObject('Player')
 const player2 = new GameObject('Player')
 
-// Instance variables (unique to each)
+// Each player has their own health and name
 player1.setVariable('name', 'Alice')
 player1.setVariable('health', 100)
+
 player2.setVariable('name', 'Bob') 
 player2.setVariable('health', 80)
 
-console.log(player1.getVariable('name')) // "Alice"
-console.log(player2.getVariable('name')) // "Bob"
-
-// Object variables (shared across all Players)
-GameObject.setObjectVariable('Player', 'maxLevel', 50)
-// OR: player1.setObjectVariable('maxLevel', 50)
-
-console.log(player1.getVariable('maxLevel')) // 50
-console.log(player2.getVariable('maxLevel')) // 50 (same value!)
-
-// Changing object variable affects ALL instances
-GameObject.setObjectVariable('Player', 'maxLevel', 60)
-console.log(player1.getVariable('maxLevel')) // 60
-console.log(player2.getVariable('maxLevel')) // 60
+// Each player shows their own values
+console.log(player1.getVariable('name')) // Shows: "Alice"
+console.log(player2.getVariable('name')) // Shows: "Bob"
 ```
 
-## Variable Lookup Order
-
-When using `getVariable(name)`:
-
-1. **Check instance variables first** - if found, return that value
-2. **Fall back to object variables** - if not found in instance, check object variables
-3. **Return undefined** - if not found in either
-
-This matches GameMaker's behavior exactly!
-
-## Instance Variables Override Object Variables
+### Setting Shared Variables (Object Variables)
+Set values that all objects of the same type will share:
 
 ```typescript
-// Set object variable
+// Set a rule that applies to ALL players
+GameObject.setObjectVariable('Player', 'maxLevel', 50)
+
+// Both players can access this shared value
+console.log(player1.getVariable('maxLevel')) // Shows: 50
+console.log(player2.getVariable('maxLevel')) // Shows: 50 (same!)
+
+// Change the shared rule - affects everyone
+GameObject.setObjectVariable('Player', 'maxLevel', 60)
+console.log(player1.getVariable('maxLevel')) // Shows: 60
+console.log(player2.getVariable('maxLevel')) // Shows: 60
+```
+
+## How Variable Lookup Works
+
+When you ask for a variable value, DGC Engine checks in this order:
+
+1. **Personal variable first** - "Does this specific object have its own version?"
+2. **Shared variable second** - "Do all objects of this type share this value?"
+3. **Nothing found** - Returns `undefined` if the variable doesn't exist anywhere
+
+This works exactly like GameMaker Studio!
+
+## Personal Variables Override Shared Variables
+
+If you set both a personal and shared variable with the same name, the personal one wins:
+
+```typescript
+// Set a shared rule for all players
 GameObject.setObjectVariable('Player', 'speed', 5)
 
-// Override with instance variable
+// Give one player a special personal speed
 player1.setVariable('speed', 10)
 
-console.log(player1.getVariable('speed')) // 10 (instance override)
-console.log(player2.getVariable('speed')) // 5  (object variable)
+// Personal variable overrides the shared one
+console.log(player1.getVariable('speed')) // Shows: 10 (personal)
+console.log(player2.getVariable('speed')) // Shows: 5 (shared)
 ```
 
-## Different Object Types Are Isolated
+## Different Object Types Stay Separate
+
+Each object type has its own separate set of shared variables:
 
 ```typescript
+// Set different max levels for different object types
 GameObject.setObjectVariable('Player', 'maxLevel', 50)
 GameObject.setObjectVariable('Enemy', 'maxLevel', 25)
 
 const player = new GameObject('Player')
 const enemy = new GameObject('Enemy')
 
-console.log(player.getVariable('maxLevel')) // 50
-console.log(enemy.getVariable('maxLevel'))  // 25
+// Each type has its own shared values
+console.log(player.getVariable('maxLevel')) // Shows: 50
+console.log(enemy.getVariable('maxLevel'))  // Shows: 25
 ```
 
-This system provides the exact same behavior as GameMaker Studio, making the engine feel completely familiar to GameMaker developers!
+## 💡 Practical Examples
+
+### Game Stats
+```typescript
+// Shared game rules
+GameObject.setObjectVariable('Player', 'maxHealth', 100)
+GameObject.setObjectVariable('Player', 'startingLives', 3)
+
+// Personal player data  
+player.setVariable('currentHealth', 100)
+player.setVariable('lives', 3)
+player.setVariable('score', 0)
+```
+
+### Enemy Behavior
+```typescript
+// All enemies share the same AI rules
+GameObject.setObjectVariable('Enemy', 'detectionRange', 100)
+GameObject.setObjectVariable('Enemy', 'attackDamage', 25)
+
+// But each enemy has its own state
+enemy1.setVariable('currentHealth', 50)
+enemy2.setVariable('currentHealth', 75)
+```
+
+This variable system works exactly like GameMaker Studio, so all your existing GameMaker knowledge applies perfectly!
