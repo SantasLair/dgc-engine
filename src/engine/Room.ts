@@ -1,4 +1,3 @@
-import type { Position } from '../game/types'
 import { GameObject, GameEvent, type EventScript } from './GameObject'
 
 /**
@@ -26,18 +25,28 @@ export interface RoomConfig {
 /**
  * Represents a game room/level/scene
  * Manages game objects within a specific area and handles room-level events
- * Follows GameMaker-style room architecture
+ * Core room management component for the DGC Engine.
+ * 
+ * Rooms are containers for game objects, providing:
+ * - Object lifecycle management (create, step, draw, destroy)
+ * - Persistent vs temporary rooms
+ * - Event-driven architecture
+ * 
+ * Follows GameMaker-style room architecture with Rapid.js immediate mode rendering
  */
 export class Room {
   /** Room identifier */
   public readonly name: string
   
-  /** Room dimensions */
+  /** Room dimensions (logical game units) */
   public readonly width: number
   public readonly height: number
   
   /** Background configuration */
   public background?: string | HTMLImageElement
+  
+  /** Rendering handled by immediate mode Rapid.js drawing system */
+  // Rapid.js uses immediate mode rendering - no retained containers needed
   
   /** Room event scripts */
   private eventScripts: Map<string, EventScript> = new Map()
@@ -156,21 +165,21 @@ export class Room {
   }
 
   /**
-   * Check if a position is within room bounds
+   * Check if a position is within room bounds - GameMaker style
    */
-  public isPositionInBounds(position: Position): boolean {
-    return position.x >= 0 && 
-           position.x < this.width && 
-           position.y >= 0 && 
-           position.y < this.height
+  public isPositionInBounds(x: number, y: number): boolean {
+    return x >= 0 && 
+           x < this.width && 
+           y >= 0 && 
+           y < this.height
   }
 
   /**
-   * Get game objects at a specific position
+   * Get game objects at a specific position - GameMaker style
    */
-  public getGameObjectsAtPosition(position: Position): GameObject[] {
+  public getGameObjectsAtPosition(x: number, y: number): GameObject[] {
     return Array.from(this.gameObjects).filter(obj => 
-      obj.x === position.x && obj.y === position.y
+      obj.x === x && obj.y === y
     )
   }
 

@@ -53,7 +53,7 @@ export class Item extends GameObject {
   private setupItemEvents(): void {
     // Create event
     this.addEventScript(GameEvent.CREATE, (self) => {
-      console.log(`${self.getVariable('itemType')} created at`, self.getPosition())
+      console.log(`${self.getVariable('itemType')} created at`, self.x, self.y)
     })
 
     // Step event for visual effects
@@ -80,7 +80,7 @@ export class Item extends GameObject {
     // In a full implementation, you'd use the engine's collision system
     // For now, this is a simplified check
     // You would typically query the engine for nearby players:
-    // const players = engine.getObjectsNear(self.getPosition(), 1, 'Player')
+    // const players = engine.getObjectsNear(self.x, self.y, 1, 'Player')
     
     // Placeholder for collision detection
     // This would be handled by the collision system in a full implementation

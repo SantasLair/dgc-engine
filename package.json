@@ -5,8 +5,17 @@
   "type": "module",
   "license": "MIT",
   "author": "SantasLair",
-  "description": "A GameMaker-style game engine built with TypeScript and Pixi.js featuring room management, event-driven GameObjects, and turn-based movement mechanics",
-  "keywords": ["game-engine", "gamemaker", "typescript", "pixijs", "turn-based", "2d-game", "game-development"],
+  "description": "A GameMaker-style game engine built with TypeScript and Rapid.js featuring room management, event-driven GameObjects, and immediate mode rendering",
+  "keywords": [
+    "game-engine",
+    "gamemaker",
+    "typescript",
+    "rapid-js",
+    "immediate-mode",
+    "turn-based",
+    "2d-game",
+    "game-development"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/SantasLair/TurnBasedMovement.git"
@@ -23,6 +32,6 @@
   },
   "dependencies": {
     "easystarjs": "^0.4.4",
-    "pixi.js": "^8.11.0"
+    "rapid-render": "^0.1.21"
   }
 }

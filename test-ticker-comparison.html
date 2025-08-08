@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PIXI Ticker vs Custom Game Loop Comparison</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #222; color: white; }
+        .comparison { display: flex; gap: 20px; }
+        .method { border: 1px solid #555; padding: 15px; border-radius: 8px; flex: 1; }
+        .stats { margin: 10px 0; font-family: monospace; font-size: 12px; }
+        canvas { border: 1px solid #555; }
+    </style>
+</head>
+<body>
+    <h1>PIXI Ticker vs Custom Game Loop Comparison</h1>
+    
+    <div class="comparison">
+        <div class="method">
+            <h3>Method 1: Custom requestAnimationFrame Loop</h3>
+            <canvas id="canvas1" width="300" height="200"></canvas>
+            <div class="stats" id="stats1"></div>
+            <p><strong>Pros:</strong></p>
+            <ul>
+                <li>Frame rate control (can limit to 30fps, 60fps, etc.)</li>
+                <li>Independent timing for game logic vs rendering</li>
+                <li>GameMaker-style consistency</li>
+                <li>Can pause game logic without stopping rendering</li>
+            </ul>
+            <p><strong>Cons:</strong></p>
+            <ul>
+                <li>Dual loop complexity</li>
+                <li>Potential for timing conflicts</li>
+            </ul>
+        </div>
+        
+        <div class="method">
+            <h3>Method 2: PIXI Ticker-Driven</h3>
+            <canvas id="canvas2" width="300" height="200"></canvas>
+            <div class="stats" id="stats2"></div>
+            <p><strong>Pros:</strong></p>
+            <ul>
+                <li>Single unified loop</li>
+                <li>Automatic frame rate optimization</li>
+                <li>Perfect sync with rendering</li>
+                <li>Simpler architecture</li>
+            </ul>
+            <p><strong>Cons:</strong></p>
+            <li>Tied to display refresh rate</li>
+            <li>Less control over timing</li>
+            <li>Game logic runs at render speed</li>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as PIXI from 'https://cdn.skypack.dev/pixi.js@8';
+
+        // Method 1: Custom requestAnimationFrame Loop
+        let customApp, customStats = { frames: 0, lastTime: performance.now(), fps: 0 };
+        let gameLogicCounter1 = 0, renderCounter1 = 0;
+
+        async function initCustomLoop() {
+            customApp = new PIXI.Application();
+            await customApp.init({ canvas: document.getElementById('canvas1'), width: 300, height: 200 });
+            
+            // Disable PIXI's auto-ticker
+            customApp.ticker.stop();
+            
+            const graphics = new PIXI.Graphics();
+            customApp.stage.addChild(graphics);
+            
+            // Custom game loop with 60 FPS target
+            const targetFPS = 60;
+            const targetFrameTime = 1000 / targetFPS;
+            let lastTime = performance.now();
+            
+            function gameLoop() {
+                const currentTime = performance.now();
+                const deltaTime = currentTime - lastTime;
+                
+                if (deltaTime >= targetFrameTime) {
+                    // Game logic update
+                    gameLogicCounter1++;
+                    
+                    // Render (could be less frequent than logic)
+                    renderCounter1++;
+                    graphics.clear();
+                    graphics.circle(150 + Math.cos(gameLogicCounter1 * 0.1) * 100, 
+                                  100 + Math.sin(gameLogicCounter1 * 0.1) * 50, 20);
+                    graphics.fill(0x00ff00);
+                    
+                    lastTime = currentTime;
+                }
+                
+                // Update stats
+                customStats.frames++;
+                if (currentTime - customStats.lastTime >= 1000) {
+                    customStats.fps = customStats.frames;
+                    customStats.frames = 0;
+                    customStats.lastTime = currentTime;
+                    
+                    document.getElementById('stats1').innerHTML = `
+                        FPS: ${customStats.fps}<br>
+                        Game Logic: ${gameLogicCounter1}<br>
+                        Render Calls: ${renderCounter1}<br>
+                        Ticker Status: ${customApp.ticker.started ? 'Running' : 'Stopped'}
+                    `;
+                }
+                
+                requestAnimationFrame(gameLoop);
+            }
+            
+            gameLoop();
+        }
+
+        // Method 2: PIXI Ticker-Driven
+        let pixiApp, pixiStats = { frames: 0, lastTime: performance.now(), fps: 0 };
+        let gameLogicCounter2 = 0, renderCounter2 = 0;
+
+        async function initPixiTicker() {
+            pixiApp = new PIXI.Application();
+            await pixiApp.init({ canvas: document.getElementById('canvas2'), width: 300, height: 200 });
+            
+            const graphics = new PIXI.Graphics();
+            pixiApp.stage.addChild(graphics);
+            
+            // Use PIXI's ticker for everything
+            pixiApp.ticker.add(() => {
+                // Game logic update
+                gameLogicCounter2++;
+                
+                // Render
+                renderCounter2++;
+                graphics.clear();
+                graphics.circle(150 + Math.cos(gameLogicCounter2 * 0.1) * 100, 
+                              100 + Math.sin(gameLogicCounter2 * 0.1) * 50, 20);
+                graphics.fill(0xff0000);
+                
+                // Update stats
+                pixiStats.frames++;
+                const currentTime = performance.now();
+                if (currentTime - pixiStats.lastTime >= 1000) {
+                    pixiStats.fps = pixiStats.frames;
+                    pixiStats.frames = 0;
+                    pixiStats.lastTime = currentTime;
+                    
+                    document.getElementById('stats2').innerHTML = `
+                        FPS: ${pixiStats.fps}<br>
+                        Game Logic: ${gameLogicCounter2}<br>
+                        Render Calls: ${renderCounter2}<br>
+                        Ticker FPS: ${pixiApp.ticker.FPS.toFixed(1)}<br>
+                        Max FPS: ${pixiApp.ticker.maxFPS}<br>
+                        Speed: ${pixiApp.ticker.speed}
+                    `;
+                }
+            });
+        }
+
+        // Initialize both methods
+        initCustomLoop();
+        initPixiTicker();
+    </script>
+</body>
+</html>

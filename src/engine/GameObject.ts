@@ -1,12 +1,12 @@
-import type { Position } from '../game/types'
-
 // Forward declarations to avoid circular imports
 export interface EventManager {
   queueObjectEvent(gameObject: GameObject, event: GameEvent, eventData?: any): void
 }
 
-export interface GameObjectManager {
+// Forward declaration for GameObjectManager to avoid circular imports
+export interface IGameObjectManager {
   destroyObject(objectId: number): void
+  getObjectsByType(objectType: string): GameObject[]
 }
 
 /**
@@ -64,6 +64,12 @@ export interface GameObjectProperties {
 export class GameObject {
   private static nextId: number = 0
   
+  // Object-level variables (shared across ALL instances of this object type)
+  private static objectVariables: Map<string, Map<string, any>> = new Map()
+  
+  // Reference to the global GameObjectManager for instance lookups
+  private static globalGameObjectManager: IGameObjectManager | null = null
+  
   public readonly id: number
   public readonly objectType: string
   
@@ -104,7 +110,7 @@ export class GameObject {
   private timers: Map<string, { duration: number; elapsed: number; callback?: () => void }> = new Map()
   
   // References
-  private gameObjectManager: GameObjectManager | null = null
+  private gameObjectManager: IGameObjectManager | null = null
   
   constructor(objectType: string, properties: GameObjectProperties = {}) {
     this.id = GameObject.nextId++
@@ -120,9 +126,120 @@ export class GameObject {
   }
   
   /**
+   * Static method to set object variables for a specific object type - GameMaker style
+   * This affects ALL instances of the given object type
+   */
+  public static setObjectVariable(objectType: string, name: string, value: any): void {
+    if (!GameObject.objectVariables.has(objectType)) {
+      GameObject.objectVariables.set(objectType, new Map())
+    }
+    
+    const objectVars = GameObject.objectVariables.get(objectType)!
+    objectVars.set(name, value)
+  }
+  
+  /**
+   * Static method to get object variables for a specific object type - GameMaker style
+   * Returns undefined if not found (like GameMaker's behavior)
+   */
+  public static getObjectVariable(objectType: string, name: string): any {
+    const objectVars = GameObject.objectVariables.get(objectType)
+    return objectVars ? objectVars.get(name) : undefined
+  }
+  
+  /**
+   * Static method to check if an object variable exists for a specific object type
+   */
+  public static hasObjectVariable(objectType: string, name: string): boolean {
+    const objectVars = GameObject.objectVariables.get(objectType)
+    return objectVars ? objectVars.has(name) : false
+  }
+  
+  /**
+   * Set the global GameObjectManager reference for instance lookups
+   */
+  public static setGlobalGameObjectManager(manager: IGameObjectManager): void {
+    GameObject.globalGameObjectManager = manager
+  }
+  
+  /**
+   * Get instance property from the first instance of an object type - GameMaker style
+   * Throws error if no instances exist (matches GameMaker behavior)
+   */
+  public static getInstanceProperty(objectType: string, propertyName: string): any {
+    if (!GameObject.globalGameObjectManager) {
+      throw new Error('GameObjectManager not set. Call GameObject.setGlobalGameObjectManager() first.')
+    }
+    
+    const instances = GameObject.globalGameObjectManager.getObjectsByType(objectType)
+    
+    if (instances.length === 0) {
+      throw new Error(`Unable to find instance for object type '${objectType}'`)
+    }
+    
+    const firstInstance = instances[0]
+    
+    // Check if it's a built-in property
+    if (propertyName === 'x') return firstInstance.x
+    if (propertyName === 'y') return firstInstance.y
+    if (propertyName === 'visible') return firstInstance.visible
+    if (propertyName === 'active') return firstInstance.active
+    if (propertyName === 'depth') return firstInstance.depth
+    if (propertyName === 'solid') return firstInstance.solid
+    if (propertyName === 'persistent') return firstInstance.persistent
+    if (propertyName === 'sprite') return firstInstance.sprite
+    if (propertyName === 'imageIndex') return firstInstance.imageIndex
+    if (propertyName === 'imageSpeed') return firstInstance.imageSpeed
+    if (propertyName === 'imageAngle') return firstInstance.imageAngle
+    if (propertyName === 'imageXScale') return firstInstance.imageXScale
+    if (propertyName === 'imageYScale') return firstInstance.imageYScale
+    if (propertyName === 'imageAlpha') return firstInstance.imageAlpha
+    
+    // Check instance variables
+    return firstInstance.getVariable(propertyName)
+  }
+  
+  /**
+   * Set instance property on the first instance of an object type - GameMaker style
+   * Throws error if no instances exist (matches GameMaker behavior)
+   */
+  public static setInstanceProperty(objectType: string, propertyName: string, value: any): void {
+    if (!GameObject.globalGameObjectManager) {
+      throw new Error('GameObjectManager not set. Call GameObject.setGlobalGameObjectManager() first.')
+    }
+    
+    const instances = GameObject.globalGameObjectManager.getObjectsByType(objectType)
+    
+    if (instances.length === 0) {
+      throw new Error(`Unable to find instance for object type '${objectType}'`)
+    }
+    
+    const firstInstance = instances[0]
+    
+    // Set built-in properties
+    if (propertyName === 'x') { firstInstance.x = value; return }
+    if (propertyName === 'y') { firstInstance.y = value; return }
+    if (propertyName === 'visible') { firstInstance.visible = value; return }
+    if (propertyName === 'active') { firstInstance.active = value; return }
+    if (propertyName === 'depth') { firstInstance.depth = value; return }
+    if (propertyName === 'solid') { firstInstance.solid = value; return }
+    if (propertyName === 'persistent') { firstInstance.persistent = value; return }
+    if (propertyName === 'sprite') { firstInstance.sprite = value; return }
+    if (propertyName === 'imageIndex') { firstInstance.imageIndex = value; return }
+    if (propertyName === 'imageSpeed') { firstInstance.imageSpeed = value; return }
+    if (propertyName === 'imageAngle') { firstInstance.imageAngle = value; return }
+    if (propertyName === 'imageXScale') { firstInstance.imageXScale = value; return }
+    if (propertyName === 'imageYScale') { firstInstance.imageYScale = value; return }
+    if (propertyName === 'imageAlpha') { firstInstance.imageAlpha = value; return }
+    
+    // Set instance variable
+    firstInstance.setVariable(propertyName, value)
+  }
+  
+  /**
    * Set references to engine managers
    */
-  public setManagers(_eventManager: EventManager, gameObjectManager: GameObjectManager): void {
+  public setManagers(_eventManager: EventManager, gameObjectManager: IGameObjectManager): void {
     this.gameObjectManager = gameObjectManager
   }
   
@@ -162,13 +279,6 @@ export class GameObject {
   }
   
   /**
-   * Get the current position as a Position object
-   */
-  public getPosition(): Position {
-    return { x: this.x, y: this.y }
-  }
-  
-  /**
    * Set the position
    */
   public setPosition(x: number, y: number): void {
@@ -186,24 +296,70 @@ export class GameObject {
   }
   
   /**
-   * Set a custom variable
+   * Set an instance variable (unique to this instance) - GameMaker style
    */
   public setVariable(name: string, value: any): void {
     this.customVariables.set(name, value)
   }
   
   /**
-   * Get a custom variable
+   * Get an instance variable, falls back to object variable if not found - GameMaker style
    */
   public getVariable(name: string): any {
-    return this.customVariables.get(name)
+    // First check instance variables
+    if (this.customVariables.has(name)) {
+      return this.customVariables.get(name)
+    }
+    
+    // Fall back to object variables
+    const objectVars = GameObject.objectVariables.get(this.objectType)
+    if (objectVars && objectVars.has(name)) {
+      return objectVars.get(name)
+    }
+    
+    return undefined
   }
   
   /**
-   * Check if a custom variable exists
+   * Set an object variable (shared across ALL instances of this object type) - GameMaker style
+   */
+  public setObjectVariable(name: string, value: any): void {
+    if (!GameObject.objectVariables.has(this.objectType)) {
+      GameObject.objectVariables.set(this.objectType, new Map())
+    }
+    
+    const objectVars = GameObject.objectVariables.get(this.objectType)!
+    objectVars.set(name, value)
+  }
+  
+  /**
+   * Get an object variable (shared across all instances)
+   */
+  public getObjectVariable(name: string): any {
+    const objectVars = GameObject.objectVariables.get(this.objectType)
+    return objectVars ? objectVars.get(name) : undefined
+  }
+  
+  /**
+   * Check if a variable exists (checks both instance and object variables)
    */
   public hasVariable(name: string): boolean {
-    return this.customVariables.has(name)
+    // Check instance variables first
+    if (this.customVariables.has(name)) {
+      return true
+    }
+    
+    // Check object variables
+    const objectVars = GameObject.objectVariables.get(this.objectType)
+    return objectVars ? objectVars.has(name) : false
+  }
+  
+  /**
+   * Check if an object variable exists
+   */
+  public hasObjectVariable(name: string): boolean {
+    const objectVars = GameObject.objectVariables.get(this.objectType)
+    return objectVars ? objectVars.has(name) : false
   }
   
   /**
