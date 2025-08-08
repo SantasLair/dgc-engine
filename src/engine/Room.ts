@@ -1,4 +1,3 @@
-import type { Position } from '../game/types'
 import { GameObject, GameEvent, type EventScript } from './GameObject'
 
 /**
@@ -166,21 +165,21 @@ export class Room {
   }
 
   /**
-   * Check if a position is within room bounds
+   * Check if a position is within room bounds - GameMaker style
    */
-  public isPositionInBounds(position: Position): boolean {
-    return position.x >= 0 && 
-           position.x < this.width && 
-           position.y >= 0 && 
-           position.y < this.height
+  public isPositionInBounds(x: number, y: number): boolean {
+    return x >= 0 && 
+           x < this.width && 
+           y >= 0 && 
+           y < this.height
   }
 
   /**
-   * Get game objects at a specific position
+   * Get game objects at a specific position - GameMaker style
    */
-  public getGameObjectsAtPosition(position: Position): GameObject[] {
+  public getGameObjectsAtPosition(x: number, y: number): GameObject[] {
     return Array.from(this.gameObjects).filter(obj => 
-      obj.x === position.x && obj.y === position.y
+      obj.x === x && obj.y === y
     )
   }
 

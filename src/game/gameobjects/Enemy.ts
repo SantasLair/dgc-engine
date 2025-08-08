@@ -29,7 +29,7 @@ export class Enemy extends GameObject {
   private setupEnemyEvents(): void {
     // Create event
     this.addEventScript(GameEvent.CREATE, (self) => {
-      console.log(`${self.getVariable('enemyType')} enemy created at`, self.getPosition())
+      console.log(`${self.getVariable('enemyType')} enemy created at`, self.x, self.y)
       // Set random patrol timer
       self.setTimer('changeDirection', 2000 + Math.random() * 3000)
     })

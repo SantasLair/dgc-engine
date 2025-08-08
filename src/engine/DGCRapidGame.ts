@@ -146,10 +146,17 @@ export abstract class DGCRapidGame {
   }
 
   /**
-   * Get the current mouse position
+   * Get the current mouse X position - GameMaker style
    */
-  public getMousePosition(): { x: number; y: number } {
-    return this.engine.getInputManager().getMousePosition()
+  public getMouseX(): number {
+    return this.engine.getInputManager().getMouseX()
+  }
+
+  /**
+   * Get the current mouse Y position - GameMaker style
+   */
+  public getMouseY(): number {
+    return this.engine.getInputManager().getMouseY()
   }
 
   /**
@@ -174,17 +181,31 @@ export abstract class DGCRapidGame {
   }
 
   /**
-   * Convert grid coordinates to screen coordinates
+   * Convert grid X coordinate to screen X coordinate - GameMaker style
    */
-  public gridToScreen(gridX: number, gridY: number): { x: number; y: number } {
-    return this.engine.gridToScreen(gridX, gridY)
+  public gridToScreenX(gridX: number): number {
+    return this.engine.gridToScreenX(gridX)
   }
 
   /**
-   * Convert screen coordinates to grid coordinates
+   * Convert grid Y coordinate to screen Y coordinate - GameMaker style
    */
-  public screenToGrid(screenX: number, screenY: number): { x: number; y: number } {
-    return this.engine.screenToGrid(screenX, screenY)
+  public gridToScreenY(gridY: number): number {
+    return this.engine.gridToScreenY(gridY)
+  }
+
+  /**
+   * Convert screen X coordinate to grid X coordinate - GameMaker style
+   */
+  public screenToGridX(screenX: number): number {
+    return this.engine.screenToGridX(screenX)
+  }
+
+  /**
+   * Convert screen Y coordinate to grid Y coordinate - GameMaker style
+   */
+  public screenToGridY(screenY: number): number {
+    return this.engine.screenToGridY(screenY)
   }
 
   /**

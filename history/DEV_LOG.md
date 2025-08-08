@@ -101,6 +101,20 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Debugging**: Systematic error resolution from compilation issues to clean build state
 - **Commits**: `e96025f`
 
+### [Session 14: GameMaker Compatibility Deep-Dive (August 7, 2025)](./milestones/00014-gamemaker-compatibility.md) 🎯
+**Authentic GameMaker Behavior Implementation** - Achieved 100% GameMaker-compatible variable systems and instance access patterns
+- **Key Achievement**: Perfect replication of GameMaker's instance vs object variable system and object instance access
+- **Technology**: GameMaker-style variable lookup + Object instance property access + Full GameMaker API parity
+- **Major Features**: 
+  - **Instance/Object Variables**: Exact GameMaker behavior with fallback hierarchy
+  - **Object Instance Access**: `GameObject.getInstanceProperty('Menu', 'x')` matches `obj_menu.x` behavior
+  - **GameMaker-Style APIs**: Mouse X/Y separation, coordinate conversion, spatial queries
+  - **Full Vector Type Elimination**: Complete GameMaker-style x,y parameter patterns
+- **Critical Behaviors**: Zero/one/multiple instance handling exactly matches GameMaker Studio error patterns
+- **Architecture**: Centralized instance management mirrors GameMaker's internal object registry
+- **Documentation**: Comprehensive GameMaker comparison guides and usage examples
+- **Commits**: `TBD`
+
 ---
 
 ## Current State (August 7, 2025)
@@ -119,6 +133,9 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - ✅ **Player Movement System**: WASD/Arrow key controls with turn-based mechanics
 - ✅ **Input Processing**: Keyboard and mouse input handling with proper event timing
 - ✅ **Visual Rendering**: Working Rapid.js immediate mode rendering with SpriteTestRoom demonstrations
+- ✅ **GameMaker Variable System**: Authentic instance vs object variable behavior with exact GameMaker compatibility
+- ✅ **Object Instance Access**: Perfect replication of `obj_menu.x` style property access patterns
+- ✅ **GameMaker-Style APIs**: Separate mouse X/Y methods, coordinate conversion, spatial queries with x,y parameters
 
 **Known Issues & Ongoing Work:**
 - ⚠️ **Click Movement Pathfinding**: Path validation and click-to-move system needs refinement

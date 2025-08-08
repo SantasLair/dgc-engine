@@ -48,7 +48,7 @@ export class Player extends GameObject {
   private setupPlayerEvents(): void {
     // Create event
     this.addEventScript(GameEvent.CREATE, (self) => {
-      console.log('Player created at', self.getPosition())
+      console.log('Player created at', self.x, self.y)
       self.setVariable('score', 0)
       self.setVariable('isMoving', false)
       self.setVariable('canMove', true)
@@ -83,9 +83,8 @@ export class Player extends GameObject {
       }
 
       const speed = self.getVariable('speed')
-      const currentPos = self.getPosition()
-      let newX = currentPos.x
-      let newY = currentPos.y
+      let newX = self.x
+      let newY = self.y
 
       console.log('Processing key movement for key:', eventData?.key) // Debug
 
@@ -125,7 +124,7 @@ export class Player extends GameObject {
       newX = Math.floor(newX)
       newY = Math.floor(newY)
 
-      console.log(`Attempting to move from (${currentPos.x}, ${currentPos.y}) to (${newX}, ${newY})`) // Debug
+      console.log(`Attempting to move from (${self.x}, ${self.y}) to (${newX}, ${newY})`) // Debug
 
       // Check if the new position is valid and walkable
       if (gameBoard.isValidPosition(newX, newY) && gameBoard.isWalkable(newX, newY)) {

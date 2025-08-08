@@ -3,7 +3,6 @@ import { EventManager } from './EventManager'
 import { GameObjectManager } from './GameObjectManager'
 import { GameObject } from './GameObject'
 import { DGCRapidDrawingSystem } from './DGCRapidDrawingSystem'
-import type { Position } from '../game/types'
 import type { DGCRapidEngineConfig } from './DGCRapidEngineConfig'
 import { createDGCRapidEngineConfig } from './DGCRapidEngineConfig'
 
@@ -14,7 +13,8 @@ class InputManager {
   private keysPressed: Set<string> = new Set()
   private keysJustPressed: Set<string> = new Set()
   private keysJustReleased: Set<string> = new Set()
-  private mousePosition: Position = { x: 0, y: 0 }
+  private mouseX: number = 0
+  private mouseY: number = 0
   private mouseButtons: Set<number> = new Set()
   private mouseJustPressed: Set<number> = new Set()
   private mouseJustReleased: Set<number> = new Set()
@@ -51,8 +51,8 @@ class InputManager {
     window.addEventListener('mousemove', (e) => {
       const rect = (e.target as HTMLCanvasElement)?.getBoundingClientRect()
       if (rect) {
-        this.mousePosition.x = e.clientX - rect.left
-        this.mousePosition.y = e.clientY - rect.top
+        this.mouseX = e.clientX - rect.left
+        this.mouseY = e.clientY - rect.top
       }
     })
     
@@ -80,9 +80,13 @@ class InputManager {
     return this.keysJustReleased.has(key)
   }
   
-  // Mouse methods
-  public getMousePosition(): Position {
-    return { ...this.mousePosition }
+  // Mouse methods - GameMaker style
+  public getMouseX(): number {
+    return this.mouseX
+  }
+  
+  public getMouseY(): number {
+    return this.mouseY
   }
   
   public isMouseButtonPressed(button: number): boolean {
@@ -308,22 +312,30 @@ export class DGCRapidEngine {
   }
   
   /**
-   * Convert grid coordinates to screen coordinates
+   * Convert grid X coordinate to screen X coordinate
    */
-  public gridToScreen(gridX: number, gridY: number): Position {
-    return {
-      x: this.config.gridOffset.x + gridX * this.config.cellSize,
-      y: this.config.gridOffset.y + gridY * this.config.cellSize
-    }
+  public gridToScreenX(gridX: number): number {
+    return this.config.gridOffset.x + gridX * this.config.cellSize
   }
   
   /**
-   * Convert screen coordinates to grid coordinates
+   * Convert grid Y coordinate to screen Y coordinate
    */
-  public screenToGrid(screenX: number, screenY: number): Position {
-    return {
-      x: Math.floor((screenX - this.config.gridOffset.x) / this.config.cellSize),
-      y: Math.floor((screenY - this.config.gridOffset.y) / this.config.cellSize)
-    }
+  public gridToScreenY(gridY: number): number {
+    return this.config.gridOffset.y + gridY * this.config.cellSize
+  }
+  
+  /**
+   * Convert screen X coordinate to grid X coordinate
+   */
+  public screenToGridX(screenX: number): number {
+    return Math.floor((screenX - this.config.gridOffset.x) / this.config.cellSize)
+  }
+  
+  /**
+   * Convert screen Y coordinate to grid Y coordinate
+   */
+  public screenToGridY(screenY: number): number {
+    return Math.floor((screenY - this.config.gridOffset.y) / this.config.cellSize)
   }
 }

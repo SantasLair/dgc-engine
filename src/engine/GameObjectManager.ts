@@ -1,6 +1,5 @@
 import { GameObject, GameEvent, type GameObjectProperties } from './GameObject'
 import type { EventManager } from './EventManager'
-import type { Position } from '../game/types'
 
 /**
  * Manages all game objects in the engine
@@ -14,6 +13,9 @@ export class GameObjectManager {
   
   constructor(eventManager: EventManager) {
     this.eventManager = eventManager
+    
+    // Set this manager as the global reference for GameMaker-style object property access
+    GameObject.setGlobalGameObjectManager(this)
   }
   
   /**
@@ -59,13 +61,6 @@ export class GameObjectManager {
     // Queue create event
     this.eventManager.queueObjectEvent(gameObject, GameEvent.CREATE)
   }
-
-  /**
-   * Create a game object at a specific position
-   */
-  public createObjectAt(objectType: string, position: Position, properties: GameObjectProperties = {}): GameObject {
-    return this.createObject(objectType, position.x, position.y, properties)
-  }
   
   /**
    * Mark an object for destruction
@@ -97,36 +92,36 @@ export class GameObjectManager {
   }
   
   /**
-   * Get objects within a certain distance of a position
+   * Get objects within a certain distance of a position - GameMaker style
    */
-  public getObjectsNear(position: Position, radius: number, objectType?: string): GameObject[] {
+  public getObjectsNear(x: number, y: number, radius: number, objectType?: string): GameObject[] {
     const objects = objectType ? this.getObjectsByType(objectType) : this.getAllObjects()
     
     return objects.filter(obj => {
       const distance = Math.sqrt(
-        Math.pow(obj.x - position.x, 2) + Math.pow(obj.y - position.y, 2)
+        Math.pow(obj.x - x, 2) + Math.pow(obj.y - y, 2)
       )
       return distance <= radius
     })
   }
   
   /**
-   * Get the nearest object to a position
+   * Get the nearest object to a position - GameMaker style
    */
-  public getNearestObject(position: Position, objectType?: string): GameObject | null {
+  public getNearestObject(x: number, y: number, objectType?: string): GameObject | null {
     const objects = objectType ? this.getObjectsByType(objectType) : this.getAllObjects()
     
     if (objects.length === 0) return null
     
     let nearest = objects[0]
     let nearestDistance = Math.sqrt(
-      Math.pow(nearest.x - position.x, 2) + Math.pow(nearest.y - position.y, 2)
+      Math.pow(nearest.x - x, 2) + Math.pow(nearest.y - y, 2)
     )
     
     for (let i = 1; i < objects.length; i++) {
       const obj = objects[i]
       const distance = Math.sqrt(
-        Math.pow(obj.x - position.x, 2) + Math.pow(obj.y - position.y, 2)
+        Math.pow(obj.x - x, 2) + Math.pow(obj.y - y, 2)
       )
       
       if (distance < nearestDistance) {
