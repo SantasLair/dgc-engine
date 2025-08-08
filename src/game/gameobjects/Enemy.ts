@@ -5,19 +5,34 @@ import { GameObject, GameEvent } from '../../engine'
  * Provides AI behavior and combat mechanics
  */
 export class Enemy extends GameObject {
-  constructor(x: number, y: number, enemyType: string = 'guard') {
+  constructor(xOrConfig: number | { x: number; y: number; [key: string]: any }, y?: number, enemyType?: string) {
+    // Handle both constructor signatures: Enemy(x, y, type) and Enemy({x, y, ...props})
+    let x: number, yPos: number, config: any = {}
+    
+    if (typeof xOrConfig === 'number') {
+      // Traditional constructor: Enemy(x, y, type)
+      x = xOrConfig
+      yPos = y!
+      config.enemyType = enemyType || 'guard'
+    } else {
+      // Data-driven constructor: Enemy({x, y, ...props})
+      x = xOrConfig.x
+      yPos = xOrConfig.y
+      config = xOrConfig
+    }
+    
     // Ensure enemies are placed on grid positions
-    super('Enemy', { x: Math.floor(x), y: Math.floor(y) })
+    super('Enemy', { x: Math.floor(x), y: Math.floor(yPos), ...config })
     
     // Set enemy properties
     this.solid = true
     this.visible = true
-    this.setVariable('health', 50)
-    this.setVariable('maxHealth', 50)
-    this.setVariable('attackPower', 15)
-    this.setVariable('detectionRange', 5)
-    this.setVariable('moveSpeed', 1) // Grid-based movement
-    this.setVariable('enemyType', enemyType)
+    this.setVariable('health', config.health || 50)
+    this.setVariable('maxHealth', config.maxHealth || 50)
+    this.setVariable('attackPower', config.damage || config.attackPower || 15)
+    this.setVariable('detectionRange', config.detectionRange || 5)
+    this.setVariable('moveSpeed', config.moveSpeed || 1) // Grid-based movement
+    this.setVariable('enemyType', config.enemyType || 'guard')
     this.setVariable('patrolDirection', Math.floor(Math.random() * 4))
     this.setVariable('patrolTimer', 0)
     this.setVariable('chasing', false)

@@ -6,7 +6,7 @@ import { DGCSprite } from './DGCSprite'
  * Provides immediate drawing functions like draw_sprite(), draw_line(), etc.
  * Uses Rapid.js's native immediate mode rendering which aligns perfectly with GameMaker's draw events
  */
-export class DGCRapidDrawingSystem {
+export class DGCDrawingSystem {
   private rapid: Rapid
   
   constructor(rapid: Rapid) {
@@ -24,32 +24,55 @@ export class DGCRapidDrawingSystem {
   
   /**
    * GameMaker-style draw_sprite equivalent for actual sprites
-   * TODO: Implement proper sprite texture rendering once Rapid.js image API is confirmed
    */
-  public drawSpriteFromSprite(sprite: DGCSprite, x: number, y: number, frame: number = 0, scaleX: number = 1, scaleY: number = 1, rotation: number = 0, _alpha: number = 1): void {
+  public drawSpriteFromSprite(sprite: DGCSprite, x: number, y: number, _frame: number = 0, scaleX: number = 1, scaleY: number = 1, rotation: number = 0, _alpha: number = 1): void {
     if (!sprite.isLoaded()) {
       console.warn(`⚠️ Sprite ${sprite.name} not loaded yet`)
       return
     }
     
-    // Calculate draw position with origin offset
-    const originOffsetX = sprite.frameWidth * sprite.origin.x * scaleX
-    const originOffsetY = sprite.frameHeight * sprite.origin.y * scaleY
-    const drawX = x - originOffsetX
-    const drawY = y - originOffsetY
+    // Convert grid coordinates to screen coordinates
+    const screenX = x * 30 + 50  // cellSize = 30, offset = 50
+    const screenY = y * 30 + 50
     
-    // For now, render a placeholder rectangle with sprite dimensions
-    // TODO: Replace with actual sprite texture rendering
-    this.rapid.renderRect({
-      offset: new Vec2(drawX, drawY),
-      width: sprite.frameWidth * scaleX,
-      height: sprite.frameHeight * scaleY,
-      color: this.hexToRapidColor(0xFF00FF), // Magenta placeholder
-      rotation: rotation * Math.PI / 180
-    })
-    
-    // Log sprite info for debugging
-    console.log(`🖼️ Drawing sprite: ${sprite.name}, frame: ${frame}, pos: (${x}, ${y})`)
+    try {
+      // Create texture from the sprite's image
+      this.rapid.textures.textureFromSource(sprite.image, true).then(texture => {
+        // Calculate draw position with origin offset
+        const originOffsetX = sprite.frameWidth * sprite.origin.x * scaleX
+        const originOffsetY = sprite.frameHeight * sprite.origin.y * scaleY
+        const drawX = screenX - originOffsetX
+        const drawY = screenY - originOffsetY
+        
+        // Render the sprite texture
+        this.rapid.renderSprite({
+          texture: texture,
+          offset: new Vec2(drawX, drawY),
+          scale: new Vec2(scaleX, scaleY),
+          rotation: rotation * Math.PI / 180
+        })
+      }).catch(error => {
+        console.error(`❌ Failed to create texture for sprite ${sprite.name}:`, error)
+        // Fallback: render a colored rectangle
+        this.rapid.renderRect({
+          offset: new Vec2(screenX, screenY),
+          width: sprite.frameWidth * scaleX,
+          height: sprite.frameHeight * scaleY,
+          color: this.hexToRapidColor(0x00FFFF), // Cyan fallback
+          rotation: rotation * Math.PI / 180
+        })
+      })
+    } catch (error) {
+      console.error(`❌ Error in drawSpriteFromSprite for ${sprite.name}:`, error)
+      // Fallback: render a colored rectangle
+      this.rapid.renderRect({
+        offset: new Vec2(screenX, screenY),
+        width: sprite.frameWidth * scaleX,
+        height: sprite.frameHeight * scaleY,
+        color: this.hexToRapidColor(0x00FFFF), // Cyan fallback
+        rotation: rotation * Math.PI / 180
+      })
+    }
   }
   
   /**

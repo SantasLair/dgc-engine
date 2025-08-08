@@ -1,12 +1,12 @@
 /**
- * Rapid.js-compatible Sprite class for immediate mode rendering
+ * DGC Engine Sprite class for immediate mode rendering
  * Provides GameMaker-style sprite functionality using Rapid.js backend
  */
 
 /**
- * Sprite configuration interface for Rapid.js sprites
+ * Sprite configuration interface for DGC sprites
  */
-export interface RapidSpriteConfig {
+export interface DGCSpriteConfig {
   /** Sprite name/identifier */
   name: string
   /** Image source (URL, base64, or HTMLImageElement) */
@@ -24,11 +24,11 @@ export interface RapidSpriteConfig {
 }
 
 /**
- * Lightweight sprite class for Rapid.js immediate mode rendering
+ * Lightweight sprite class for DGC Engine immediate mode rendering
  * Unlike retained mode systems, this sprite doesn't maintain display objects
  * Instead, it provides metadata for immediate drawing operations
  */
-export class RapidSprite {
+export class DGCSprite {
   public readonly name: string
   public readonly image: HTMLImageElement
   public readonly frameCount: number
@@ -40,7 +40,7 @@ export class RapidSprite {
   private loaded: boolean = false
   private loadPromise: Promise<void>
 
-  constructor(config: RapidSpriteConfig) {
+  constructor(config: DGCSpriteConfig) {
     this.name = config.name
     this.frameCount = config.frames ?? 1
     this.animationSpeed = config.animationSpeed ?? 12
@@ -57,9 +57,11 @@ export class RapidSprite {
     
     // Set up loading promise
     if (typeof config.source === 'string') {
+      console.log(`🎯 Loading sprite image from: ${config.source}`)
       this.loadPromise = new Promise((resolve, reject) => {
         this.image.onload = () => {
           this.loaded = true
+          console.log(`✅ Sprite image loaded successfully: ${config.name}`)
           
           // Auto-detect frame dimensions if not provided
           if (!config.frameWidth || !config.frameHeight) {
@@ -69,7 +71,10 @@ export class RapidSprite {
           
           resolve()
         }
-        this.image.onerror = reject
+        this.image.onerror = (error) => {
+          console.error(`❌ Failed to load sprite image: ${config.name} from ${config.source}`, error)
+          reject(error)
+        }
         this.image.src = config.source as string
       })
     } else {
@@ -122,17 +127,17 @@ export class RapidSprite {
 }
 
 /**
- * Sprite manager for Rapid.js sprites
+ * Sprite manager for DGC Engine sprites
  * Manages sprite loading and provides access to sprites by name
  */
-export class RapidSpriteManager {
-  private sprites: Map<string, RapidSprite> = new Map()
+export class DGCSpriteManager {
+  private sprites: Map<string, DGCSprite> = new Map()
 
   /**
    * Add a sprite to the manager
    */
-  public addSprite(config: RapidSpriteConfig): RapidSprite {
-    const sprite = new RapidSprite(config)
+  public addSprite(config: DGCSpriteConfig): DGCSprite {
+    const sprite = new DGCSprite(config)
     this.sprites.set(config.name, sprite)
     return sprite
   }
@@ -140,7 +145,7 @@ export class RapidSpriteManager {
   /**
    * Get a sprite by name
    */
-  public getSprite(name: string): RapidSprite | undefined {
+  public getSprite(name: string): DGCSprite | undefined {
     return this.sprites.get(name)
   }
 

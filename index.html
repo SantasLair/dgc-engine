@@ -47,10 +47,24 @@
         margin: 0;
         padding: 0;
       }
+      
+      #status {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: white;
+        font-family: monospace;
+        font-size: 12px;
+        background: rgba(0,0,0,0.7);
+        padding: 5px;
+        border-radius: 3px;
+        z-index: 1000;
+      }
     </style>
   </head>
   <body>
     <div id="app">
+      <div id="status">Loading...</div>
       <canvas id="gameCanvas"></canvas>
     </div>
     <script type="module" src="/src/main.ts"></script>

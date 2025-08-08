@@ -1,0 +1,83 @@
+version = "1.0.0"
+
+[room]
+name = "test_level"
+
+[room.dimensions]
+width = 20
+height = 15
+
+[room.background]
+type = "color"
+value = "#2c3e50"
+
+[room.view]
+width = 800
+height = 600
+x = 0
+y = 0
+
+[[room.sprites]]
+name = "player_sprite"
+source = "/images/platformChar_idle.png"
+frameWidth = 32
+frameHeight = 32
+
+[[room.sprites]]
+name = "enemy_sprite"
+source = "/images/platformerPack_character@2.png"
+frameWidth = 32
+frameHeight = 32
+
+[[room.objects]]
+objectType = "Player"
+instanceName = "player1"
+
+[room.objects.position]
+x = 5
+y = 7
+depth = 0
+
+[room.objects.properties]
+health = 100
+speed = 1
+
+[[room.objects]]
+objectType = "Enemy"
+instanceName = "enemy1"
+
+[room.objects.position]
+x = 15
+y = 10
+depth = 1
+
+[room.objects.properties]
+health = 50
+damage = 10
+
+[[room.objects]]
+objectType = "Enemy"
+instanceName = "enemy2"
+
+[room.objects.position]
+x = 12
+y = 8
+depth = 1
+
+[room.objects.properties]
+health = 30
+damage = 8
+
+[room.events]
+# Room event scripts can be defined here
+
+[room.properties]
+levelNumber = 1
+theme = "forest"
+musicTrack = "forest_theme.mp3"
+
+[room.metadata]
+description = "First test level with basic enemies"
+author = "DGC Engine"
+version = "1.0.0"
+tags = ["test", "level1", "forest"]

@@ -1,5 +1,10 @@
-import { GameObject, GameEvent, type GameObjectProperties } from './GameObject'
+import { GameObject, type GameObjectProperties, GameEvent } from './GameObject'
 import type { EventManager } from './EventManager'
+
+// Forward declaration for drawing system
+interface IDrawingSystem {
+  drawSpriteFromSprite(sprite: any, x: number, y: number, frame?: number, scaleX?: number, scaleY?: number, rotation?: number, alpha?: number): void
+}
 
 /**
  * Manages all game objects in the engine
@@ -10,9 +15,11 @@ export class GameObjectManager {
   private objectsByType: Map<string, Set<GameObject>> = new Map()
   private objectsToDestroy: Set<number> = new Set()
   private eventManager: EventManager
+  private drawingSystem: IDrawingSystem | null = null
   
-  constructor(eventManager: EventManager) {
+  constructor(eventManager: EventManager, drawingSystem?: IDrawingSystem) {
     this.eventManager = eventManager
+    this.drawingSystem = drawingSystem || null
     
     // Set this manager as the global reference for GameMaker-style object property access
     GameObject.setGlobalGameObjectManager(this)
@@ -28,7 +35,7 @@ export class GameObjectManager {
       ...properties
     })
     
-    gameObject.setManagers(this.eventManager, this)
+    gameObject.setManagers(this.eventManager, this, this.drawingSystem || undefined)
     
     // Add to collections
     this.gameObjects.set(gameObject.id, gameObject)
@@ -48,7 +55,7 @@ export class GameObjectManager {
    * Add an existing GameObject to the manager
    */
   public addExistingObject(gameObject: GameObject): void {
-    gameObject.setManagers(this.eventManager, this)
+    gameObject.setManagers(this.eventManager, this, this.drawingSystem || undefined)
     
     // Add to collections
     this.gameObjects.set(gameObject.id, gameObject)
@@ -194,7 +201,10 @@ export class GameObjectManager {
       .filter(obj => obj.visible && obj.active)
       .sort((a, b) => a.depth - b.depth) // Lower depth values draw first (background)
     
+    console.log(`🎨 GameObjectManager.draw() called with ${visibleObjects.length} visible objects`)
+    
     for (const gameObject of visibleObjects) {
+      console.log(`🎨 Queuing DRAW event for ${gameObject.objectType} at (${gameObject.x}, ${gameObject.y})`)
       this.eventManager.queueObjectEvent(gameObject, GameEvent.DRAW)
     }
   }

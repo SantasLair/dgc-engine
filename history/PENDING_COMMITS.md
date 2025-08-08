@@ -2,22 +2,32 @@
 
 > Track minor commits and improvements between major development milestones for easier grouping and documentation.
 
+# Pending Commits
+
+> Track minor commits and improvements between major development milestones for easier grouping and documentation.
+
 ## Current Tracking Period
-**Started**: August 6, 2025 (after Milestone 11)  
-**Last Milestone**: [Milestone 11: Copilot Configuration](./milestones/00011-copilot-configuration.md)
+**Started**: August 8, 2025 (after Milestone 15)  
+**Last Milestone**: [Milestone 15: Sprite Rendering Implementation](./milestones/00015-sprite-functionality.md)
 
 ## Pending Commits
 
 ### Format: `commit_hash` - Brief description (Date)
 *Use this format to track commits until they're grouped into a milestone*
 
-### 🎨 Rapid.js Integration (Major Feature - COMPLETE PIXI REPLACEMENT)
-- `TBD` - Removed PIXI.js dependency and replaced with Rapid.js (August 7, 2025)
-- `TBD` - Created DGCRapidDrawingSystem with GameMaker-style immediate rendering API (August 7, 2025)
-- `TBD` - Created DGCRapidEngine to replace DGCEngine with Rapid.js backend (August 7, 2025)
-- `TBD` - Created DGCRapidGame base class for Rapid.js-powered games (August 7, 2025)
-- `TBD` - Updated Game.ts to use DGCRapidGame and Rapid.js configuration (August 7, 2025)
-- `TBD` - Completely rewrote SpriteTestRoom to demonstrate Rapid.js rendering (August 7, 2025)
+### � Current Development Focus
+*No pending commits - clean state after sprite system implementation*
+
+## Recently Completed (Moved to Milestones)
+
+### ✅ Milestone 15: Sprite Rendering Implementation (August 8, 2025)
+- `6f2815c` - Implement complete sprite rendering system with TOML room configuration (August 8, 2025)
+
+### ✅ Milestone 14: GameMaker Compatibility Deep-Dive (August 7, 2025)
+- `77b163a` - Achieve 100% GameMaker-compatible variable systems and instance access patterns (August 7, 2025)
+
+### ✅ Milestone 13: Rapid.js Migration & Engine Modernization (August 7, 2025)
+- `e96025f` - Successfully migrated from PIXI.js to Rapid.js immediate mode rendering (August 7, 2025)
 - `TBD` - Updated engine index.ts to export new Rapid.js classes (August 7, 2025)
 
 ### 🎨 GameMaker Draw Events Implementation (Previous Major Feature)

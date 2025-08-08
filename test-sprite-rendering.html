@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sprite Rendering Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>DGC Engine Sprite Rendering Test</h1>
+    <div id="testResults"></div>
+    
+    <script type="module">
+        // Simple test to verify sprite rendering functionality
+        const results = document.getElementById('testResults');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        async function runTests() {
+            addResult('🧪 Running sprite rendering tests...');
+            
+            try {
+                // Test if the development server is running
+                const response = await fetch('http://localhost:5174/');
+                if (response.ok) {
+                    addResult('✅ Development server is running', 'success');
+                } else {
+                    addResult('❌ Development server not responding', 'error');
+                    return;
+                }
+                
+                // Test if sprite files are accessible
+                const spriteTests = [
+                    '/images/platformChar_idle.png',
+                    '/images/platformerPack_character@2.png'
+                ];
+                
+                for (const spritePath of spriteTests) {
+                    try {
+                        const spriteResponse = await fetch(`http://localhost:5174${spritePath}`);
+                        if (spriteResponse.ok) {
+                            addResult(`✅ Sprite accessible: ${spritePath}`, 'success');
+                        } else {
+                            addResult(`❌ Sprite not accessible: ${spritePath}`, 'error');
+                        }
+                    } catch (error) {
+                        addResult(`❌ Error accessing sprite ${spritePath}: ${error.message}`, 'error');
+                    }
+                }
+                
+                // Test if room data is accessible
+                const roomTests = [
+                    '/data/rooms/sprite_demo.toml',
+                    '/data/rooms/main_menu.toml'
+                ];
+                
+                for (const roomPath of roomTests) {
+                    try {
+                        const roomResponse = await fetch(`http://localhost:5174${roomPath}`);
+                        if (roomResponse.ok) {
+                            addResult(`✅ Room data accessible: ${roomPath}`, 'success');
+                        } else {
+                            addResult(`❌ Room data not accessible: ${roomPath}`, 'error');
+                        }
+                    } catch (error) {
+                        addResult(`❌ Error accessing room data ${roomPath}: ${error.message}`, 'error');
+                    }
+                }
+                
+                addResult('🎮 Open http://localhost:5174/ to test the game');
+                addResult('📊 Check the status display in the top-left corner for object count');
+                addResult('🔍 Open browser console to see detailed debug logs');
+                
+            } catch (error) {
+                addResult(`❌ Test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>

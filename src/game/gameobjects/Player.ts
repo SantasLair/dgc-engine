@@ -7,17 +7,34 @@ import { GameObject, GameEvent } from '../../engine'
 export class Player extends GameObject {
   private gameInstance: any // Reference to Game instance for turn management
   
-  constructor(x: number, y: number) {
-    super('Player', { x, y })
+  constructor(xOrConfig: number | { x: number; y: number; [key: string]: any }, y?: number) {
+    // Handle both constructor signatures: Player(x, y) and Player({x, y, ...props})
+    let x: number, yPos: number, config: any = {}
     
-    console.log('🎮 Player constructor called at position:', x, y)
+    if (typeof xOrConfig === 'number') {
+      // Traditional constructor: Player(x, y)
+      x = xOrConfig
+      yPos = y!
+    } else {
+      // Data-driven constructor: Player({x, y, ...props})
+      x = xOrConfig.x
+      yPos = xOrConfig.y
+      config = xOrConfig
+    }
+    
+    super('Player', { x, y: yPos, ...config })
+    
+    console.log('🎮 Player constructor called at position:', x, yPos)
+    console.log('🎮 Player config received:', config)
+    console.log('🎮 Passed to GameObject:', { x, y: yPos, ...config })
     
     // Set player-specific properties
     this.solid = true
     this.visible = true
-    this.setVariable('health', 100)
-    this.setVariable('maxHealth', 100)
-    this.setVariable('speed', 1)
+    console.log('🎮 Player visibility set to:', this.visible)
+    this.setVariable('health', config.health || 100)
+    this.setVariable('maxHealth', config.maxHealth || 100)
+    this.setVariable('speed', config.speed || 1)
     this.setVariable('canMove', true)
     this.setVariable('isMoving', false) // Explicitly set this to false initially
     
@@ -52,6 +69,14 @@ export class Player extends GameObject {
       self.setVariable('score', 0)
       self.setVariable('isMoving', false)
       self.setVariable('canMove', true)
+    })
+
+    // Draw event - automatically draw the player's sprite
+    this.addEventScript(GameEvent.DRAW, (self) => {
+      console.log('🎨 Player draw event called')
+      
+      // Draw the sprite
+      self.drawSelf()
     })
 
     // Movement input handling - turn-based single-step movement

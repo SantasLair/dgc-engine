@@ -12,11 +12,24 @@ export class GameBoard extends GameObject {
   private boardHeight: number
   private grid: Grid<CellType>
 
-  constructor(width: number, height: number) {
+  constructor(widthOrConfig: number | { width: number; height: number; [key: string]: any }, height?: number) {
+    // Handle both constructor signatures: GameBoard(width, height) and GameBoard({width, height, ...props})
+    let width: number, h: number
+    
+    if (typeof widthOrConfig === 'number') {
+      // Traditional constructor: GameBoard(width, height)
+      width = widthOrConfig
+      h = height!
+    } else {
+      // Data-driven constructor: GameBoard({width, height, ...props})
+      width = widthOrConfig.width
+      h = widthOrConfig.height
+    }
+    
     super('GameBoard', { x: 0, y: 0, visible: true })
     
     this.boardWidth = width
-    this.boardHeight = height
+    this.boardHeight = h
     this.grid = this.initializeGrid()
     
     // Setup GameObject events

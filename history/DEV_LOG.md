@@ -12,37 +12,37 @@ This project began as a simple turn-based movement game and evolved into a sophi
 
 ## Development Sessions
 
-### [Session 1: Foundation (January 4-5, 2025)](./sessions/00001-foundation.md) ✨
+### [Session 1: Foundation (January 4-5, 2025)](./milestones/00001-foundation.md) ✨
 **Foundation Building** - Established basic turn-based movement game prototype
 - **Key Achievement**: Core game mechanics and basic architecture
 - **Technology**: TypeScript + Vite + Canvas 2D + Grid-based movement
 - **Commits**: `34ee4a2`, `208645c`
 
-### [Session 2: Rendering Revolution (January 4, 2025)](./sessions/00002-rendering.md) 🚀
+### [Session 2: Rendering Revolution (January 4, 2025)](./milestones/00002-rendering.md) 🚀
 **Professional Graphics** - Upgraded from Canvas 2D to Pixi.js rendering
 - **Key Achievement**: Hardware-accelerated professional rendering
 - **Technology**: Pixi.js migration + Enhanced visual effects
 - **Commits**: `18dd7da`, `bd619e6`
 
-### [Session 3: Engine Architecture (January 5, 2025)](./sessions/00003-engine-architecture.md) 🏗️
+### [Session 3: Engine Architecture (January 5, 2025)](./milestones/00003-engine-architecture.md) 🏗️
 **Engine Foundation** - Transformed from game to reusable engine framework
 - **Key Achievement**: GameMaker-style event-driven GameObject system
 - **Technology**: Event Manager + GameObject framework + AI behaviors
 - **Commits**: `6cb0a5e`, `957d997`
 
-### [Session 4: Architecture Cleanup (January 5, 2025)](./sessions/00004-cleanup.md) 🧹
+### [Session 4: Architecture Cleanup (January 5, 2025)](./milestones/00004-cleanup.md) 🧹
 **Codebase Hygiene** - Cleaned and organized codebase for maintainability
 - **Key Achievement**: Eliminated technical debt and standardized structure
 - **Technology**: Code cleanup + File organization + Naming conventions
 - **Commits**: `b5488ba`, `4ca19d9`
 
-### [Session 5: Engine Abstraction (January 5, 2025)](./sessions/00005-abstraction.md) 🏛️
+### [Session 5: Engine Abstraction (January 5, 2025)](./milestones/00005-abstraction.md) 🏛️
 **Advanced Architecture** - Implemented enterprise-level design patterns
 - **Key Achievement**: Production-ready extensible framework
 - **Technology**: Renderer abstraction + Factory patterns + BaseGame architecture
 - **Commits**: `f2ddf0f`, `39d1641`, `5f5255d`, `e5bf8af`
 
-### [Session 6: Room System Revolution (January 5, 2025)](./sessions/00006-room-system.md) 🏠
+### [Session 6: Room System Revolution (January 5, 2025)](./milestones/00006-room-system.md) 🏠
 **Game Organization** - Professional level/scene management system
 - **Key Achievement**: GameMaker-style room-based architecture
 - **Technology**: Room system + RoomManager + GameObject integration
@@ -103,7 +103,7 @@ This project began as a simple turn-based movement game and evolved into a sophi
 
 ### [Session 14: GameMaker Compatibility Deep-Dive (August 7, 2025)](./milestones/00014-gamemaker-compatibility.md) 🎯
 **Authentic GameMaker Behavior Implementation** - Achieved 100% GameMaker-compatible variable systems and instance access patterns
-- **Key Achievement**: Perfect replication of GameMaker's instance vs object variable system and object instance access
+- **Key Achievement**: GameMaker-authentic replication of instance vs object variable system and object instance access
 - **Technology**: GameMaker-style variable lookup + Object instance property access + Full GameMaker API parity
 - **Major Features**: 
   - **Instance/Object Variables**: Exact GameMaker behavior with fallback hierarchy
@@ -115,26 +115,44 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Documentation**: Comprehensive GameMaker comparison guides and usage examples
 - **Commits**: `77b163a`
 
+### [Session 15: Sprite Rendering Implementation (August 8, 2025)](./milestones/00015-sprite-functionality.md) 🎨
+**Complete Sprite System Implementation** - Data-driven sprite loading and rendering with TOML room configuration
+- **Key Achievement**: Functional sprite system with TOML-based room data and real image rendering
+- **Technology**: TOML room data parsing + DGCSprite class + Rapid.js texture rendering + Data-driven object creation
+- **Major Features**:
+  - **TOML Room Configuration**: Declarative room definition with sprites and objects
+  - **Sprite Loading Pipeline**: Automatic sprite resolution from names to loaded textures
+  - **Room-to-Engine Integration**: Seamless object transfer from Room storage to GameObjectManager
+  - **Rapid.js Image Rendering**: HTMLImageElement to Rapid.js texture conversion with proper rendering
+  - **Coordinate System**: Grid-to-screen coordinate conversion with configurable cell size and offset
+- **Architecture Breakthrough**: Connected isolated Room system to engine's GameObjectManager for rendering
+- **Data-Driven Workflow**: `sprite_demo.toml` → RoomFactory → Room.activate() → RoomManager.goToRoom() → Engine rendering
+- **Debugging Success**: Systematic pipeline analysis from TOML loading through texture rendering
+- **Visual Validation**: Functional sprite display with fallback rectangle debugging system
+- **Commits**: `6f2815c`
+
 ---
 
-## Current State (August 7, 2025)
+## Current State (August 8, 2025)
 
-### Project Status: 🚧 **Active Development - Rapid.js-Powered GameMaker-Style Engine**
+### Project Status: 🚧 **Active Development - Rapid.js-Powered GameMaker-Style Engine with Sprite System**
 
 **Core Capabilities:**
 - ✅ **Event-Driven Architecture**: GameMaker-style events (CREATE, STEP, DRAW, DESTROY)
 - ✅ **Room Management System**: Professional level/scene organization with working navigation
 - ✅ **GameObject Framework**: Reusable, extensible game entities
 - ✅ **Rapid.js Rendering**: Immediate mode rendering with GameMaker-style drawing API
+- ✅ **Sprite System**: TOML-driven sprite loading and rendering with real image display
+- ✅ **Data-Driven Rooms**: Declarative room configuration using TOML files
 - ✅ **TypeScript Throughout**: Type-safe development with hot reload and zero compilation errors
 - ✅ **GameMaker Conventions**: Familiar structure and patterns
 - ✅ **GML Compatibility Layer**: Copy-paste GameMaker ds_grid code support
 - ✅ **Dual Coding Paradigms**: Modern TypeScript + Classic GML syntax
 - ✅ **Player Movement System**: WASD/Arrow key controls with turn-based mechanics
 - ✅ **Input Processing**: Keyboard and mouse input handling with proper event timing
-- ✅ **Visual Rendering**: Working Rapid.js immediate mode rendering with SpriteTestRoom demonstrations
+- ✅ **Visual Rendering**: Working Rapid.js immediate mode rendering with functional sprite display
 - ✅ **GameMaker Variable System**: Authentic instance vs object variable behavior with exact GameMaker compatibility
-- ✅ **Object Instance Access**: Perfect replication of `obj_menu.x` style property access patterns
+- ✅ **Object Instance Access**: Functional replication of `obj_menu.x` style property access patterns
 - ✅ **GameMaker-Style APIs**: Separate mouse X/Y methods, coordinate conversion, spatial queries with x,y parameters
 
 **Known Issues & Ongoing Work:**
@@ -173,8 +191,8 @@ Single File → Modular → Engine Framework → GameMaker Conventions → GML C
 - **Total Documentation**: 1,300+ lines
 
 ### Development Progress
-- **12 Major Development Sessions** with comprehensive documentation
-- **25+ Git Commits** with detailed commit messages
+- **15 Major Development Sessions** with comprehensive documentation
+- **26+ Git Commits** with detailed commit messages
 - **Solid Engine Architecture** with modern design patterns
 - **Dual Paradigm Support** accommodating different developer backgrounds
 - **Active Development Status** with ongoing feature additions and refinements
@@ -209,16 +227,20 @@ Single File → Modular → Engine Framework → GameMaker Conventions → GML C
 - **Compatibility**: GameMaker ds_grid code copy-paste support implemented
 - **Rendering Engine**: Complete migration from PIXI.js to Rapid.js immediate mode rendering
 - **Room System**: Fully functional room management with navigation and lifecycle management
-- **User Experience**: Working visual output with immediate mode rendering demonstrations
+- **Sprite System**: Complete TOML-driven sprite loading and rendering with real image display
+- **Data-Driven Development**: Declarative room configuration using TOML files
+- **User Experience**: Working visual output with functional sprite rendering
 - **Clean Architecture**: Resolved all technical debt with systematic error resolution
 - **Debugging**: Robust debugging pipeline for development and troubleshooting
 
 ### Areas for Future Development 🚧
+- **Sprite Animation**: Multi-frame sprite support with animation controls
+- **Additional Object Types**: Enemy and Item sprites in TOML rooms  
 - **Pathfinding System**: Click-to-move functionality needs refinement and bug fixes
 - **Engine Distribution**: Packaging for external use as npm package or template
 - **API Stabilization**: Engine interface may evolve during continued development
 - **Extended GML Support**: Additional GameMaker functions beyond ds_grid
-- **Asset Management**: Sprite and audio systems for complete game development
+- **Audio System**: Sound and music integration for complete game development
 - **Testing Framework**: Automated testing for engine components and game logic
 
 ---
@@ -226,25 +248,27 @@ Single File → Modular → Engine Framework → GameMaker Conventions → GML C
 ## Development Roadmap
 
 ### Immediate Priorities 🎯
-- **Fix Pathfinding System**: Resolve click-to-move validation and routing issues
+- **Sprite Animation**: Multi-frame sprite support and animation controls
+- **Additional Object Types**: Enemy and Item object implementation with sprites
+- **TOML Room Expansion**: More complex room configurations and object interactions
 - **Engine Distribution Prep**: Package for npm distribution and external use
 - **API Documentation**: Complete API reference for engine consumers
-- **Extended GML Support**: ds_list, ds_map functions for broader compatibility
 
 ### Medium-term Features 🚀
-- **Asset Pipeline**: Sprite management and texture optimization
 - **Audio Engine**: Comprehensive sound and music system
 - **Physics System**: Enhanced collision detection and response framework
 - **Save/Load System**: Game state persistence and serialization
+- **Extended GML Support**: ds_list, ds_map functions for broader compatibility
+- **Pathfinding Enhancement**: Improve click-to-move validation and routing
 
 ### Long-term Vision 🌟
-- **Visual Editor**: Scene and level design tools
+- **Visual Editor**: Scene and level design tools with TOML export
 - **Particle Effects**: Advanced visual effects and animation system
 - **Networking**: Multiplayer capabilities and real-time features
 - **Complete Platform**: Full web-based game development ecosystem
 
 ### Current Focus
-The engine is in active development with a solid foundation. Primary focus is on resolving known issues, stabilizing the API, and preparing for distribution to enable external game development projects.
+The engine now has a functional sprite system with TOML-driven room configuration. Primary focus is on expanding the sprite system with animation support, additional object types, and more sophisticated room configurations to create a complete 2D game development platform.
 
 ---
 

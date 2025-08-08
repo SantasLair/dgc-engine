@@ -27,11 +27,13 @@
   },
   "devDependencies": {
     "@types/easystarjs": "^0.1.29",
+    "glob": "^11.0.3",
     "typescript": "~5.8.3",
     "vite": "^7.0.4"
   },
   "dependencies": {
     "easystarjs": "^0.4.4",
-    "rapid-render": "^0.1.21"
+    "rapid-render": "^0.1.21",
+    "smol-toml": "^1.4.1"
   }
 }

@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "room": {
+    "name": "main_menu",
+    "dimensions": {
+      "width": 20,
+      "height": 15
+    },
+    "background": {
+      "type": "color",
+      "value": "#1a1a1a"
+    },
+    "view": {
+      "width": 800,
+      "height": 600,
+      "x": 0,
+      "y": 0
+    },
+    "sprites": [
+      {
+        "name": "logo_sprite",
+        "url": "/sprites/logo.png",
+        "frameWidth": 200,
+        "frameHeight": 100
+      },
+      {
+        "name": "button_sprite",
+        "url": "/sprites/button.png", 
+        "frameWidth": 120,
+        "frameHeight": 40
+      }
+    ],
+    "objects": [],
+    "events": {
+      "onCreate": "console.log('Menu room created')",
+      "onStep": "// Menu update logic here"
+    },
+    "properties": {
+      "menuType": "main",
+      "showCredits": true
+    },
+    "metadata": {
+      "description": "Main menu screen",
+      "author": "DGC Engine",
+      "version": "1.0.0",
+      "tags": ["menu", "ui"]
+    }
+  }
+}
