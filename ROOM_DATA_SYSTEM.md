@@ -211,14 +211,26 @@ onDraw = "// Custom drawing here"
 ## Directory Structure
 
 ```
-public/
-  data/
-    rooms/
-      main_menu.toml
-      test_level.toml
-      boss_fight.toml
-      ...
+src/game/rooms/data/           # ← Edit room data files here
+  main_menu.toml
+  test_level.toml
+  boss_fight.toml
+  ...
+
+public/data/rooms/             # ← Automatically copied during build
+  main_menu.toml               # (Generated - don't edit directly)
+  test_level.toml              # (Generated - don't edit directly)
+  ...
 ```
+
+**Important**: Always edit room data files in `src/game/rooms/data/`. The build system automatically copies them to `public/data/rooms/` where the engine can load them.
+
+## Development Workflow
+
+1. **Create/edit** room data files in `src/game/rooms/data/`
+2. **Save the file** - Vite automatically copies it to public directory
+3. **Hot reload** triggers and your changes are immediately available
+4. **No manual copying needed** - everything is automatic!
 
 ## Benefits of TOML Format
 

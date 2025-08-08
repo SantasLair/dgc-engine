@@ -40,7 +40,7 @@ menuType = "main"
 showCredits = true
 
 [room.metadata]
-description = "Main menu screen"
+description = "Main menu screen (edited in src!)"
 author = "DGC Engine"
 version = "1.0.0"
 tags = ["menu", "ui"]
