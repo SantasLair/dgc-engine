@@ -66,27 +66,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     ;(window as any).getCurrentRoom = () => game.getCurrentRoom()?.name
     ;(window as any).getRoomManager = () => game.getRoomManager()
     
-    // Test TOML room loading
-    ;(window as any).testTomlRooms = async () => {
+    // Test JSON room loading
+    ;(window as any).testJsonRooms = async () => {
       try {
-        console.log('🧪 Testing TOML room loading...')
+        console.log('🧪 Testing JSON room loading...')
         const roomManager = game.getRoomManager()
         const factory = roomManager.getFactory()
         
-        // Test loading a TOML file
-        const tomlRoom = await factory.createRoomFromFile('main_menu.toml')
-        console.log('✅ Successfully loaded TOML room:', tomlRoom.name)
+        // Test loading a JSON file
+        const jsonRoom = await factory.createRoomFromFile('main_menu.json')
+        console.log('✅ Successfully loaded JSON room:', jsonRoom.name)
         
-        // Test exporting TOML data
+        // Test exporting JSON data
         const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
-        const tomlString = factory.exportRoomData(roomData, 'toml')
-        console.log('✅ Successfully exported TOML data:')
-        console.log(tomlString)
+        const jsonString = factory.exportRoomData(roomData)
+        console.log('✅ Successfully exported JSON data:')
+        console.log(jsonString)
         
         return true
       } catch (error) {
-        console.error('❌ TOML test failed:', error)
+        console.error('❌ JSON test failed:', error)
         return false
+      }
+    }
+    
+    // Debug room state
+    ;(window as any).debugRoom = () => {
+      const currentRoom = game.getCurrentRoom()
+      const engine = game.getEngine()
+      const objectManager = engine?.getObjectManager()
+      
+      console.log('🔍 Current Room Debug Info:')
+      console.log('Room:', currentRoom?.name)
+      console.log('Object Count:', objectManager?.getObjectCount())
+      console.log('Objects:', objectManager?.getAllObjects().map(o => ({ type: o.objectType, x: o.x, y: o.y, visible: o.visible })))
+      
+      if (currentRoom) {
+        console.log('Room Sprites:', (currentRoom as any).sprites || 'none')
+        console.log('Room Properties:', (currentRoom as any).properties || 'none')
+      }
+      
+      return {
+        room: currentRoom?.name,
+        objectCount: objectManager?.getObjectCount(),
+        objects: objectManager?.getAllObjects()
       }
     }      // Expose GML room functions for testing
       ;(window as any).room_goto = room_goto

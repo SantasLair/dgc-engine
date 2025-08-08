@@ -117,10 +117,10 @@ export class EnhancedGame extends DGCGame {
     console.log('🏠 Setting up rooms...')
     
     try {
-      // Load data-driven rooms from TOML files (automatically copied from src/game/rooms/data/)
-      await this.roomManager.addRoomFromFile('main_menu.toml')
-      await this.roomManager.addRoomFromFile('test_level.toml')
-      await this.roomManager.addRoomFromFile('sprite_demo.toml')
+      // Load data-driven rooms from JSON files (automatically copied from src/game/rooms/data/)
+      await this.roomManager.addRoomFromFile('main_menu.json')
+      await this.roomManager.addRoomFromFile('test_level.json')
+      await this.roomManager.addRoomFromFile('sprite_demo.json')
       
       console.log('✅ Loaded data-driven rooms: main_menu, test_level, sprite_demo')
       

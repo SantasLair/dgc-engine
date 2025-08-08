@@ -19,15 +19,15 @@
     "sprites": [
       {
         "name": "logo_sprite",
-        "url": "/sprites/logo.png",
-        "frameWidth": 200,
-        "frameHeight": 100
+        "source": "/images/platformChar_idle.png",
+        "frameWidth": 32,
+        "frameHeight": 32
       },
       {
         "name": "button_sprite",
-        "url": "/sprites/button.png", 
-        "frameWidth": 120,
-        "frameHeight": 40
+        "source": "/images/platformerPack_character@2.png", 
+        "frameWidth": 32,
+        "frameHeight": 32
       }
     ],
     "objects": [],

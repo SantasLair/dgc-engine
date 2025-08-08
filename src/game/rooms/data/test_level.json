@@ -19,13 +19,13 @@
     "sprites": [
       {
         "name": "player_sprite",
-        "url": "/sprites/player.png",
+        "source": "/images/platformChar_idle.png",
         "frameWidth": 32,
         "frameHeight": 32
       },
       {
         "name": "enemy_sprite", 
-        "url": "/sprites/enemy.png",
+        "source": "/images/platformerPack_character@2.png",
         "frameWidth": 32,
         "frameHeight": 32
       }

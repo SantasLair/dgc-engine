@@ -13,8 +13,8 @@ function copyRoomData() {
     mkdirSync(targetDir, { recursive: true })
   }
   
-  // Copy all room data files
-  const files = glob.sync('**/*.{toml,json}', { cwd: sourceDir })
+  // Copy all room data files (JSON only)
+  const files = glob.sync('**/*.json', { cwd: sourceDir })
   files.forEach(file => {
     const sourcePath = resolve(sourceDir, file)
     const targetPath = resolve(targetDir, file)

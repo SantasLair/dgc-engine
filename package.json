@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "easystarjs": "^0.4.4",
-    "rapid-render": "^0.1.21",
-    "smol-toml": "^1.4.1"
+    "rapid-render": "^0.1.21"
   }
 }
