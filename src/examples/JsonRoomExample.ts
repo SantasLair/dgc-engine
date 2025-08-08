@@ -66,7 +66,7 @@ export class JsonRoomExample {
    */
   public exportRoomAsJson(roomData: RoomData): string {
     const factory = this.roomManager.getFactory()
-    return factory.exportRoomData(roomData)
+    return factory.exportRoomDataAsJson(roomData)
   }
 
   /**
@@ -119,16 +119,16 @@ export class JsonRoomExample {
   }
 
   /**
-   * Demo: Load all available JSON rooms
+   * Demo: Load all available MessagePack rooms
    */
   public async loadAllJsonRooms(): Promise<void> {
     const jsonFiles = [
-      'main_menu.json',
-      'test_level.json', 
-      'sprite_demo.json'
+      'main_menu.dgcroom',
+      'test_level.dgcroom', 
+      'sprite_demo.dgcroom'
     ]
     
-    console.log('📚 Loading all JSON rooms...')
+    console.log('📚 Loading all MessagePack rooms...')
     
     for (const filename of jsonFiles) {
       try {
@@ -184,7 +184,7 @@ export class JsonRoomExample {
  * const example = new JsonRoomExample()
  * 
  * // Load a specific room
- * await example.loadJsonRoom('sprite_demo.json')
+ * await example.loadJsonRoom('sprite_demo.dgcroom')
  * 
  * // Create and export room data
  * const json = await example.createDemoRoom()

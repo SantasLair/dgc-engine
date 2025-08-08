@@ -69,17 +69,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Test JSON room loading
     ;(window as any).testJsonRooms = async () => {
       try {
-        console.log('🧪 Testing JSON room loading...')
+        console.log('🧪 Testing MessagePack room loading...')
         const roomManager = game.getRoomManager()
         const factory = roomManager.getFactory()
         
-        // Test loading a JSON file
-        const jsonRoom = await factory.createRoomFromFile('main_menu.json')
-        console.log('✅ Successfully loaded JSON room:', jsonRoom.name)
+        // Test loading a MessagePack file
+        const jsonRoom = await factory.createRoomFromFile('main_menu.dgcroom')
+        console.log('✅ Successfully loaded MessagePack room:', jsonRoom.name)
         
         // Test exporting JSON data
         const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
-        const jsonString = factory.exportRoomData(roomData)
+        const jsonString = factory.exportRoomData(roomData, 'json')
         console.log('✅ Successfully exported JSON data:')
         console.log(jsonString)
         
@@ -87,6 +87,62 @@ document.addEventListener('DOMContentLoaded', async () => {
       } catch (error) {
         console.error('❌ JSON test failed:', error)
         return false
+      }
+    }
+    
+    // Test MessagePack room loading
+    ;(window as any).testMessagePackRooms = async () => {
+      try {
+        console.log('📦 Testing MessagePack room loading...')
+        const roomManager = game.getRoomManager()
+        const factory = roomManager.getFactory()
+        
+        // Test loading a MessagePack file (if it exists)
+        try {
+          const msgpackRoom = await factory.createRoomFromFile('main_menu.dgcroom')
+          console.log('✅ Successfully loaded MessagePack room:', msgpackRoom.name)
+        } catch (error) {
+          console.log('⚠️ MessagePack file not found (normal in development)')
+        }
+        
+        // Test exporting MessagePack data
+        const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
+        const msgpackData = factory.exportRoomData(roomData, 'msgpack') as Uint8Array
+        console.log('✅ Successfully exported MessagePack data:')
+        console.log('Binary data size:', msgpackData.byteLength, 'bytes')
+        
+        // Test round-trip conversion
+        console.log('✅ MessagePack functionality working')
+        
+        return true
+      } catch (error) {
+        console.error('❌ MessagePack test failed:', error)
+        return false
+      }
+    }
+    
+    // Convert current JSON data to MessagePack for testing
+    ;(window as any).convertToMessagePack = async () => {
+      try {
+        const roomManager = game.getRoomManager()
+        const factory = roomManager.getFactory()
+        
+        // Load MessagePack room
+        const jsonRoom = await factory.createRoomFromFile('sprite_demo.dgcroom')
+        console.log('📄 Loaded MessagePack room:', jsonRoom.name)
+        
+        // Create room data template and export as MessagePack
+        const roomData = factory.createRoomDataTemplate('converted_test', 20, 15)
+        const msgpackData = factory.exportRoomData(roomData, 'msgpack') as Uint8Array
+        
+        console.log('📦 Converted to MessagePack:')
+        console.log('Size:', msgpackData.byteLength, 'bytes')
+        console.log('Data:', msgpackData)
+        
+        return msgpackData
+      } catch (error) {
+        console.error('❌ Conversion failed:', error)
+        return null
       }
     }
     

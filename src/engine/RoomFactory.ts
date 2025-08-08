@@ -1,10 +1,11 @@
 /**
  * Room Factory System
  * 
- * Creates room instances from JSON data files or data objects.
+ * Creates room instances from JSON or MessagePack data files.
  * Supports both pure data-driven rooms and custom room classes.
  */
 
+import { encode, decode } from '@msgpack/msgpack'
 import { Room, type RoomConfig } from './Room'
 import type { 
   RoomData, 
@@ -54,7 +55,7 @@ export class RoomFactory {
   }
 
   /**
-   * Create a room from a JSON data file
+   * Create a room from a data file (supports JSON and MessagePack formats)
    */
   public async createRoomFromFile(filename: string): Promise<Room> {
     try {
@@ -66,14 +67,20 @@ export class RoomFactory {
         throw new Error(`Failed to load room file: ${response.statusText}`)
       }
       
-      const fileContent = await response.text()
-      
-      // Parse JSON data
       let roomDataFile: RoomDataFile
-      if (filename.endsWith('.json')) {
+      
+      if (filename.endsWith('.dgcroom')) {
+        // Load MessagePack binary format
+        console.log('📦 Parsing MessagePack data...')
+        const arrayBuffer = await response.arrayBuffer()
+        roomDataFile = decode(new Uint8Array(arrayBuffer)) as RoomDataFile
+      } else if (filename.endsWith('.json')) {
+        // Load JSON format (development)
+        console.log('📄 Parsing JSON data...')
+        const fileContent = await response.text()
         roomDataFile = JSON.parse(fileContent) as RoomDataFile
       } else {
-        throw new Error(`Unsupported file format. Use .json files.`)
+        throw new Error(`Unsupported file format. Use .json or .dgcroom files.`)
       }
       
       return this.createRoomFromData(roomDataFile.room)
@@ -224,11 +231,31 @@ export class RoomFactory {
   /**
    * Export room data to JSON string for saving
    */
-  public exportRoomData(roomData: RoomData): string {
+  public exportRoomDataAsJson(roomData: RoomData): string {
     const roomDataFile: RoomDataFile = {
       version: '1.0.0',
       room: roomData
     }
     return JSON.stringify(roomDataFile, null, 2)
+  }
+
+  /**
+   * Export room data to MessagePack binary format
+   */
+  public exportRoomDataAsMessagePack(roomData: RoomData): Uint8Array {
+    const roomDataFile: RoomDataFile = {
+      version: '1.0.0',
+      room: roomData
+    }
+    return encode(roomDataFile)
+  }
+
+  /**
+   * Export room data (defaults to JSON format)
+   */
+  public exportRoomData(roomData: RoomData, format: 'json' | 'msgpack' = 'json'): string | Uint8Array {
+    return format === 'msgpack' 
+      ? this.exportRoomDataAsMessagePack(roomData)
+      : this.exportRoomDataAsJson(roomData)
   }
 }

@@ -1,7 +1,7 @@
 /**
  * Enhanced Game Class with Data-Driven Room Support
  * 
- * Example showing how to use the new room data system alongside 
+ * Example showing how to use the new room data system alongside
  * traditional custom room classes.
  */
 
@@ -117,10 +117,10 @@ export class EnhancedGame extends DGCGame {
     console.log('🏠 Setting up rooms...')
     
     try {
-      // Load data-driven rooms from JSON files (automatically copied from src/game/rooms/data/)
-      await this.roomManager.addRoomFromFile('main_menu.json')
-      await this.roomManager.addRoomFromFile('test_level.json')
-      await this.roomManager.addRoomFromFile('sprite_demo.json')
+      // Load data-driven rooms from MessagePack files (automatically converted from JSON during build)
+      await this.roomManager.addRoomFromFile('main_menu.dgcroom')
+      await this.roomManager.addRoomFromFile('test_level.dgcroom')
+      await this.roomManager.addRoomFromFile('sprite_demo.dgcroom')
       
       console.log('✅ Loaded data-driven rooms: main_menu, test_level, sprite_demo')
       
@@ -245,6 +245,6 @@ export class EnhancedGame extends DGCGame {
       currentRoom.height
     )
     
-    return factory.exportRoomData(roomData)
+    return factory.exportRoomDataAsJson(roomData)
   }
 }

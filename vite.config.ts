@@ -1,10 +1,11 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import { copyFileSync, mkdirSync, existsSync } from 'fs'
+import { copyFileSync, mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs'
 import { glob } from 'glob'
+import { encode } from '@msgpack/msgpack'
 
-// Function to copy room data files
-function copyRoomData() {
+// Function to convert JSON room data to MessagePack binary format
+function convertRoomDataToMessagePack() {
   const sourceDir = resolve(__dirname, 'src/game/rooms/data')
   const targetDir = resolve(__dirname, 'public/data/rooms')
   
@@ -13,13 +14,22 @@ function copyRoomData() {
     mkdirSync(targetDir, { recursive: true })
   }
   
-  // Copy all room data files (JSON only)
+  // Convert all JSON files to .dgcroom MessagePack files
   const files = glob.sync('**/*.json', { cwd: sourceDir })
   files.forEach(file => {
     const sourcePath = resolve(sourceDir, file)
-    const targetPath = resolve(targetDir, file)
-    copyFileSync(sourcePath, targetPath)
-    console.log(`📄 Copied room data: ${file}`)
+    const jsonContent = readFileSync(sourcePath, 'utf8')
+    const roomData = JSON.parse(jsonContent)
+    
+    // Convert to MessagePack binary
+    const binaryData = encode(roomData)
+    
+    // Save as .dgcroom file
+    const outputFile = file.replace('.json', '.dgcroom')
+    const targetPath = resolve(targetDir, outputFile)
+    writeFileSync(targetPath, binaryData)
+    
+    console.log(`📦 Converted to MessagePack: ${file} → ${outputFile}`)
   })
 }
 
@@ -52,17 +62,18 @@ export default defineConfig({
     }
   },
   plugins: [
-    // Plugin to copy room data files from src to public during dev and build
+    // Plugin to convert room data to MessagePack and copy assets
     {
       name: 'copy-assets',
       buildStart() {
-        copyRoomData()
+        // Only convert to MessagePack (no JSON copying for compression and obfuscation)
+        convertRoomDataToMessagePack()
         copyImageAssets()
       },
       handleHotUpdate({ file }) {
-        // Re-copy room data files when they change during development
+        // Re-convert room data files when they change during development
         if (file.includes('src/game/rooms/data/')) {
-          copyRoomData()
+          convertRoomDataToMessagePack()
         }
         // Re-copy images when they change during development
         if (file.includes('src/game/artifacts/images/')) {

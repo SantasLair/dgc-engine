@@ -1,10 +1,5 @@
-import { GameObject, type GameObjectProperties, GameEvent } from './GameObject'
+import { GameObject, type GameObjectProperties, GameEvent, type IDrawingSystem } from './GameObject'
 import type { EventManager } from './EventManager'
-
-// Forward declaration for drawing system
-interface IDrawingSystem {
-  drawSpriteFromSprite(sprite: any, x: number, y: number, frame?: number, scaleX?: number, scaleY?: number, rotation?: number, alpha?: number): void
-}
 
 /**
  * Manages all game objects in the engine
