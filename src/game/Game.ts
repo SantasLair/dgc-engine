@@ -1,12 +1,12 @@
 import { DGCGame, type DGCEngineConfig, RoomManager } from '../engine'
-import { GameRoom, MenuRoom, SpriteTestRoom } from './rooms'
+import { GameRoom, MenuRoom } from './rooms'
 
 /**
  * Main game class with room management functionality
  */
 export class Game extends DGCGame {
   public roomManager!: RoomManager
-  private currentRoomName: string = 'sprite_test'
+  private currentRoomName: string = 'game'
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
@@ -28,11 +28,14 @@ export class Game extends DGCGame {
     // Initialize room manager
     this.roomManager = new RoomManager()
     
+    // Set this game instance on the room manager for object management
+    this.roomManager.setGameInstance(this)
+    
     // Create and register rooms
     this.setupRooms()
     
-    // Start with the sprite test room to show visual content
-    await this.goToRoom('sprite_test')
+    // Start with the game room
+    await this.goToRoom('game')
     
     console.log('🎮 Game setup complete with room management')
   }
@@ -41,16 +44,14 @@ export class Game extends DGCGame {
     console.log('🏠 Setting up rooms...')
     
     // Create room instances
-    const spriteTestRoom = new SpriteTestRoom(this)
     const gameRoom = new GameRoom(this)
     const menuRoom = new MenuRoom(this)
 
     // Add rooms to manager
-    this.roomManager.addRoom(spriteTestRoom)
     this.roomManager.addRoom(gameRoom)
     this.roomManager.addRoom(menuRoom)
     
-    console.log('🏠 Rooms registered: sprite_test, game, menu')
+    console.log('🏠 Rooms registered: game, menu')
   }
 
   /**

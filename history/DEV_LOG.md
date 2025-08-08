@@ -103,7 +103,7 @@ This project began as a simple turn-based movement game and evolved into a sophi
 
 ### [Session 14: GameMaker Compatibility Deep-Dive (August 7, 2025)](./milestones/00014-gamemaker-compatibility.md) 🎯
 **Authentic GameMaker Behavior Implementation** - Achieved 100% GameMaker-compatible variable systems and instance access patterns
-- **Key Achievement**: Perfect replication of GameMaker's instance vs object variable system and object instance access
+- **Key Achievement**: GameMaker-authentic replication of instance vs object variable system and object instance access
 - **Technology**: GameMaker-style variable lookup + Object instance property access + Full GameMaker API parity
 - **Major Features**: 
   - **Instance/Object Variables**: Exact GameMaker behavior with fallback hierarchy
@@ -115,26 +115,44 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Documentation**: Comprehensive GameMaker comparison guides and usage examples
 - **Commits**: `77b163a`
 
+### [Session 15: Sprite Rendering Implementation (August 8, 2025)](./milestones/00015-sprite-functionality.md) 🎨
+**Complete Sprite System Implementation** - Data-driven sprite loading and rendering with TOML room configuration
+- **Key Achievement**: Functional sprite system with TOML-based room data and real image rendering
+- **Technology**: TOML room data parsing + DGCSprite class + Rapid.js texture rendering + Data-driven object creation
+- **Major Features**:
+  - **TOML Room Configuration**: Declarative room definition with sprites and objects
+  - **Sprite Loading Pipeline**: Automatic sprite resolution from names to loaded textures
+  - **Room-to-Engine Integration**: Seamless object transfer from Room storage to GameObjectManager
+  - **Rapid.js Image Rendering**: HTMLImageElement to Rapid.js texture conversion with proper rendering
+  - **Coordinate System**: Grid-to-screen coordinate conversion with configurable cell size and offset
+- **Architecture Breakthrough**: Connected isolated Room system to engine's GameObjectManager for rendering
+- **Data-Driven Workflow**: `sprite_demo.toml` → RoomFactory → Room.activate() → RoomManager.goToRoom() → Engine rendering
+- **Debugging Success**: Systematic pipeline analysis from TOML loading through texture rendering
+- **Visual Validation**: Functional sprite display with fallback rectangle debugging system
+- **Commits**: TBD
+
 ---
 
-## Current State (August 7, 2025)
+## Current State (August 8, 2025)
 
-### Project Status: 🚧 **Active Development - Rapid.js-Powered GameMaker-Style Engine**
+### Project Status: 🚧 **Active Development - Rapid.js-Powered GameMaker-Style Engine with Sprite System**
 
 **Core Capabilities:**
 - ✅ **Event-Driven Architecture**: GameMaker-style events (CREATE, STEP, DRAW, DESTROY)
 - ✅ **Room Management System**: Professional level/scene organization with working navigation
 - ✅ **GameObject Framework**: Reusable, extensible game entities
 - ✅ **Rapid.js Rendering**: Immediate mode rendering with GameMaker-style drawing API
+- ✅ **Sprite System**: TOML-driven sprite loading and rendering with real image display
+- ✅ **Data-Driven Rooms**: Declarative room configuration using TOML files
 - ✅ **TypeScript Throughout**: Type-safe development with hot reload and zero compilation errors
 - ✅ **GameMaker Conventions**: Familiar structure and patterns
 - ✅ **GML Compatibility Layer**: Copy-paste GameMaker ds_grid code support
 - ✅ **Dual Coding Paradigms**: Modern TypeScript + Classic GML syntax
 - ✅ **Player Movement System**: WASD/Arrow key controls with turn-based mechanics
 - ✅ **Input Processing**: Keyboard and mouse input handling with proper event timing
-- ✅ **Visual Rendering**: Working Rapid.js immediate mode rendering with SpriteTestRoom demonstrations
+- ✅ **Visual Rendering**: Working Rapid.js immediate mode rendering with functional sprite display
 - ✅ **GameMaker Variable System**: Authentic instance vs object variable behavior with exact GameMaker compatibility
-- ✅ **Object Instance Access**: Perfect replication of `obj_menu.x` style property access patterns
+- ✅ **Object Instance Access**: Functional replication of `obj_menu.x` style property access patterns
 - ✅ **GameMaker-Style APIs**: Separate mouse X/Y methods, coordinate conversion, spatial queries with x,y parameters
 
 **Known Issues & Ongoing Work:**

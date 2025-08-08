@@ -5,19 +5,35 @@ import { GameObject, GameEvent } from '../../engine'
  * Provides collectible items with various effects
  */
 export class Item extends GameObject {
-  constructor(x: number, y: number, itemType: string = 'coin', value: number = 10) {
-    super('Item', { x, y })
+  constructor(xOrConfig: number | { x: number; y: number; [key: string]: any }, y?: number, itemType?: string, value?: number) {
+    // Handle both constructor signatures: Item(x, y, type, value) and Item({x, y, ...props})
+    let x: number, yPos: number, config: any = {}
+    
+    if (typeof xOrConfig === 'number') {
+      // Traditional constructor: Item(x, y, type, value)
+      x = xOrConfig
+      yPos = y!
+      config.itemType = itemType || 'coin'
+      config.value = value || 10
+    } else {
+      // Data-driven constructor: Item({x, y, ...props})
+      x = xOrConfig.x
+      yPos = xOrConfig.y
+      config = xOrConfig
+    }
+    
+    super('Item', { x, y: yPos, ...config })
     
     // Set item properties
     this.solid = false // Items don't block movement
     this.visible = true
-    this.setVariable('itemType', itemType)
-    this.setVariable('value', value)
+    this.setVariable('itemType', config.itemType || 'coin')
+    this.setVariable('value', config.value || 10)
     this.setVariable('bobOffset', Math.random() * Math.PI * 2)
     this.setVariable('collected', false)
     
     // Set item-specific properties based on type
-    this.setItemProperties(itemType, value)
+    this.setItemProperties(config.itemType || 'coin', config.value || 10)
     
     this.setupItemEvents()
   }

@@ -19,21 +19,28 @@ y = 0
 
 [[room.sprites]]
 name = "logo_sprite"
-source = "/sprites/logo.png"
+source = "/images/platformerPack_character@2.png"
 frameWidth = 200
 frameHeight = 100
 
 [[room.sprites]]
 name = "button_sprite"
-source = "/sprites/button.png"
+source = "/images/platformChar_idle.png"
 frameWidth = 120
 frameHeight = 40
 
 # No objects in main menu - just background and UI elements
+[[room.objects]]
+objectType = "Player"
+instanceName = "menu_marker"
 
-[room.events]
-onCreate = "console.log('Menu room created')"
-onStep = "// Menu update logic here"
+[room.objects.position]
+x = 10
+y = 7
+depth = 0
+
+[room.objects.properties]
+health = 100
 
 [room.properties]
 menuType = "main"

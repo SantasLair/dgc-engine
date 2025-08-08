@@ -12,6 +12,7 @@ export interface IGameObjectManager {
 // Forward declaration for drawing system
 export interface IDrawingSystem {
   drawSpriteFromSprite(sprite: any, x: number, y: number, frame?: number, scaleX?: number, scaleY?: number, rotation?: number, alpha?: number): void
+  drawRectangle(x1: number, y1: number, x2: number, y2: number, filled?: boolean, color?: number, alpha?: number): void
 }
 
 /**
@@ -253,6 +254,13 @@ export class GameObject {
   }
   
   /**
+   * Get the drawing system (for custom drawing in events)
+   */
+  public getDrawingSystem(): IDrawingSystem | null {
+    return this.drawingSystem
+  }
+  
+  /**
    * Add an event script to this object
    */
   public addEventScript(event: GameEvent, script: EventScript): void {
@@ -468,6 +476,7 @@ export class GameObject {
    */
   public drawSelf(): void {
     if (!this.sprite || !this.drawingSystem) {
+      console.log(`❌ Cannot draw ${this.objectType}: sprite=${!!this.sprite}, drawingSystem=${!!this.drawingSystem}`)
       return
     }
     

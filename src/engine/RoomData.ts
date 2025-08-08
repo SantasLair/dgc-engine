@@ -90,7 +90,7 @@ export interface RoomData {
   /** Objects to create in this room */
   objects?: RoomObjectData[]
   
-  /** Room event scripts (optional) */
+  /** Room event scripts (optional) - should be provided via companion TypeScript files */
   events?: {
     onCreate?: EventScript
     onStep?: EventScript

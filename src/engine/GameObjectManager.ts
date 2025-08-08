@@ -201,7 +201,10 @@ export class GameObjectManager {
       .filter(obj => obj.visible && obj.active)
       .sort((a, b) => a.depth - b.depth) // Lower depth values draw first (background)
     
+    console.log(`🎨 GameObjectManager.draw() called with ${visibleObjects.length} visible objects`)
+    
     for (const gameObject of visibleObjects) {
+      console.log(`🎨 Queuing DRAW event for ${gameObject.objectType} at (${gameObject.x}, ${gameObject.y})`)
       this.eventManager.queueObjectEvent(gameObject, GameEvent.DRAW)
     }
   }

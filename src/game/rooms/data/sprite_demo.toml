@@ -2,7 +2,6 @@ version = "1.0.0"
 
 [room]
 name = "sprite_demo"
-customClass = "SpriteTestRoom"
 
 [room.dimensions]
 width = 20
@@ -20,10 +19,10 @@ y = 0
 
 [[room.sprites]]
 name = "test_sprite"
-source = "/sprites/test.png"
+source = "/images/platformChar_idle.png"
 frameWidth = 32
 frameHeight = 32
-frameCount = 4
+frameCount = 1
 
 [[room.objects]]
 objectType = "Player"
@@ -36,10 +35,6 @@ depth = 0
 
 [room.objects.properties]
 sprite = "test_sprite"
-
-[room.events]
-onCreate = "console.log('Sprite demo room loaded')"
-onDraw = "// Custom drawing code can go here"
 
 [room.properties]
 demoMode = true

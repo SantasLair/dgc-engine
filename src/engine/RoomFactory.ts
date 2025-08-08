@@ -127,12 +127,11 @@ export class RoomFactory {
       // TODO: Handle image backgrounds when needed
     }
 
-    // Handle room events
+    // Handle room events - TOML files should not contain scripts
+    // Scripts should be handled by companion TypeScript files
     if (roomData.events) {
-      config.onCreate = roomData.events.onCreate
-      config.onStep = roomData.events.onStep
-      config.onDraw = roomData.events.onDraw
-      config.onDestroy = roomData.events.onDestroy
+      // Skip script compilation for now - use companion TS files for scripts
+      console.log('⚠️ Room events found in TOML - consider using companion TypeScript files for scripts')
     }
 
     return config
@@ -142,6 +141,8 @@ export class RoomFactory {
    * Create and add objects to a room based on object data
    */
   private setupRoomObjects(room: Room, objectsData: RoomObjectData[]): void {
+    console.log(`🎯 Setting up ${objectsData.length} objects in room: ${room.name}`)
+    
     for (const objectData of objectsData) {
       try {
         const gameObject = this.createObject(objectData)
@@ -159,13 +160,23 @@ export class RoomFactory {
    * Create a game object from object data
    */
   private createObject(objectData: RoomObjectData): GameObject | null {
+    console.log(`🏭 Creating object: ${objectData.objectType} at (${objectData.position.x}, ${objectData.position.y})`)
+    
     const ObjectClass = this.objectTypes.get(objectData.objectType)
     if (!ObjectClass) {
       console.error(`❌ Unknown object type: ${objectData.objectType}`)
+      console.log(`📝 Available object types:`, Array.from(this.objectTypes.keys()))
       return null
     }
 
     // Create the object with position and properties
+    console.log(`✅ Creating ${objectData.objectType} with data:`, {
+      x: objectData.position.x,
+      y: objectData.position.y,
+      depth: objectData.position.depth || 0,
+      ...objectData.properties
+    })
+    
     const gameObject = new ObjectClass({
       x: objectData.position.x,
       y: objectData.position.y,
@@ -177,6 +188,7 @@ export class RoomFactory {
     if (objectData.instanceName) {
       // Add instance name property if GameObject supports it
       (gameObject as any).instanceName = objectData.instanceName
+      console.log(`🏷️ Set instance name: ${objectData.instanceName}`)
     }
 
     return gameObject

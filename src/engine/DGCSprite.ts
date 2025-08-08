@@ -57,9 +57,11 @@ export class DGCSprite {
     
     // Set up loading promise
     if (typeof config.source === 'string') {
+      console.log(`🎯 Loading sprite image from: ${config.source}`)
       this.loadPromise = new Promise((resolve, reject) => {
         this.image.onload = () => {
           this.loaded = true
+          console.log(`✅ Sprite image loaded successfully: ${config.name}`)
           
           // Auto-detect frame dimensions if not provided
           if (!config.frameWidth || !config.frameHeight) {
@@ -69,7 +71,10 @@ export class DGCSprite {
           
           resolve()
         }
-        this.image.onerror = reject
+        this.image.onerror = (error) => {
+          console.error(`❌ Failed to load sprite image: ${config.name} from ${config.source}`, error)
+          reject(error)
+        }
         this.image.src = config.source as string
       })
     } else {

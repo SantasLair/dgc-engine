@@ -6,12 +6,12 @@
  */
 
 import { DGCGame, type DGCEngineConfig, RoomManager } from '../engine'
-import { GameRoom, MenuRoom, SpriteTestRoom } from './rooms'
+import { GameRoom, MenuRoom } from './rooms'
 import { Player, Enemy, GameBoard } from './gameobjects'
 
 export class EnhancedGame extends DGCGame {
   public roomManager!: RoomManager
-  private currentRoomName: string = 'main_menu'
+  private currentRoomName: string = 'sprite_demo' // Changed to test sprite demo directly
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
@@ -29,25 +29,52 @@ export class EnhancedGame extends DGCGame {
 
   public async setupGame(): Promise<void> {
     console.log('🎮 Setting up enhanced game with data-driven rooms...')
+    console.log('🎮 Current working directory and config check')
     
-    // Initialize room manager with factory configuration
-    this.roomManager = new RoomManager({
-      dataPath: '/data/rooms/',
-      objectTypes: new Map(),
-      roomClasses: new Map()
-    })
-    
-    // Register object types that can be created in data-driven rooms
-    this.setupObjectTypes()
-    
-    // Register custom room classes (optional)
-    this.setupCustomRoomClasses()
-    
-    // Setup rooms (mix of data-driven and custom classes)
-    await this.setupRooms()
-    
-    // Start with the main menu
-    await this.goToRoom('main_menu')
+    try {
+      // Initialize room manager with factory configuration
+      console.log('🏗️ Creating RoomManager...')
+      this.roomManager = new RoomManager({
+        dataPath: '/data/rooms/',
+        objectTypes: new Map(),
+        roomClasses: new Map()
+      })
+      console.log('✅ RoomManager created successfully')
+      
+      // Set this game instance on the room manager for object management
+      this.roomManager.setGameInstance(this)
+      console.log('✅ Game instance set on RoomManager')
+      
+      // Register object types that can be created in data-driven rooms
+      console.log('🏗️ Setting up object types...')
+      this.setupObjectTypes()
+      console.log('✅ Object types registered')
+      
+      // Register custom room classes (optional)
+      console.log('🏗️ Setting up custom room classes...')
+      this.setupCustomRoomClasses()
+      console.log('✅ Custom room classes registered')
+      
+      // Setup rooms (mix of data-driven and custom classes)
+      console.log('🏗️ Setting up rooms...')
+      await this.setupRooms()
+      console.log('✅ Rooms setup completed')
+      
+      // Start with the sprite demo for testing
+      console.log('🎮 About to load sprite_demo room...')
+      const success = await this.goToRoom('sprite_demo')
+      if (success) {
+        console.log('✅ Successfully loaded sprite_demo room')
+      } else {
+        console.error('❌ Failed to load sprite_demo room')
+        // Try fallback to main_menu
+        console.log('🔄 Trying main_menu as fallback...')
+        await this.goToRoom('main_menu')
+      }
+    } catch (error) {
+      console.error('❌ Error in setupGame:', error)
+      throw error
+    }
     
     console.log('🎮 Enhanced game setup complete')
   }
@@ -56,12 +83,16 @@ export class EnhancedGame extends DGCGame {
    * Register object types that can be created in room data files
    */
   private setupObjectTypes(): void {
+    console.log('🏭 Registering object types...')
     const factory = this.roomManager.getFactory()
     
     // Register all game object types
     factory.registerObjectType('Player', Player)
+    console.log('✅ Registered Player class')
     factory.registerObjectType('Enemy', Enemy)
+    console.log('✅ Registered Enemy class')
     factory.registerObjectType('GameBoard', GameBoard)
+    console.log('✅ Registered GameBoard class')
     
     console.log('🏭 Registered object types: Player, Enemy, GameBoard')
   }
@@ -73,7 +104,6 @@ export class EnhancedGame extends DGCGame {
     const factory = this.roomManager.getFactory()
     
     // Register custom room classes (only needed for special behavior)
-    factory.registerRoomClass('SpriteTestRoom', SpriteTestRoom)
     factory.registerRoomClass('GameRoom', GameRoom)
     factory.registerRoomClass('MenuRoom', MenuRoom)
     

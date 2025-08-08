@@ -114,6 +114,9 @@ export class Room {
       await this.spriteManager.loadSprites(this.requiredSprites)
     }
     
+    // Now that sprites are loaded, resolve sprite names to sprite objects for all game objects
+    this.resolveSpriteReferences()
+    
     // Execute create event if not already created
     if (!this.isCreated) {
       await this.executeEvent(GameEvent.CREATE)
@@ -283,6 +286,32 @@ export class Room {
   public hasSprite(name: string): boolean {
     return this.spriteManager.hasSprite(name)
   }
+  
+  /**
+   * Resolve sprite name references to actual sprite objects for all game objects
+   * Called after sprites are loaded but before room create event
+   */
+  private resolveSpriteReferences(): void {
+    console.log(`🎨 Resolving sprite references for ${this.gameObjects.size} objects in room: ${this.name}`)
+    
+    for (const gameObject of this.gameObjects) {
+      console.log(`🔍 Checking object: ${gameObject.objectType} sprite property:`, (gameObject as any).sprite)
+      
+      // Check if the object has a sprite property that's a string (sprite name)
+      if (typeof (gameObject as any).sprite === 'string') {
+        const spriteName = (gameObject as any).sprite as string
+        const spriteObject = this.getSprite(spriteName)
+        
+        if (spriteObject) {
+          (gameObject as any).sprite = spriteObject
+          console.log(`🎨 Resolved sprite '${spriteName}' for ${gameObject.objectType}`)
+        } else {
+          // Set sprite to null so the object knows it doesn't have a sprite
+          (gameObject as any).sprite = null
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -298,9 +327,17 @@ export class RoomManager {
   private rooms: Map<string, Room> = new Map()
   private currentRoom?: Room
   private roomFactory: RoomFactory
+  private gameInstance?: any  // Reference to the game instance for adding/removing objects
 
   constructor(factoryConfig?: RoomFactoryConfig) {
     this.roomFactory = new RoomFactory(factoryConfig)
+  }
+
+  /**
+   * Set the game instance for object management
+   */
+  public setGameInstance(game: any): void {
+    this.gameInstance = game
   }
 
   /**
@@ -376,6 +413,14 @@ export class RoomManager {
 
     // Deactivate and cleanup current room
     if (this.currentRoom) {
+      // Remove all game objects from the engine
+      if (this.gameInstance) {
+        for (const gameObject of this.currentRoom.getGameObjects()) {
+          this.gameInstance.removeGameObject(gameObject)
+        }
+        console.log(`🧹 Removed ${this.currentRoom.getGameObjects().size} objects from engine`)
+      }
+      
       // Fully destroy the room and all its game objects
       await this.currentRoom.destroy()
     }
@@ -383,6 +428,22 @@ export class RoomManager {
     // Activate new room
     this.currentRoom = newRoom
     await newRoom.activate()
+    
+    // Add all game objects from the new room to the engine
+    if (this.gameInstance) {
+      for (const gameObject of newRoom.getGameObjects()) {
+        this.gameInstance.addGameObject(gameObject)
+      }
+      console.log(`🎮 Added ${newRoom.getGameObjects().size} objects to engine for room: ${roomName}`)
+      
+      // Additional verification
+      if (newRoom.getGameObjects().size > 0) {
+        console.log('🎯 SPRITE RENDERING FIX: Objects successfully transferred to engine!')
+        for (const obj of newRoom.getGameObjects()) {
+          console.log(`  - ${obj.objectType} at (${obj.x}, ${obj.y}) with sprite:`, (obj as any).sprite)
+        }
+      }
+    }
     
     return true
   }

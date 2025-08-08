@@ -106,6 +106,7 @@ export abstract class DGCGame {
    * Add a GameObject to the game
    */
   public addGameObject(gameObject: GameObject): void {
+    console.log(`🎮 DGCGame.addGameObject() called for: ${gameObject.objectType} at (${gameObject.x}, ${gameObject.y})`)
     this.engine.addGameObject(gameObject)
   }
 
