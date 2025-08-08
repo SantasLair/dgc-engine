@@ -5,15 +5,20 @@
 This is a turn-based movement game demo project built with:
 - **Vite** - Fast build tool and development server
 - **TypeScript** - Type-safe JavaScript development
+- **rapid-render** - Immediate-mode 2D rendering library
 - **EasyStar.js** - A* pathfinding library for 2D grids
-- **HTML5 Canvas** - 2D rendering
+- **MessagePack** - Binary data serialization
+- **HTML5 Canvas** - 2D rendering target
 
 ## Game Architecture Guidelines
 
 - Use object-oriented programming with TypeScript classes
+- Implement GameMaker-style event system with GameObject base class
+- Use immediate-mode rendering with rapid-render library
 - Implement a grid-based game board system
 - Use EasyStar.js for pathfinding calculations
 - Follow turn-based game patterns with clear state management
+- Use MessagePack binary format for room data
 - Keep rendering logic separate from game logic
 - Use proper TypeScript typing throughout the codebase
 
