@@ -5,12 +5,11 @@
  * traditional custom room classes.
  */
 
-import { DGCGame, type DGCEngineConfig, RoomManager } from '../engine'
+import { DGCGame, type DGCEngineConfig } from '../engine'
 import { GameRoom, MenuRoom } from './rooms'
 import { Player, Enemy, GameBoard } from './gameobjects'
 
 export class EnhancedGame extends DGCGame {
-  public roomManager!: RoomManager
   private currentRoomName: string = 'sprite_demo' // Changed to test sprite demo directly
 
   constructor(canvas: HTMLCanvasElement) {
@@ -32,18 +31,8 @@ export class EnhancedGame extends DGCGame {
     console.log('🎮 Current working directory and config check')
     
     try {
-      // Initialize room manager with factory configuration
-      console.log('🏗️ Creating RoomManager...')
-      this.roomManager = new RoomManager({
-        dataPath: '/data/rooms/',
-        objectTypes: new Map(),
-        roomClasses: new Map()
-      })
-      console.log('✅ RoomManager created successfully')
-      
-      // Set this game instance on the room manager for object management
-      this.roomManager.setGameInstance(this)
-      console.log('✅ Game instance set on RoomManager')
+      // Room manager is already initialized in the base DGCGame class
+      console.log('✅ RoomManager available from engine')
       
       // Register object types that can be created in data-driven rooms
       console.log('🏗️ Setting up object types...')
@@ -185,13 +174,6 @@ export class EnhancedGame extends DGCGame {
    */
   public getCurrentRoom(): any {
     return this.roomManager.getCurrentRoom()
-  }
-
-  /**
-   * Get the room manager (for compatibility with existing room classes)
-   */
-  public getRoomManager(): RoomManager {
-    return this.roomManager
   }
 
   /**

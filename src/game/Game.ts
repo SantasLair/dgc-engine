@@ -1,11 +1,10 @@
-import { DGCGame, type DGCEngineConfig, RoomManager } from '../engine'
+import { DGCGame, type DGCEngineConfig } from '../engine'
 import { GameRoom, MenuRoom } from './rooms'
 
 /**
  * Main game class with room management functionality
  */
 export class Game extends DGCGame {
-  public roomManager!: RoomManager
   private currentRoomName: string = 'game'
 
   constructor(canvas: HTMLCanvasElement) {
@@ -25,11 +24,8 @@ export class Game extends DGCGame {
   public async setupGame(): Promise<void> {
     console.log('🎮 Setting up game with room management...')
     
-    // Initialize room manager
-    this.roomManager = new RoomManager()
-    
-    // Set this game instance on the room manager for object management
-    this.roomManager.setGameInstance(this)
+    // Room manager is already initialized in the base DGCGame class
+    console.log('✅ RoomManager available from engine')
     
     // Create and register rooms
     this.setupRooms()
@@ -88,12 +84,5 @@ export class Game extends DGCGame {
    */
   public getCurrentRoomName(): string {
     return this.currentRoomName
-  }
-
-  /**
-   * Get the room manager
-   */
-  public getRoomManager(): RoomManager {
-    return this.roomManager
   }
 }

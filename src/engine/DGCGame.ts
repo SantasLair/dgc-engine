@@ -2,6 +2,7 @@ import { DGCEngine } from './DGCEngine'
 import type { DGCEngineConfig } from './DGCEngineConfig'
 import { createDGCEngineConfig } from './DGCEngineConfig'
 import { GameObject } from './GameObject'
+import { RoomManager } from './Room'
 import type { Rapid } from 'rapid-render'
 
 /**
@@ -11,6 +12,7 @@ import type { Rapid } from 'rapid-render'
 export abstract class DGCGame {
   protected canvas: HTMLCanvasElement
   protected engine: DGCEngine
+  protected roomManager: RoomManager
   protected isInitialized: boolean = false
 
   constructor(canvas: HTMLCanvasElement) {
@@ -33,6 +35,17 @@ export abstract class DGCGame {
     console.log(`🎮 Actual canvas element size: ${this.canvas.width}x${this.canvas.height}`)
     
     this.engine = new DGCEngine(config)
+    
+    // Initialize room manager as part of the engine
+    this.roomManager = new RoomManager({
+      dataPath: '/data/rooms/',
+      objectTypes: new Map(),
+      roomClasses: new Map()
+    })
+    
+    // Set this game instance on the room manager for object management
+    this.roomManager.setGameInstance(this)
+    console.log('🏗️ RoomManager initialized in engine')
   }
 
   /**
@@ -93,6 +106,13 @@ export abstract class DGCGame {
    */
   public getEngine(): DGCEngine {
     return this.engine
+  }
+
+  /**
+   * Get the room manager
+   */
+  public getRoomManager(): RoomManager {
+    return this.roomManager
   }
 
   /**
