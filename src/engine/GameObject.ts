@@ -9,6 +9,11 @@ export interface IGameObjectManager {
   getObjectsByType(objectType: string): GameObject[]
 }
 
+// Forward declaration for drawing system
+export interface IDrawingSystem {
+  drawSpriteFromSprite(sprite: any, x: number, y: number, frame?: number, scaleX?: number, scaleY?: number, rotation?: number, alpha?: number): void
+}
+
 /**
  * GameMaker-style event types
  */
@@ -52,7 +57,7 @@ export interface GameObjectProperties {
   depth?: number
   solid?: boolean
   persistent?: boolean
-  sprite?: string
+  sprite?: any // DGCSprite reference instead of string
   maskSprite?: string
   [key: string]: any
 }
@@ -85,7 +90,7 @@ export class GameObject {
   public persistent: boolean = false
   
   // Visual properties
-  public sprite: string | null = null
+  public sprite: any | null = null // DGCSprite reference instead of string
   public imageIndex: number = 0
   public imageSpeed: number = 1
   public imageAngle: number = 0
@@ -111,6 +116,7 @@ export class GameObject {
   
   // References
   private gameObjectManager: IGameObjectManager | null = null
+  private drawingSystem: IDrawingSystem | null = null
   
   constructor(objectType: string, properties: GameObjectProperties = {}) {
     this.id = GameObject.nextId++
@@ -239,8 +245,11 @@ export class GameObject {
   /**
    * Set references to engine managers
    */
-  public setManagers(_eventManager: EventManager, gameObjectManager: IGameObjectManager): void {
+  public setManagers(_eventManager: EventManager, gameObjectManager: IGameObjectManager, drawingSystem?: IDrawingSystem): void {
     this.gameObjectManager = gameObjectManager
+    if (drawingSystem) {
+      this.drawingSystem = drawingSystem
+    }
   }
   
   /**
@@ -451,5 +460,32 @@ export class GameObject {
     if (!this.active) return
     
     this.updateTimers(deltaTime)
+  }
+  
+  /**
+   * GameMaker-style draw_self() - renders the object's sprite
+   * Called manually in draw events when you want to render the object's sprite
+   */
+  public drawSelf(): void {
+    if (!this.sprite || !this.drawingSystem) {
+      return
+    }
+    
+    // Calculate current animation frame
+    const currentFrame = this.imageSpeed > 0 ? 
+      Math.floor(this.imageIndex) % this.sprite.frameCount : 
+      Math.floor(this.imageIndex)
+    
+    // Draw the sprite using the drawing system
+    this.drawingSystem.drawSpriteFromSprite(
+      this.sprite,
+      this.x,
+      this.y,
+      currentFrame,
+      this.imageXScale,
+      this.imageYScale,
+      this.imageAngle,
+      this.imageAlpha
+    )
   }
 }

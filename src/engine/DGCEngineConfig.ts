@@ -4,9 +4,9 @@ import type { IRapidOptions } from 'rapid-render'
 /**
  * Configuration for the DGC game engine with Rapid.js
  */
-export interface DGCRapidEngineConfig {
+export interface DGCEngineConfig {
   /**
-   * Canvas element to render to (added automatically by DGCRapidGame)
+   * Canvas element to render to (added automatically by DGCGame)
    */
   canvas?: HTMLCanvasElement
   
@@ -40,7 +40,7 @@ export interface DGCRapidEngineConfig {
 /**
  * Default configuration values
  */
-export const DEFAULT_RAPID_CONFIG: Partial<DGCRapidEngineConfig> = {
+export const DEFAULT_CONFIG: Partial<DGCEngineConfig> = {
   targetFPS: 60,
   cellSize: 30,
   gridOffset: { x: 50, y: 50 },
@@ -53,17 +53,17 @@ export const DEFAULT_RAPID_CONFIG: Partial<DGCRapidEngineConfig> = {
 /**
  * Create a complete configuration object with defaults
  */
-export function createDGCRapidEngineConfig(config: DGCRapidEngineConfig, canvas?: HTMLCanvasElement): Required<DGCRapidEngineConfig> {
+export function createDGCEngineConfig(config: DGCEngineConfig, canvas?: HTMLCanvasElement): Required<DGCEngineConfig> {
   const merged = {
-    ...DEFAULT_RAPID_CONFIG,
+    ...DEFAULT_CONFIG,
     ...config,
     canvas: canvas || config.canvas, // Use provided canvas or canvas from config
     rapidConfig: {
       canvas: canvas || config.canvas, // Always use the provided canvas
-      ...DEFAULT_RAPID_CONFIG.rapidConfig,
+      ...DEFAULT_CONFIG.rapidConfig,
       ...config.rapidConfig
     }
-  } as Required<DGCRapidEngineConfig>
+  } as Required<DGCEngineConfig>
   
   return merged
 }

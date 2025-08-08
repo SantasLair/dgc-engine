@@ -1,0 +1,52 @@
+version = "1.0.0"
+
+[room]
+name = "sprite_demo"
+customClass = "SpriteTestRoom"
+
+[room.dimensions]
+width = 20
+height = 15
+
+[room.background]
+type = "color"
+value = "#34495e"
+
+[room.view]
+width = 800
+height = 600
+x = 0
+y = 0
+
+[[room.sprites]]
+name = "test_sprite"
+source = "/sprites/test.png"
+frameWidth = 32
+frameHeight = 32
+frameCount = 4
+
+[[room.objects]]
+objectType = "Player"
+instanceName = "demo_player"
+
+[room.objects.position]
+x = 10
+y = 7
+depth = 0
+
+[room.objects.properties]
+sprite = "test_sprite"
+
+[room.events]
+onCreate = "console.log('Sprite demo room loaded')"
+onDraw = "// Custom drawing code can go here"
+
+[room.properties]
+demoMode = true
+showGrid = true
+
+[room.metadata]
+description = "Sprite system demonstration room"
+author = "DGC Engine"
+version = "1.0.0"
+tags = ["demo", "sprites", "test"]

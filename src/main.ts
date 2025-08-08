@@ -42,14 +42,36 @@ document.addEventListener('DOMContentLoaded', async () => {
       ;(window as any).game = game
       console.log('Game instance exposed to window.game for debugging')
       
-      // Expose room functionality for testing
-      ;(window as any).goToGame = async () => await game.goToRoom('game')
-      ;(window as any).goToMenu = async () => await game.goToRoom('menu')
-      ;(window as any).goToSpriteTest = async () => await game.goToRoom('sprite_test')
-      ;(window as any).getCurrentRoom = () => game.getCurrentRoom()?.name
-      ;(window as any).getRoomManager = () => game.getRoomManager()
-      
-      // Expose GML room functions for testing
+    // Expose room functionality for testing
+    ;(window as any).goToGame = async () => await game.goToRoom('game')
+    ;(window as any).goToMenu = async () => await game.goToRoom('menu')
+    ;(window as any).goToSpriteTest = async () => await game.goToRoom('sprite_test')
+    ;(window as any).getCurrentRoom = () => game.getCurrentRoom()?.name
+    ;(window as any).getRoomManager = () => game.getRoomManager()
+    
+    // Test TOML room loading
+    ;(window as any).testTomlRooms = async () => {
+      try {
+        console.log('🧪 Testing TOML room loading...')
+        const roomManager = game.getRoomManager()
+        const factory = roomManager.getFactory()
+        
+        // Test loading a TOML file
+        const tomlRoom = await factory.createRoomFromFile('main_menu.toml')
+        console.log('✅ Successfully loaded TOML room:', tomlRoom.name)
+        
+        // Test exporting TOML data
+        const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
+        const tomlString = factory.exportRoomData(roomData, 'toml')
+        console.log('✅ Successfully exported TOML data:')
+        console.log(tomlString)
+        
+        return true
+      } catch (error) {
+        console.error('❌ TOML test failed:', error)
+        return false
+      }
+    }      // Expose GML room functions for testing
       ;(window as any).room_goto = room_goto
       ;(window as any).room_restart = room_restart
       ;(window as any).room_get_name = room_get_name

@@ -1,0 +1,58 @@
+{
+  "version": "1.0.0",
+  "room": {
+    "name": "sprite_demo",
+    "dimensions": {
+      "width": 20,
+      "height": 15
+    },
+    "background": {
+      "type": "color", 
+      "value": "#34495e"
+    },
+    "view": {
+      "width": 800,
+      "height": 600,
+      "x": 0,
+      "y": 0
+    },
+    "sprites": [
+      {
+        "name": "test_sprite",
+        "url": "/sprites/test.png",
+        "frameWidth": 32,
+        "frameHeight": 32,
+        "frameCount": 4
+      }
+    ],
+    "objects": [
+      {
+        "objectType": "Player",
+        "position": {
+          "x": 10,
+          "y": 7,
+          "depth": 0
+        },
+        "properties": {
+          "sprite": "test_sprite"
+        },
+        "instanceName": "demo_player"
+      }
+    ],
+    "events": {
+      "onCreate": "console.log('Sprite demo room loaded')",
+      "onDraw": "// Custom drawing code can go here"
+    },
+    "properties": {
+      "demoMode": true,
+      "showGrid": true
+    },
+    "customClass": "SpriteTestRoom",
+    "metadata": {
+      "description": "Sprite system demonstration room",
+      "author": "DGC Engine",
+      "version": "1.0.0",
+      "tags": ["demo", "sprites", "test"]
+    }
+  }
+}

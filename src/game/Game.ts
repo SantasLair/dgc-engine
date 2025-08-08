@@ -1,10 +1,10 @@
-import { DGCRapidGame, type DGCRapidEngineConfig, RoomManager } from '../engine'
+import { DGCGame, type DGCEngineConfig, RoomManager } from '../engine'
 import { GameRoom, MenuRoom, SpriteTestRoom } from './rooms'
 
 /**
  * Main game class with room management functionality
  */
-export class Game extends DGCRapidGame {
+export class Game extends DGCGame {
   public roomManager!: RoomManager
   private currentRoomName: string = 'sprite_test'
 
@@ -12,7 +12,7 @@ export class Game extends DGCRapidGame {
     super(canvas)
   }
 
-  public getEngineConfig(): DGCRapidEngineConfig {
+  public getEngineConfig(): DGCEngineConfig {
     return {
       gridWidth: 20,
       gridHeight: 15,

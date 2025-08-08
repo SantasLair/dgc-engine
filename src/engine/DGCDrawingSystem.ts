@@ -6,7 +6,7 @@ import { DGCSprite } from './DGCSprite'
  * Provides immediate drawing functions like draw_sprite(), draw_line(), etc.
  * Uses Rapid.js's native immediate mode rendering which aligns perfectly with GameMaker's draw events
  */
-export class DGCRapidDrawingSystem {
+export class DGCDrawingSystem {
   private rapid: Rapid
   
   constructor(rapid: Rapid) {

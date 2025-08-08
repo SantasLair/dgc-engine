@@ -1,4 +1,4 @@
-import { Room, type RoomConfig, GameEvent } from '../../engine'
+import { Room, type RoomConfig, GameEvent, type SpriteLoadConfig } from '../../engine'
 import type { Game } from '../Game'
 
 /**
@@ -9,11 +9,24 @@ export class SpriteTestRoom extends Room {
   private animationFrame: number = 0
 
   constructor(game: Game) {
+    // Define test sprites for this room
+    const testSprites: SpriteLoadConfig[] = [
+      {
+        name: 'test_sprite',
+        source: '/vite.svg', // Use the existing vite.svg as a test sprite
+        frames: 1,
+        frameWidth: 32,
+        frameHeight: 32,
+        origin: { x: 0.5, y: 0.5 }
+      }
+    ]
+
     const config: RoomConfig = {
       name: 'sprite_test',
       width: 20,
       height: 15,
       background: '#1a1a1a',
+      sprites: testSprites, // Room will automatically load these sprites
       onCreate: async (_gameObject) => await this.onCreateRoom(),
       onDestroy: async (_gameObject) => await this.onDestroyRoom()
     }
@@ -27,53 +40,66 @@ export class SpriteTestRoom extends Room {
    */
   private async onCreateRoom(): Promise<void> {
     console.log('🏠 SpriteTestRoom: onCreateRoom() called')
+    console.log('🎯 Sprites loaded for room:', this.getSprite('test_sprite') ? 'test_sprite ✅' : 'test_sprite ❌')
     
-    // Create a test object to demonstrate Rapid.js drawing
-    const testObject = this.game.createGameObject('sprite_test_object', 0, 0)
+    // Create a test object to demonstrate the new sprite system
+    const spriteTestObject = this.game.createGameObject('sprite_test_object', 200, 150)
     
-    // Add step event for animation
-    testObject.addEventScript(GameEvent.STEP, (_self) => {
+    // Get the loaded sprite from this room
+    const testSprite = this.getSprite('test_sprite')
+    if (testSprite) {
+      // Assign the sprite to the game object
+      spriteTestObject.sprite = testSprite
+      console.log('✅ Sprite assigned to game object')
+    }
+    
+    // Add step event for animation and movement
+    spriteTestObject.addEventScript(GameEvent.STEP, (self) => {
       this.animationFrame += 1
+      
+      // Move the sprite object in a circle
+      const time = this.animationFrame * 0.02
+      self.x = 200 + Math.cos(time) * 80
+      self.y = 150 + Math.sin(time) * 50
+      
+      // Rotate the sprite
+      self.imageAngle = this.animationFrame * 2
+      
+      // Scale animation
+      const scale = 1 + Math.sin(time * 2) * 0.3
+      self.imageXScale = scale
+      self.imageYScale = scale
     })
     
-    // Add draw event to demonstrate Rapid.js immediate mode rendering
-    testObject.addEventScript(GameEvent.DRAW, (_self) => {
+    // Add draw event - GameMaker style: manually call draw_self()
+    spriteTestObject.addEventScript(GameEvent.DRAW, (self) => {
       const drawingSystem = this.game.getEngine().getDrawingSystem()
       
-      // Test 1: Draw rectangles
-      drawingSystem.drawRectangle(50, 50, 150, 100, true, 0xFF0000, 1) // Red filled rectangle
-      drawingSystem.drawRectangle(160, 50, 260, 100, false, 0x00FF00, 1) // Green outline rectangle
+      // Draw some background elements first
+      drawingSystem.drawRectangle(50, 50, 150, 100, true, 0xFF0000, 1)
+      drawingSystem.drawText(50, 120, 'Background Elements', 0xFFFFFF, 14, 'Arial')
       
-      // Test 2: Draw circles
-      drawingSystem.drawCircle(100, 150, 30, true, 0x0000FF, 1) // Blue filled circle
-      drawingSystem.drawCircle(200, 150, 30, false, 0xFFFF00, 1) // Yellow outline circle (note: Rapid.js doesn't support outline circles natively)
+      // GameMaker-style: draw_self() renders the object's sprite
+      self.drawSelf()
       
-      // Test 3: Draw lines
-      drawingSystem.drawLine(50, 200, 250, 200, 0xFFFFFF, 2) // White horizontal line
-      drawingSystem.drawLine(150, 180, 150, 220, 0xFFFFFF, 2) // White vertical line
-      
-      // Test 4: Draw text
-      drawingSystem.drawText(50, 250, 'Rapid.js Rendering Test!', 0xFFFFFF, 16, 'Arial')
-      drawingSystem.drawText(50, 280, `Frame: ${this.animationFrame}`, 0x00FFFF, 14, 'Arial')
-      
-      // Test 5: Draw animated sprite (simple colored rectangle)
-      const time = this.animationFrame * 0.1
-      const x = 300 + Math.sin(time) * 50
-      const y = 150 + Math.cos(time) * 30
-      drawingSystem.drawSprite(x, y, 1, 1, time * 180 / Math.PI, 0xFF00FF, 1)
-      
-      // Test 6: Draw arrow
-      drawingSystem.drawArrow(50, 320, 200, 350, 15, 0x00FF00)
-      
-      // Test 7: Draw health bar
-      const healthPercent = (Math.sin(time) + 1) / 2 // Animate between 0 and 1
-      drawingSystem.drawHealthbar(50, 380, 250, 400, healthPercent, 0x333333, 0xFF0000, 0x00FF00)
-      
-      // Add health percentage text
-      drawingSystem.drawText(260, 385, `${Math.round(healthPercent * 100)}%`, 0xFFFFFF, 12, 'Arial')
+      // Draw UI elements on top
+      drawingSystem.drawText(self.x - 30, self.y + 30, 'Sprite Object!', 0x00FFFF, 12, 'Arial')
+      drawingSystem.drawText(50, 200, `Frame: ${this.animationFrame}`, 0x00FFFF, 12, 'Arial')
+      drawingSystem.drawText(50, 220, `Pos: (${Math.round(self.x)}, ${Math.round(self.y)})`, 0x00FFFF, 12, 'Arial')
+      drawingSystem.drawText(50, 240, `Angle: ${Math.round(self.imageAngle)}°`, 0x00FFFF, 12, 'Arial')
     })
     
-    console.log('✅ SpriteTestRoom: Test objects created with Rapid.js rendering')
+    // Create another test object to show regular drawing without sprites
+    const regularObject = this.game.createGameObject('regular_object', 300, 300)
+    regularObject.addEventScript(GameEvent.DRAW, (_self) => {
+      const drawingSystem = this.game.getEngine().getDrawingSystem()
+      
+      // Regular drawing without sprites
+      drawingSystem.drawCircle(300, 300, 20, true, 0x00FF00, 1)
+      drawingSystem.drawText(280, 330, 'No Sprite', 0xFFFFFF, 12, 'Arial')
+    })
+    
+    console.log('✅ SpriteTestRoom: Test objects created with sprite system demo')
   }
 
   /**

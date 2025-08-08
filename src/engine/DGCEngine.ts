@@ -2,9 +2,9 @@ import { Rapid } from 'rapid-render'
 import { EventManager } from './EventManager'
 import { GameObjectManager } from './GameObjectManager'
 import { GameObject } from './GameObject'
-import { DGCRapidDrawingSystem } from './DGCRapidDrawingSystem'
-import type { DGCRapidEngineConfig } from './DGCRapidEngineConfig'
-import { createDGCRapidEngineConfig } from './DGCRapidEngineConfig'
+import { DGCDrawingSystem } from './DGCDrawingSystem'
+import type { DGCEngineConfig } from './DGCEngineConfig'
+import { createDGCEngineConfig } from './DGCEngineConfig'
 
 /**
  * Input manager for handling keyboard and mouse events
@@ -114,21 +114,21 @@ class InputManager {
  * DGC game engine powered by Rapid.js
  * This engine uses Rapid.js for immediate mode rendering that aligns with GameMaker's draw events
  */
-export class DGCRapidEngine {
+export class DGCEngine {
   private rapid: Rapid
-  private config: Required<DGCRapidEngineConfig>
+  private config: Required<DGCEngineConfig>
   private eventManager: EventManager
   private gameObjectManager: GameObjectManager
   private inputManager: InputManager
-  private drawingSystem: DGCRapidDrawingSystem
+  private drawingSystem: DGCDrawingSystem
   private lastTime: number = 0
   private targetFrameTime: number
   private isRunning: boolean = false
   private isInitialized: boolean = false
   private animationFrameId: number | null = null
   
-  constructor(config: DGCRapidEngineConfig) {
-    this.config = createDGCRapidEngineConfig(config)
+  constructor(config: DGCEngineConfig) {
+    this.config = createDGCEngineConfig(config)
     this.targetFrameTime = 1000 / this.config.targetFPS
     
     // Initialize Rapid.js with guaranteed canvas
@@ -139,11 +139,13 @@ export class DGCRapidEngine {
     
     // Initialize managers
     this.eventManager = new EventManager()
-    this.gameObjectManager = new GameObjectManager(this.eventManager)
-    this.inputManager = new InputManager()
     
     // Initialize the GameMaker-style drawing system
-    this.drawingSystem = new DGCRapidDrawingSystem(this.rapid)
+    this.drawingSystem = new DGCDrawingSystem(this.rapid)
+    
+    // Initialize game object manager with drawing system
+    this.gameObjectManager = new GameObjectManager(this.eventManager, this.drawingSystem)
+    this.inputManager = new InputManager()
   }
   
   /**
@@ -271,7 +273,7 @@ export class DGCRapidEngine {
   /**
    * Get the drawing system for immediate mode drawing
    */
-  public getDrawingSystem(): DGCRapidDrawingSystem {
+  public getDrawingSystem(): DGCDrawingSystem {
     return this.drawingSystem
   }
   
@@ -292,7 +294,7 @@ export class DGCRapidEngine {
   /**
    * Get engine configuration
    */
-  public getConfig(): Required<DGCRapidEngineConfig> {
+  public getConfig(): Required<DGCEngineConfig> {
     return this.config
   }
 

@@ -1,6 +1,6 @@
-import { DGCRapidEngine } from './DGCRapidEngine'
-import type { DGCRapidEngineConfig } from './DGCRapidEngineConfig'
-import { createDGCRapidEngineConfig } from './DGCRapidEngineConfig'
+import { DGCEngine } from './DGCEngine'
+import type { DGCEngineConfig } from './DGCEngineConfig'
+import { createDGCEngineConfig } from './DGCEngineConfig'
 import { GameObject } from './GameObject'
 import type { Rapid } from 'rapid-render'
 
@@ -8,9 +8,9 @@ import type { Rapid } from 'rapid-render'
  * Base Game class that provides a foundation for DGC games using Rapid.js
  * Games should extend this class to implement their specific logic
  */
-export abstract class DGCRapidGame {
+export abstract class DGCGame {
   protected canvas: HTMLCanvasElement
-  protected engine: DGCRapidEngine
+  protected engine: DGCEngine
   protected isInitialized: boolean = false
 
   constructor(canvas: HTMLCanvasElement) {
@@ -18,7 +18,7 @@ export abstract class DGCRapidGame {
     
     // Create the DGC engine with the game's configuration
     const userConfig = this.getEngineConfig()
-    const config = createDGCRapidEngineConfig(userConfig, canvas)
+    const config = createDGCEngineConfig(userConfig, canvas)
     
     // Calculate and set canvas dimensions based on grid configuration
     const canvasWidth = config.gridWidth * config.cellSize + (config.gridOffset.x * 2)
@@ -32,14 +32,14 @@ export abstract class DGCRapidGame {
     console.log(`🎮 Grid: ${config.gridWidth}x${config.gridHeight}, Cell: ${config.cellSize}px, Offset: ${config.gridOffset.x}x${config.gridOffset.y}`)
     console.log(`🎮 Actual canvas element size: ${this.canvas.width}x${this.canvas.height}`)
     
-    this.engine = new DGCRapidEngine(config)
+    this.engine = new DGCEngine(config)
   }
 
   /**
    * Get the engine configuration
    * Override this method to customize the engine settings
    */
-  protected abstract getEngineConfig(): DGCRapidEngineConfig
+  protected abstract getEngineConfig(): DGCEngineConfig
 
   /**
    * Setup game-specific logic after engine creation
@@ -91,7 +91,7 @@ export abstract class DGCRapidGame {
   /**
    * Get the game engine
    */
-  public getEngine(): DGCRapidEngine {
+  public getEngine(): DGCEngine {
     return this.engine
   }
 
@@ -211,7 +211,7 @@ export abstract class DGCRapidGame {
   /**
    * Get the engine configuration
    */
-  public getConfig(): DGCRapidEngineConfig {
+  public getConfig(): DGCEngineConfig {
     return this.engine.getConfig()
   }
 
