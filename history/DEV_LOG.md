@@ -113,7 +113,7 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Critical Behaviors**: Zero/one/multiple instance handling exactly matches GameMaker Studio error patterns
 - **Architecture**: Centralized instance management mirrors GameMaker's internal object registry
 - **Documentation**: Comprehensive GameMaker comparison guides and usage examples
-- **Commits**: `TBD`
+- **Commits**: `77b163a`
 
 ---
 

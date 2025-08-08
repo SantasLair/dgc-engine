@@ -18,7 +18,7 @@
 - `history/milestones/00004-cleanup.md` - Codebase organization milestone
 - `history/milestones/00005-abstraction.md` - Advanced architectural patterns
 - `history/milestones/00006-room-system.md` - Professional game organization
-- `history/milestones/00007-gamemaker-organization.md` - Perfect folder structure
+- `history/milestones/00007-gamemaker-organization.md` - Authentic folder structure
 - `history/milestones/00008-gml-compatibility.md` - Dual paradigm support
 - `history/milestones/README.md` - Milestone navigation and overview
 
