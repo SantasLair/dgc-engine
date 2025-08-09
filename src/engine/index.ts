@@ -19,3 +19,12 @@ export { SpriteManager, type SpriteLoadConfig } from './SpriteManager'
 
 // Drawing systems
 export { DGCDrawingSystem } from './DGCDrawingSystem'
+
+// GameMaker constants and types
+export { all, type ObjectTypeOrAll } from './GameMakerConstants'
+
+// GameMaker object types (unquoted object type constants)
+export { 
+  Player, Enemy, PowerUp, Bullet, Boss,
+  type GameObjectType, type ObjectTypeOrAll as ObjectTypeOrAllFromTypes
+} from './GameObjectTypes'

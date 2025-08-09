@@ -1,5 +1,6 @@
 import { GameObject, type GameObjectProperties, GameEvent, type IDrawingSystem } from './GameObject'
 import type { EventManager } from './EventManager'
+import { all, type ObjectTypeOrAll } from './GameObjectTypes'
 
 /**
  * Manages all game objects in the engine
@@ -105,8 +106,11 @@ export class GameObjectManager {
   /**
    * Get all objects of a specific type
    */
-  public getObjectsByType(objectType: string): GameObject[] {
-    const objectSet = this.objectsByType.get(objectType)
+  public getObjectsByType(objectType: ObjectTypeOrAll): GameObject[] {
+    if (objectType === all) {
+      return this.getAllObjects()
+    }
+    const objectSet = this.objectsByType.get(objectType as string)
     return objectSet ? Array.from(objectSet) : []
   }
   
@@ -160,8 +164,8 @@ export class GameObjectManager {
   /**
    * Get objects within a certain distance of a position - GameMaker style
    */
-  public getObjectsNear(x: number, y: number, radius: number, objectType?: string): GameObject[] {
-    const objects = objectType ? this.getObjectsByType(objectType) : this.getAllObjects()
+  public getObjectsNear(x: number, y: number, radius: number, objectType?: ObjectTypeOrAll): GameObject[] {
+    const objects = objectType && objectType !== all ? this.getObjectsByType(objectType) : this.getAllObjects()
     
     return objects.filter(obj => {
       const distance = Math.sqrt(
@@ -174,8 +178,8 @@ export class GameObjectManager {
   /**
    * Get the nearest object to a position - GameMaker style
    */
-  public getNearestObject(x: number, y: number, objectType?: string): GameObject | null {
-    const objects = objectType ? this.getObjectsByType(objectType) : this.getAllObjects()
+  public getNearestObject(x: number, y: number, objectType?: ObjectTypeOrAll): GameObject | null {
+    const objects = objectType && objectType !== all ? this.getObjectsByType(objectType) : this.getAllObjects()
     
     if (objects.length === 0) return null
     
@@ -321,11 +325,38 @@ export class GameObjectManager {
   /**
    * Get count of objects of a specific type
    */
-  public getObjectCount(objectType?: string): number {
-    if (objectType) {
-      const typeSet = this.objectsByType.get(objectType)
-      return typeSet ? typeSet.size : 0
+  public getObjectCount(objectType?: ObjectTypeOrAll): number {
+    if (!objectType || objectType === all) {
+      return this.gameObjects.size
     }
-    return this.gameObjects.size
+    const typeSet = this.objectsByType.get(objectType as string)
+    return typeSet ? typeSet.size : 0
+  }
+
+  /**
+   * GameMaker-style instance_number function
+   * Returns the number of instances of an object type
+   */
+  public instance_number(objectType: ObjectTypeOrAll): number {
+    return this.getObjectCount(objectType)
+  }
+
+  /**
+   * GameMaker-style instance_exists function
+   * Checks if any instances of an object type exist
+   */
+  public instance_exists(objectType: ObjectTypeOrAll): boolean {
+    return this.getObjectCount(objectType) > 0
+  }
+
+  /**
+   * GameMaker-style instance_destroy function
+   * Destroys all instances of a specific object type
+   */
+  public instance_destroy(objectType: ObjectTypeOrAll): void {
+    const objects = this.getObjectsByType(objectType)
+    for (const obj of objects) {
+      this.destroyObject(obj.id)
+    }
   }
 }

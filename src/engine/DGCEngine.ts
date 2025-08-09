@@ -6,6 +6,7 @@ import { DGCDrawingSystem } from './DGCDrawingSystem'
 import type { DGCEngineConfig } from './DGCEngineConfig'
 import { createDGCEngineConfig } from './DGCEngineConfig'
 import { InputManager } from './InputManager'
+import { type ObjectTypeOrAll } from './GameObjectTypes'
 
 /**
  * DGC game engine powered by Rapid.js
@@ -86,7 +87,7 @@ export class DGCEngine {
     if (deltaTime >= this.targetFrameTime) {
       // === GameMaker Event Order ===
       
-      // Cache active objects list for performance (avoid 8+ getAllActiveObjects() calls)
+      // Cache active objects array for performance (avoid 8+ array allocations)
       const allActiveObjects = this.gameObjectManager.getAllActiveObjects()
       
       // Input and Timer Events
@@ -189,6 +190,35 @@ export class DGCEngine {
   public getFPS(): number {
     // Simple FPS calculation based on target frame time
     return Math.round(1000 / this.targetFrameTime)
+  }
+
+  // === GameMaker-Style Instance Functions ===
+
+  /**
+   * GameMaker-style instance_number function
+   * Returns the number of instances of an object type
+   * @param objectType - Object type name or 'all' for all objects
+   */
+  public instance_number(objectType: ObjectTypeOrAll): number {
+    return this.gameObjectManager.instance_number(objectType)
+  }
+
+  /**
+   * GameMaker-style instance_exists function
+   * Checks if any instances of an object type exist
+   * @param objectType - Object type name or 'all' for all objects
+   */
+  public instance_exists(objectType: ObjectTypeOrAll): boolean {
+    return this.gameObjectManager.instance_exists(objectType)
+  }
+
+  /**
+   * GameMaker-style instance_destroy function
+   * Destroys all instances of a specific object type
+   * @param objectType - Object type name or 'all' for all objects
+   */
+  public instance_destroy(objectType: ObjectTypeOrAll): void {
+    this.gameObjectManager.instance_destroy(objectType)
   }
 
   /**
