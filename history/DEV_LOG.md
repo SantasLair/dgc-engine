@@ -118,7 +118,7 @@ This project began as a simple turn-based movement game and evolved into a sophi
 ### [Session 15: Sprite Rendering Implementation (August 8, 2025)](./milestones/00015-sprite-functionality.md) 🎨
 **Complete Sprite System Implementation** - Data-driven sprite loading and rendering with TOML room configuration
 - **Key Achievement**: Functional sprite system with TOML-based room data and real image rendering
-- **Technology**: TOML room data parsing + DGCSprite class + Rapid.js texture rendering + Data-driven object creation
+- **Technology**: TOML room data parsing + Sprite class + Rapid.js texture rendering + Data-driven object creation
 - **Major Features**:
   - **TOML Room Configuration**: Declarative room definition with sprites and objects
   - **Sprite Loading Pipeline**: Automatic sprite resolution from names to loaded textures

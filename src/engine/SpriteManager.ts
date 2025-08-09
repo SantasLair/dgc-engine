@@ -1,4 +1,4 @@
-import { DGCSprite } from './DGCSprite'
+import { Sprite } from './Sprite.ts'
 
 /**
  * Configuration for loading a sprite
@@ -18,13 +18,13 @@ export interface SpriteLoadConfig {
  * Each room can declare what sprites it needs, and they're loaded/unloaded automatically
  */
 export class SpriteManager {
-  private loadedSprites: Map<string, DGCSprite> = new Map()
-  private loadingPromises: Map<string, Promise<DGCSprite>> = new Map()
+  private loadedSprites: Map<string, Sprite> = new Map()
+  private loadingPromises: Map<string, Promise<Sprite>> = new Map()
   
   /**
    * Load a single sprite
    */
-  public async loadSprite(config: SpriteLoadConfig): Promise<DGCSprite> {
+  public async loadSprite(config: SpriteLoadConfig): Promise<Sprite> {
     // Check if already loaded
     if (this.loadedSprites.has(config.name)) {
       return this.loadedSprites.get(config.name)!
@@ -68,7 +68,7 @@ export class SpriteManager {
   /**
    * Get a loaded sprite by name
    */
-  public getSprite(name: string): DGCSprite | null {
+  public getSprite(name: string): Sprite | null {
     return this.loadedSprites.get(name) || null
   }
   
@@ -119,10 +119,10 @@ export class SpriteManager {
   }
   
   /**
-   * Create a DGCSprite from config
+   * Create a Sprite from config
    */
-  private async createSprite(config: SpriteLoadConfig): Promise<DGCSprite> {
-    const sprite = new DGCSprite({
+  private async createSprite(config: SpriteLoadConfig): Promise<Sprite> {
+    const sprite = new Sprite({
       name: config.name,
       source: config.source,
       frames: config.frames,

@@ -12,20 +12,20 @@
 
 ### **Core Components Hierarchy**
 ```
-DGCEngine (Main Engine)
+Engine (Main Engine)
 ├── DGCGame (Abstract game base class)
-├── DGCRoom (Scene/Level management)
+├── Room (Scene/Level management)
 ├── GameObject (Base object class)
 ├── GameObjectManager (Object lifecycle)
-├── DGCDrawingSystem (Immediate mode rendering)
+├── DrawingSystem (Immediate mode rendering)
 ├── EventManager (Event queuing system)
 ├── InputManager (Input handling)
 └── SpriteManager (Asset management)
 ```
 
-## 🎮 DGCEngine - Core Engine Class
+## 🎮 Engine - Core Engine Class
 
-**File**: `src/engine/DGCEngine.ts`
+**File**: `src/engine/Engine.ts`
 
 ### **Key Responsibilities**
 - **Game Loop Management**: Fixed timestep game loop with frame accumulation
@@ -99,7 +99,7 @@ imageAngle: number           // Rotation in degrees
 imageAlpha: number           // Transparency (0-1)
 
 // Rendering
-sprite: DGCSprite | null     // Associated sprite
+sprite: Sprite | null     // Associated sprite
 visible: boolean             // Visibility flag
 depth: number               // Draw order (lower = background)
 
@@ -139,7 +139,7 @@ export class Player extends GameObject {
 
 ## 🎨 Drawing System - Immediate Mode Rendering
 
-**File**: `src/engine/DGCDrawingSystem.ts`
+**File**: `src/engine/DrawingSystem.ts`
 
 ### **GameMaker-Style Drawing Functions**
 ```typescript
@@ -169,7 +169,7 @@ drawHealthbar(x1, y1, x2, y2, amount, backColor?, minColor?, maxColor?)
 
 ## 🏠 Room System - Scene Management
 
-**File**: `src/engine/DGCRoom.ts`
+**File**: `src/engine/Room.ts`
 
 ### **Room Responsibilities**
 - **Game Object Container**: Manages objects within a scene
@@ -204,9 +204,9 @@ interface RoomConfig {
 
 ## 🖼️ Sprite System - Asset Management
 
-**Files**: `src/engine/DGCSprite.ts`, `src/engine/SpriteManager.ts`
+**Files**: `src/engine/Sprite.ts`, `src/engine/SpriteManager.ts`
 
-### **DGCSprite Class**
+### **Sprite Class**
 ```typescript
 interface DGCSpriteConfig {
   name: string                    // Sprite identifier
@@ -233,25 +233,25 @@ interface DGCSpriteConfig {
 
 ## 🎮 Game Management - DGCGame Base Class
 
-**File**: `src/engine/DGCGame.ts`
+**File**: `src/engine/BaseGame.ts`
 
 ### **Abstract Game Class Pattern**
 ```typescript
 export abstract class DGCGame {
-  protected abstract getEngineConfig(): DGCEngineConfig
+  protected abstract getEngineConfig(): EngineConfig
   protected abstract setupGame(): Promise<void>
   
   // Room management
-  public addRoom(room: DGCRoom): void
+  public addRoom(room: Room): void
   public async goToRoom(roomName: string): Promise<boolean>
-  public getCurrentRoom(): DGCRoom | undefined
+  public getCurrentRoom(): Room | undefined
 }
 ```
 
 ### **Implementation Pattern**
 ```typescript
 export class MyGame extends DGCGame {
-  protected getEngineConfig(): DGCEngineConfig {
+  protected getEngineConfig(): EngineConfig {
     return {
       canvas: this.canvas,
       targetFPS: 60,
@@ -343,10 +343,10 @@ game.goToRoom('nextLevel')
 ```
 src/
 ├── engine/           # Core engine components
-│   ├── DGCEngine.ts     # Main engine class
+│   ├── Engine.ts     # Main engine class
 │   ├── GameObject.ts    # Base object class
-│   ├── DGCRoom.ts      # Room/scene management
-│   ├── DGCDrawingSystem.ts # Immediate mode drawing
+│   ├── Room.ts      # Room/scene management
+│   ├── DrawingSystem.ts # Immediate mode drawing
 │   ├── SpriteManager.ts    # Asset management
 │   └── ...
 ├── game/            # Game-specific implementation

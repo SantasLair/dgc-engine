@@ -3,17 +3,17 @@ import { EventManager } from './EventManager'
 import { GameObjectManager, type ObjectFilter } from './GameObjectManager'
 import { GameObject } from './GameObject'
 import { DrawingSystem } from './DrawingSystem.ts'
-import type { DGCEngineConfig } from './DGCEngineConfig'
-import { createDGCEngineConfig } from './DGCEngineConfig'
+import type { EngineConfig } from './EngineConfig.ts'
+import { createDGCEngineConfig } from './EngineConfig.ts'
 import { InputManager } from './InputManager'
 
 /**
  * DGC game engine powered by Rapid.js
  * This engine uses Rapid.js for immediate mode rendering
  */
-export class DGCEngine {
+export class Engine {
   private rapid: Rapid
-  private config: Required<DGCEngineConfig>
+  private config: Required<EngineConfig>
   private eventManager: EventManager
   private gameObjectManager: GameObjectManager
   private inputManager: InputManager
@@ -25,7 +25,7 @@ export class DGCEngine {
   private accumulator: number = 0  // For frame rate smoothing
   private maxFrameTime: number = 50  // Cap maximum frame time to prevent spiral of death
   
-  constructor(config: DGCEngineConfig) {
+  constructor(config: EngineConfig) {
     this.config = createDGCEngineConfig(config)
     this.targetFrameTime = 1000 / this.config.targetFPS
     
@@ -176,7 +176,7 @@ export class DGCEngine {
   /**
    * Get engine configuration
    */
-  public getConfig(): Required<DGCEngineConfig> {
+  public getConfig(): Required<EngineConfig> {
     return this.config
   }
 

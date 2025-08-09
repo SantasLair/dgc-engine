@@ -1,12 +1,12 @@
 import { Rapid, Color, Vec2 } from 'rapid-render'
-import { DGCSprite } from './DGCSprite'
+import { Sprite } from './Sprite.ts'
 
 /**
  * GameMaker-style drawing system using Rapid.js
  * Provides immediate drawing functions like draw_sprite(), draw_line(), etc.
  * Uses Rapid.js's native immediate mode rendering which aligns perfectly with GameMaker's draw events
  */
-export class DGCDrawingSystem {
+export class DrawingSystem {
   private rapid: Rapid
   
   constructor(rapid: Rapid) {
@@ -25,7 +25,7 @@ export class DGCDrawingSystem {
   /**
    * GameMaker-style draw_sprite equivalent for actual sprites
    */
-  public drawSpriteFromSprite(sprite: DGCSprite, x: number, y: number, _frame: number = 0, scaleX: number = 1, scaleY: number = 1, rotation: number = 0, _alpha: number = 1): void {
+  public drawSpriteFromSprite(sprite: Sprite, x: number, y: number, _frame: number = 0, scaleX: number = 1, scaleY: number = 1, rotation: number = 0, _alpha: number = 1): void {
     if (!sprite.isLoaded()) {
       console.warn(`⚠️ Sprite ${sprite.name} not loaded yet`)
       return

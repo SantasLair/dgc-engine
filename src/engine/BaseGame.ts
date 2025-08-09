@@ -1,6 +1,6 @@
-import { DGCEngine } from './DGCEngine'
-import type { DGCEngineConfig } from './DGCEngineConfig'
-import { createDGCEngineConfig } from './DGCEngineConfig'
+import { Engine } from './Engine.ts'
+import type { EngineConfig } from './EngineConfig.ts'
+import { createDGCEngineConfig } from './EngineConfig.ts'
 import { GameObject } from './GameObject'
 import { Room } from './Room.ts'
 import type { Rapid } from 'rapid-render'
@@ -11,7 +11,7 @@ import type { Rapid } from 'rapid-render'
  */
 export abstract class DGCGame {
   protected canvas: HTMLCanvasElement
-  protected engine: DGCEngine
+  protected engine: Engine
   protected rooms: Map<string, Room> = new Map()
   protected currentRoom?: Room
   protected isInitialized: boolean = false
@@ -26,7 +26,7 @@ export abstract class DGCGame {
     // Let the game configure canvas dimensions
     this.configureCanvas(config)
     
-    this.engine = new DGCEngine(config)
+    this.engine = new Engine(config)
     
     console.log('🏗️ DGCGame initialized with direct room management')
   }
@@ -35,12 +35,12 @@ export abstract class DGCGame {
    * Get the engine configuration
    * Override this method to customize the engine settings
    */
-  protected abstract getEngineConfig(): DGCEngineConfig
+  protected abstract getEngineConfig(): EngineConfig
 
   /**
    * Configure canvas dimensions - can be overridden by subclasses
    */
-  protected configureCanvas(_config: Required<DGCEngineConfig>): void {
+  protected configureCanvas(_config: Required<EngineConfig>): void {
     // Default implementation - set canvas to a reasonable size if not specified
     console.log(`🔧 Canvas dimensions before config: ${this.canvas.width}x${this.canvas.height}`)
     
@@ -99,7 +99,7 @@ export abstract class DGCGame {
   /**
    * Get the game engine
    */
-  public getEngine(): DGCEngine {
+  public getEngine(): Engine {
     return this.engine
   }
 
@@ -265,7 +265,7 @@ export abstract class DGCGame {
   /**
    * Get the engine configuration
    */
-  public getConfig(): DGCEngineConfig {
+  public getConfig(): EngineConfig {
     return this.engine.getConfig()
   }
 

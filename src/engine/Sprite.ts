@@ -28,7 +28,7 @@ export interface DGCSpriteConfig {
  * Unlike retained mode systems, this sprite doesn't maintain display objects
  * Instead, it provides metadata for immediate drawing operations
  */
-export class DGCSprite {
+export class Sprite {
   public readonly name: string
   public readonly image: HTMLImageElement
   public readonly frameCount: number
@@ -131,13 +131,13 @@ export class DGCSprite {
  * Manages sprite loading and provides access to sprites by name
  */
 export class DGCSpriteManager {
-  private sprites: Map<string, DGCSprite> = new Map()
+  private sprites: Map<string, Sprite> = new Map()
 
   /**
    * Add a sprite to the manager
    */
-  public addSprite(config: DGCSpriteConfig): DGCSprite {
-    const sprite = new DGCSprite(config)
+  public addSprite(config: DGCSpriteConfig): Sprite {
+    const sprite = new Sprite(config)
     this.sprites.set(config.name, sprite)
     return sprite
   }
@@ -145,7 +145,7 @@ export class DGCSpriteManager {
   /**
    * Get a sprite by name
    */
-  public getSprite(name: string): DGCSprite | undefined {
+  public getSprite(name: string): Sprite | undefined {
     return this.sprites.get(name)
   }
 
