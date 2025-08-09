@@ -1,11 +1,10 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import { copyFileSync, mkdirSync, existsSync, readFileSync, writeFileSync } from 'fs'
+import { copyFileSync, mkdirSync, existsSync } from 'fs'
 import { glob } from 'glob'
-import { encode } from '@msgpack/msgpack'
 
-// Function to convert JSON room data to MessagePack binary format
-function convertRoomDataToMessagePack() {
+// Function to copy JSON room data files
+function copyRoomDataFiles() {
   const sourceDir = resolve(__dirname, 'src/game/rooms/data')
   const targetDir = resolve(__dirname, 'public/data/rooms')
   
@@ -14,28 +13,19 @@ function convertRoomDataToMessagePack() {
     mkdirSync(targetDir, { recursive: true })
   }
   
-  // Convert all JSON files to .dgcroom MessagePack files
+  // Copy all JSON files directly
   const files = glob.sync('**/*.json', { cwd: sourceDir })
   files.forEach(file => {
     const sourcePath = resolve(sourceDir, file)
-    const jsonContent = readFileSync(sourcePath, 'utf8')
-    const roomData = JSON.parse(jsonContent)
-    
-    // Convert to MessagePack binary
-    const binaryData = encode(roomData)
-    
-    // Save as .dgcroom file
-    const outputFile = file.replace('.json', '.dgcroom')
-    const targetPath = resolve(targetDir, outputFile)
-    writeFileSync(targetPath, binaryData)
-    
-    console.log(`📦 Converted to MessagePack: ${file} → ${outputFile}`)
+    const targetPath = resolve(targetDir, file)
+    copyFileSync(sourcePath, targetPath)
+    console.log(`� Copied room data: ${file}`)
   })
 }
 
 // Function to copy image assets
 function copyImageAssets() {
-  const sourceDir = resolve(__dirname, 'src/game/artifacts/images')
+  const sourceDir = resolve(__dirname, 'src/assets/images')
   const targetDir = resolve(__dirname, 'public/images')
   
   // Ensure target directory exists
@@ -62,21 +52,21 @@ export default defineConfig({
     }
   },
   plugins: [
-    // Plugin to convert room data to MessagePack and copy assets
+    // Plugin to copy room data and assets
     {
       name: 'copy-assets',
       buildStart() {
-        // Only convert to MessagePack (no JSON copying for compression and obfuscation)
-        convertRoomDataToMessagePack()
+        // Copy JSON room data files
+        copyRoomDataFiles()
         copyImageAssets()
       },
       handleHotUpdate({ file }) {
-        // Re-convert room data files when they change during development
+        // Re-copy room data files when they change during development
         if (file.includes('src/game/rooms/data/')) {
-          convertRoomDataToMessagePack()
+          copyRoomDataFiles()
         }
         // Re-copy images when they change during development
-        if (file.includes('src/game/artifacts/images/')) {
+        if (file.includes('src/assets/images/')) {
           copyImageAssets()
         }
       }

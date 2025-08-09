@@ -31,9 +31,9 @@ export class DGCDrawingSystem {
       return
     }
     
-    // Convert grid coordinates to screen coordinates
-    const screenX = x * 30 + 50  // cellSize = 30, offset = 50
-    const screenY = y * 30 + 50
+    // Use direct screen coordinates (no grid conversion)
+    const screenX = x
+    const screenY = y
     
     try {
       // Create texture from the sprite's image

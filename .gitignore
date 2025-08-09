@@ -15,6 +15,9 @@ dist-ssr
 # Generated room data files (source files are in src/game/rooms/data/)
 public/data/
 
+# Generated image assets (source files are in src/assets/images/)
+public/images/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

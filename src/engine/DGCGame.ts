@@ -50,11 +50,13 @@ export abstract class DGCGame {
    */
   protected configureCanvas(_config: Required<DGCEngineConfig>): void {
     // Default implementation - set canvas to a reasonable size if not specified
-    if (!this.canvas.width || !this.canvas.height) {
-      this.canvas.width = 800
-      this.canvas.height = 600
-    }
-    console.log(`🎮 Canvas dimensions: ${this.canvas.width}x${this.canvas.height}`)
+    console.log(`🔧 Canvas dimensions before config: ${this.canvas.width}x${this.canvas.height}`)
+    
+    // Always set canvas dimensions explicitly
+    this.canvas.width = 800
+    this.canvas.height = 600
+    
+    console.log(`🎮 Canvas dimensions after config: ${this.canvas.width}x${this.canvas.height}`)
   }
 
   /**

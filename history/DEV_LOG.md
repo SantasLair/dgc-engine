@@ -131,7 +131,9 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Visual Validation**: Functional sprite display with fallback rectangle debugging system
 - **Commits**: `6f2815c`
 
-### [Session 16: Engine Philosophy & GameMaker Keywords (August 8, 2025) - Current Session](./milestones/00016-engine-philosophy.md) 🌉
+### [Session 16: Engine Philosophy & GameMaker Keywords (August 8, 2025)](./milestones/00016-engine-philosophy.md) 🌉
+⚠️ **STATUS: ROLLED BACK** - Features implemented but later removed in Session 17 for engine simplification. May be reconsidered when core engine reaches maturity.
+
 **Bridge Philosophy & Authentic GameMaker Compatibility** - Defined comprehensive engine philosophy and completed GameMaker keyword system
 - **Key Achievement**: Authentic GameMaker `all`, `noone`, and unquoted custom object types with full TypeScript type safety
 - **Engine Philosophy**: Established bridge philosophy connecting GameMaker traditions with modern web development
@@ -147,51 +149,76 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Bridge Philosophy**: Connects GameMaker traditions with modern web development without forcing paradigms
 - **Dual API Design**: Support for both classic GML function-based and modern TypeScript object-oriented programming
 - **Developer Experience**: Inclusive design supporting GameMaker veterans and modern web developers equally
+- **Future Consideration**: GameMaker compatibility may be reconsidered when core engine reaches maturity
 - **Commits**: `52b30d9`, `c0c4b6a` (feature/engine-refinement branch)
+
+### [Session 17: Engine Simplification & JSON-Only Data (August 9, 2025) - Current Session](./milestones/00017-engine-simplification.md) 🎯
+**Engine Simplification for Enhanced Development Experience** - Strategic removal of GameMaker compatibility layer to focus on core feature development
+- **Key Achievement**: Streamlined engine architecture by removing GameMaker compatibility while preserving GameMaker paradigms
+- **Philosophy**: Simplification to facilitate rapid feature development and improve personal development experience
+- **Technology**: Modern TypeScript patterns + JSON-only room data + Simplified build pipeline + Clean architecture
+- **Major Changes**:
+  - **GameMaker Compatibility Removal**: Eliminated GML compatibility layer, GameMaker constants, and wrapper functions
+  - **Modern TypeScript APIs**: Replaced GameMaker-style functions with clean TypeScript methods (getObjectsByType, getNearestObject, etc.)
+  - **JSON-Only Room Data**: Removed MessagePack binary compilation, simplified to direct JSON file usage
+  - **Build Pipeline Simplification**: Eliminated MessagePack conversion step, faster build times with transparent data
+  - **Dependency Cleanup**: Removed @msgpack/msgpack dependency and related binary processing
+  - **Code Modernization**: Updated all APIs to use modern TypeScript patterns and ObjectFilter types
+- **Development Strategy**: Focus on feature development first, GameMaker compatibility can be reconsidered when engine matures
+- **Developer Experience**: Improved transparency, faster builds, easier debugging with human-readable JSON data
+- **Architecture**: Maintained GameMaker paradigms (GameObject events, Room system, Event-driven architecture) using modern TypeScript
+- **Future Consideration**: GameMaker compatibility layer can be re-added as optional feature once core engine is stable
+- **Personal Experience**: Prioritized enjoyable development workflow over compatibility constraints
+- **Commits**: TBD (simplification branch)
 
 ---
 
-## Current State (August 8, 2025)
+## Current State (August 9, 2025)
 
-### Project Status: 🌉 **Professional GameMaker-Style Engine with Bridge Philosophy**
+### Project Status: � **Simplified Modern TypeScript Engine with GameMaker Paradigms**
 
 **Core Capabilities:**
 - ✅ **Event-Driven Architecture**: GameMaker-style events (CREATE, STEP, DRAW, DESTROY)
 - ✅ **Room Management System**: Professional level/scene organization with working navigation
 - ✅ **GameObject Framework**: Reusable, extensible game entities
 - ✅ **Rapid.js Rendering**: Immediate mode rendering with GameMaker-style drawing API
-- ✅ **Sprite System**: TOML-driven sprite loading and rendering with real image display
-- ✅ **Data-Driven Rooms**: Declarative room configuration using TOML files
+- ✅ **Sprite System**: JSON-driven sprite loading and rendering with real image display
+- ✅ **Data-Driven Rooms**: Declarative room configuration using JSON files
 - ✅ **TypeScript Throughout**: Type-safe development with hot reload and zero compilation errors
 - ✅ **GameMaker Conventions**: Familiar structure and patterns
-- ✅ **GML Compatibility Layer**: Copy-paste GameMaker ds_grid code support
-- ✅ **Dual Coding Paradigms**: Modern TypeScript + Classic GML syntax
+- ✅ **Modern TypeScript APIs**: Clean object-oriented patterns (getObjectsByType, getNearestObject, etc.)
 - ✅ **Player Movement System**: WASD/Arrow key controls with turn-based mechanics
 - ✅ **Input Processing**: Keyboard and mouse input handling with proper event timing
 - ✅ **Visual Rendering**: Working Rapid.js immediate mode rendering with functional sprite display
-- ✅ **GameMaker Variable System**: Authentic instance vs object variable behavior with exact GameMaker compatibility
-- ✅ **Object Instance Access**: Functional replication of `obj_menu.x` style property access patterns
-- ✅ **GameMaker-Style APIs**: Separate mouse X/Y methods, coordinate conversion, spatial queries with x,y parameters
-- ✅ **GameMaker Keywords**: Unquoted `all`, `noone`, and custom object types (Player, Enemy, etc.)
-- ✅ **Bridge Philosophy**: Comprehensive engine philosophy supporting both GameMaker and modern web development paradigms
-- ✅ **Performance Optimization**: Object state management with optimized collections for active/inactive/pending objects
-- ✅ **Type Safety**: Complete TypeScript integration with GameMaker-authentic syntax
+- ✅ **Simplified Build Pipeline**: JSON-only room data with fast, transparent builds
+- ✅ **Clean Architecture**: Modern TypeScript patterns without compatibility overhead
+
+**Simplified Features:**
+- ✅ **JSON-Only Room Data**: Human-readable, debuggable room files without binary conversion
+- ✅ **Modern APIs**: Clean TypeScript methods replacing GameMaker compatibility wrappers
+- ✅ **Faster Builds**: Eliminated MessagePack processing for improved development speed
+- ✅ **Transparent Data**: Direct JSON file usage for easier debugging and modification
+- ✅ **Reduced Dependencies**: Removed MessagePack and compatibility layer dependencies
 
 **Known Issues & Ongoing Work:**
 - ⚠️ **Click Movement Pathfinding**: Path validation and click-to-move system needs refinement
 - 🔧 **Engine Distribution**: Not yet packaged for external use (development build only)
 - 📋 **API Stability**: Engine API may change during active development
+- 🎯 **GameMaker Compatibility**: Removed for simplification, may be reconsidered when engine matures
 
-**Coding Approaches Available:**
-1. **Modern TypeScript**: `grid.set(x, y, value)` with full type safety
-2. **GameMaker GML**: `ds_grid_set(grid, x, y, value)` for familiarity (ds_grid functions)
-3. **Mixed**: Both approaches in same project for gradual migration
+**Current Development Philosophy:**
+- **Feature Development First**: Focus on core game engine functionality
+- **Modern TypeScript Patterns**: Clean, maintainable code using current best practices
+- **Simplified Workflow**: Prioritize developer experience and enjoyable development
+- **GameMaker Paradigms**: Maintain familiar concepts (GameObject events, Room system) without compatibility overhead
+- **Future Flexibility**: GameMaker compatibility can be added later as optional feature
 
 **Architecture Progression:**
 ```
-Procedural → Object-Oriented → Event-Driven → Room-Based → Dual-Paradigm → Immediate Mode
+Procedural → Object-Oriented → Event-Driven → Room-Based → Dual-Paradigm → Immediate Mode → Simplified Modern
 Canvas 2D → Pixi.js → Rapid.js Immediate Mode Rendering
-Single File → Modular → Engine Framework → GameMaker Conventions → GML Compatibility → Clean Architecture
+Single File → Modular → Engine Framework → GameMaker Conventions → GML Compatibility → Clean Architecture → Simplified TypeScript
+MessagePack Binary → JSON-Only Transparent Data
 ```
 
 ---
@@ -229,7 +256,7 @@ Single File → Modular → Engine Framework → GameMaker Conventions → GML C
 3. **Architecture-First**: Early abstraction investment paid off significantly
 4. **GameMaker Conventions**: Familiar patterns increased developer adoption
 5. **TypeScript Benefits**: Type safety caught errors early, improved refactoring
-6. **Developer Choice**: Dual paradigm support accommodated different backgrounds
+6. **Strategic Simplification**: Removing complexity improved development velocity and enjoyment
 
 ### Lessons Learned
 1. **Start Simple, Evolve Complex**: Basic prototype → Full engine methodology
@@ -237,7 +264,18 @@ Single File → Modular → Engine Framework → GameMaker Conventions → GML C
 3. **Document Everything**: Made evolution and major refactoring possible
 4. **Consistent Patterns**: GameMaker conventions provided organizational structure
 5. **Version Control**: Git history became invaluable development documentation
-6. **Developer Choice**: Providing options increases adoption and developer comfort
+6. **Simplicity Over Compatibility**: Clean code improves development experience more than compatibility layers
+7. **Focus on Core Features**: Feature development should precede compatibility concerns
+8. **Developer Experience First**: Personal enjoyment and workflow efficiency drive better outcomes
+9. **Avoid Premature Complexity**: Adding too much complexity too soon can hinder development progress and enjoyment
+
+### Simplification Strategy
+- **Removed GameMaker Compatibility**: Eliminated GML compatibility layer for cleaner codebase
+- **Modern TypeScript Focus**: Embraced modern patterns without compatibility constraints
+- **JSON-Only Data**: Simplified build pipeline by removing MessagePack binary conversion
+- **Feature Development Priority**: Focus on core engine functionality before compatibility features
+- **Future Flexibility**: GameMaker compatibility can be reconsidered when engine reaches maturity
+- **Personal Experience**: Prioritized enjoyable development workflow and reduced complexity
 
 ### Development Achievements ✅
 - **Core Functionality**: Turn-based game with working keyboard movement controls
@@ -267,34 +305,14 @@ Single File → Modular → Engine Framework → GameMaker Conventions → GML C
 
 ---
 
-## Development Roadmap
-
-### Immediate Priorities 🎯
-- **Sprite Animation**: Multi-frame sprite support and animation controls
-- **Additional Object Types**: Enemy and Item object implementation with sprites
-- **TOML Room Expansion**: More complex room configurations and object interactions
-- **Engine Distribution Prep**: Package for npm distribution and external use
-- **API Documentation**: Complete API reference for engine consumers
-
-### Medium-term Features 🚀
-- **Audio Engine**: Comprehensive sound and music system
-- **Physics System**: Enhanced collision detection and response framework
-- **Save/Load System**: Game state persistence and serialization
-- **Extended GML Support**: ds_list, ds_map functions for broader compatibility
-- **Pathfinding Enhancement**: Improve click-to-move validation and routing
-
-### Long-term Vision 🌟
-- **Visual Editor**: Scene and level design tools with TOML export
-- **Particle Effects**: Advanced visual effects and animation system
-- **Networking**: Multiplayer capabilities and real-time features
-- **Complete Platform**: Full web-based game development ecosystem
-
 ### Current Focus
-The engine has achieved a major milestone with the completion of its **Bridge Philosophy** - a comprehensive approach that authentically supports both GameMaker traditions and modern web development paradigms. With the GameMaker keyword system (`all`, `noone`, unquoted custom types) now complete and performance-optimized object management in place, the engine provides a professional foundation for game development that scales from rapid prototyping to production applications.
+The engine has undergone strategic simplification, removing GameMaker compatibility layers to focus on core feature development and improved developer experience. With clean modern TypeScript APIs and JSON-only room data, the engine now prioritizes development velocity and maintainability. 
 
-Primary focus is now on engine distribution, additional GameMaker API functions, and expanding the room/sprite system to support more complex game scenarios. The engine has evolved from a simple turn-based prototype to a sophisticated dual-paradigm game engine that bridges classic game development with modern web technologies.
+The simplified architecture maintains GameMaker paradigms (GameObject events, Room system, Event-driven architecture) while using modern TypeScript patterns. This approach facilitates rapid feature development and makes the development process more enjoyable.
+
+GameMaker compatibility features can be reconsidered and potentially re-added as optional layers once the core engine reaches greater maturity.
 
 ---
 
-*Last Updated: August 8, 2025*
-*Project: DGC Engine - Rapid.js-Powered GameMaker-Style TypeScript Game Engine*
+*Last Updated: August 9, 2025*
+*Project: DGC Engine - Simplified TypeScript Game Engine with GameMaker Paradigms*
