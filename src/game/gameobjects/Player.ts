@@ -30,6 +30,10 @@ export class Player extends GameObject {
     this.setVariable('maxHealth', config.maxHealth || 100)
     this.setVariable('speed', config.speed || 5)
     
+    // Initialize movement variables
+    this.setVariable('velocityX', 0)
+    this.setVariable('velocityY', 0)
+    
     this.setupPlayerEvents()
     console.log('🎮 Player setup complete')
   }
@@ -54,32 +58,67 @@ export class Player extends GameObject {
 
     // STEP event - called every frame for game logic
     this.addEventScript(GameEvent.STEP, (self) => {
-      // Handle movement input through global game instance
+      // Handle movement with velocity smoothing
       const game = (window as any).game
       if (game) {
-        const speed = self.getVariable('speed') || 5
+        const maxSpeed = 4 // Reduced max speed for smoother movement
+        const acceleration = 0.5 // Smoother acceleration
+        const friction = 0.85 // Higher friction for quicker stops
         
-        // WASD movement
-        if (game.isKeyPressed('KeyW') || game.isKeyPressed('ArrowUp')) {
-          self.y -= speed
-        }
-        if (game.isKeyPressed('KeyS') || game.isKeyPressed('ArrowDown')) {
-          self.y += speed
-        }
-        if (game.isKeyPressed('KeyA') || game.isKeyPressed('ArrowLeft')) {
-          self.x -= speed
-        }
-        if (game.isKeyPressed('KeyD') || game.isKeyPressed('ArrowRight')) {
-          self.x += speed
+        let velocityX = self.getVariable('velocityX') || 0
+        let velocityY = self.getVariable('velocityY') || 0
+        
+        // Input handling with acceleration
+        let inputX = 0
+        let inputY = 0
+        
+        if (game.isKeyPressed('KeyA') || game.isKeyPressed('ArrowLeft')) inputX = -1
+        if (game.isKeyPressed('KeyD') || game.isKeyPressed('ArrowRight')) inputX = 1
+        if (game.isKeyPressed('KeyW') || game.isKeyPressed('ArrowUp')) inputY = -1
+        if (game.isKeyPressed('KeyS') || game.isKeyPressed('ArrowDown')) inputY = 1
+        
+        // Apply acceleration or friction
+        if (inputX !== 0) {
+          velocityX += inputX * acceleration
+          velocityX = Math.max(-maxSpeed, Math.min(maxSpeed, velocityX))
+        } else {
+          velocityX *= friction
+          if (Math.abs(velocityX) < 0.01) velocityX = 0
         }
         
-        // Keep player within canvas bounds
-        const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
-        if (canvas) {
-          const spriteSize = 32 // Assume 32x32 sprite
-          self.x = Math.max(spriteSize / 2, Math.min(canvas.width - spriteSize / 2, self.x))
-          self.y = Math.max(spriteSize / 2, Math.min(canvas.height - spriteSize / 2, self.y))
+        if (inputY !== 0) {
+          velocityY += inputY * acceleration
+          velocityY = Math.max(-maxSpeed, Math.min(maxSpeed, velocityY))
+        } else {
+          velocityY *= friction
+          if (Math.abs(velocityY) < 0.01) velocityY = 0
         }
+        
+        // Apply movement with fractional precision
+        if (velocityX !== 0 || velocityY !== 0) {
+          self.x += velocityX
+          self.y += velocityY
+          
+          // Keep player within canvas bounds
+          const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
+          if (canvas) {
+            const spriteSize = 32
+            const halfSprite = spriteSize / 2
+            const newX = Math.max(halfSprite, Math.min(canvas.width - halfSprite, self.x))
+            const newY = Math.max(halfSprite, Math.min(canvas.height - halfSprite, self.y))
+            
+            // Stop velocity if we hit a boundary
+            if (newX !== self.x) velocityX = 0
+            if (newY !== self.y) velocityY = 0
+            
+            self.x = newX
+            self.y = newY
+          }
+        }
+        
+        // Store velocity for next frame
+        self.setVariable('velocityX', velocityX)
+        self.setVariable('velocityY', velocityY)
       }
       
       // Health regeneration
@@ -92,33 +131,34 @@ export class Player extends GameObject {
 
     // DRAW event - called every frame for rendering
     this.addEventScript(GameEvent.DRAW, (self) => {
-      // Only log occasionally to avoid spam
-      const shouldLog = Math.random() < 0.01 // Log ~1% of frames
-      
-      if (shouldLog) {
-        console.log('🎨 Player DRAW event called at position:', self.x, self.y)
-        console.log('🎨 Player visible:', self.visible, 'sprite:', self.sprite)
-      }
-      
       // Draw the player sprite if we have one, otherwise draw a rectangle
       if (self.sprite) {
-        if (shouldLog) console.log('🎨 Drawing sprite:', self.sprite.name || 'unnamed')
+        // Ensure sprite is drawn at integer pixel positions to avoid jitter
+        const drawX = Math.round(self.x)
+        const drawY = Math.round(self.y)
+        
+        // Temporarily set rounded position for drawing
+        const originalX = self.x
+        const originalY = self.y
+        self.x = drawX
+        self.y = drawY
+        
         self.drawSelf()
+        
+        // Restore original position
+        self.x = originalX
+        self.y = originalY
       } else {
-        if (shouldLog) console.log('🎨 Drawing rectangle fallback...')
-        // Fallback rectangle if no sprite - make it larger and more visible
+        // Fallback rectangle if no sprite
         const drawing = self.getDrawingSystem()
         if (drawing) {
-          if (shouldLog) {
-            console.log('🎨 Drawing rectangle from', self.x - 25, self.y - 25, 'to', self.x + 25, self.y + 25)
-          }
+          const drawX = Math.round(self.x)
+          const drawY = Math.round(self.y)
           drawing.drawRectangle(
-            self.x - 25, self.y - 25,
-            self.x + 25, self.y + 25,
+            drawX - 25, drawY - 25,
+            drawX + 25, drawY + 25,
             true, 0x00FF00, 1.0  // Green, fully opaque
           )
-        } else {
-          if (shouldLog) console.log('❌ No drawing system available!')
         }
       }
     })
