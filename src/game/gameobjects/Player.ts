@@ -1,9 +1,20 @@
-import { GameObject, GameEvent } from '../../engine'
+import { GameObject } from '../../engine'
 
 /**
  * Simplified Player class for real-time movement and interaction
  */
 export class Player extends GameObject {
+  // Player stats as real class properties (no more GameMaker variables)
+  public health: number = 100
+  public maxHealth: number = 100
+  public score: number = 0
+  public speed: number = 2.5
+  public alive: boolean = true
+  
+  // High-precision logical position for sub-pixel movement
+  public realX: number = 0
+  public realY: number = 0
+  
   constructor(xOrConfig: number | { x: number; y: number; [key: string]: any }, y?: number) {
     // Handle both constructor signatures: Player(x, y) and Player({x, y, ...props})
     let x: number, yPos: number, config: any = {}
@@ -26,162 +37,119 @@ export class Player extends GameObject {
     // Set player-specific properties
     this.solid = true
     this.visible = true
-    this.setVariable('health', config.health || 100)
-    this.setVariable('maxHealth', config.maxHealth || 100)
-    this.setVariable('speed', config.speed || 5)
     
-    // Initialize movement variables
-    this.setVariable('velocityX', 0)
-    this.setVariable('velocityY', 0)
+    // Initialize class properties (no more GameMaker-style variables)
+    this.health = config.health || 100
+    this.maxHealth = config.maxHealth || 100
+    this.speed = config.speed || 2.5 // Sub-pixel speed for smooth movement
+    this.score = 0
+    this.alive = true
     
-    this.setupPlayerEvents()
-    console.log('🎮 Player setup complete')
+    // Initialize high-precision logical position (separate from visual position)
+    this.realX = this.x // Floating-point logical position
+    this.realY = this.y // Floating-point logical position
+    
+    console.log('🎮 Player setup complete with sub-pixel precision and real class properties')
+  }
+
+  // Virtual event methods (replacing GameMaker event scripts)
+
+  /**
+   * CREATE event - called when player is first created
+   */
+  public onCreate(): void {
+    console.log('🎮 Player CREATE event - Player spawned!')
+    console.log('🎮 Player position:', this.x, this.y)
+    console.log('🎮 Player visible:', this.visible)
+    console.log('🎮 Player sprite at CREATE:', this.sprite ? 'assigned' : 'null')
+    
+    // Force visibility
+    this.visible = true
+    
+    // Initialize using class properties (no more GameMaker variables)
+    this.alive = true
+    this.score = 0
   }
 
   /**
-   * Setup player event handlers
+   * STEP event - called every frame for game logic
    */
-  private setupPlayerEvents(): void {
-    // CREATE event - called when player is first created
-    this.addEventScript(GameEvent.CREATE, (self) => {
-      console.log('🎮 Player CREATE event - Player spawned!')
-      console.log('🎮 Player position:', self.x, self.y)
-      console.log('🎮 Player visible:', self.visible)
-      console.log('🎮 Player sprite at CREATE:', self.sprite ? 'assigned' : 'null')
+  public onStep(): void {
+    // Sub-pixel precision movement for buttery smoothness
+    const game = (window as any).game
+    if (game) {
+      // Get high-precision logical position from class properties
+      let realX = this.realX
+      let realY = this.realY
       
-      // Force visibility
-      self.visible = true
+      // Direct movement based on input (affects logical position)
+      let moveX = 0
+      let moveY = 0
       
-      self.setVariable('isAlive', true)
-      self.setVariable('score', 0)
-    })
-
-    // STEP event - called every frame for game logic
-    this.addEventScript(GameEvent.STEP, (self) => {
-      // Handle movement with velocity smoothing
-      const game = (window as any).game
-      if (game) {
-        const maxSpeed = 4 // Reduced max speed for smoother movement
-        const acceleration = 0.5 // Smoother acceleration
-        const friction = 0.85 // Higher friction for quicker stops
-        
-        let velocityX = self.getVariable('velocityX') || 0
-        let velocityY = self.getVariable('velocityY') || 0
-        
-        // Input handling with acceleration
-        let inputX = 0
-        let inputY = 0
-        
-        if (game.isKeyPressed('KeyA') || game.isKeyPressed('ArrowLeft')) inputX = -1
-        if (game.isKeyPressed('KeyD') || game.isKeyPressed('ArrowRight')) inputX = 1
-        if (game.isKeyPressed('KeyW') || game.isKeyPressed('ArrowUp')) inputY = -1
-        if (game.isKeyPressed('KeyS') || game.isKeyPressed('ArrowDown')) inputY = 1
-        
-        // Apply acceleration or friction
-        if (inputX !== 0) {
-          velocityX += inputX * acceleration
-          velocityX = Math.max(-maxSpeed, Math.min(maxSpeed, velocityX))
-        } else {
-          velocityX *= friction
-          if (Math.abs(velocityX) < 0.01) velocityX = 0
-        }
-        
-        if (inputY !== 0) {
-          velocityY += inputY * acceleration
-          velocityY = Math.max(-maxSpeed, Math.min(maxSpeed, velocityY))
-        } else {
-          velocityY *= friction
-          if (Math.abs(velocityY) < 0.01) velocityY = 0
-        }
-        
-        // Apply movement with fractional precision
-        if (velocityX !== 0 || velocityY !== 0) {
-          self.x += velocityX
-          self.y += velocityY
-          
-          // Keep player within canvas bounds
-          const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
-          if (canvas) {
-            const spriteSize = 32
-            const halfSprite = spriteSize / 2
-            const newX = Math.max(halfSprite, Math.min(canvas.width - halfSprite, self.x))
-            const newY = Math.max(halfSprite, Math.min(canvas.height - halfSprite, self.y))
-            
-            // Stop velocity if we hit a boundary
-            if (newX !== self.x) velocityX = 0
-            if (newY !== self.y) velocityY = 0
-            
-            self.x = newX
-            self.y = newY
-          }
-        }
-        
-        // Store velocity for next frame
-        self.setVariable('velocityX', velocityX)
-        self.setVariable('velocityY', velocityY)
-      }
+      if (game.isKeyPressed('KeyA') || game.isKeyPressed('ArrowLeft')) moveX = -this.speed
+      if (game.isKeyPressed('KeyD') || game.isKeyPressed('ArrowRight')) moveX = this.speed
+      if (game.isKeyPressed('KeyW') || game.isKeyPressed('ArrowUp')) moveY = -this.speed
+      if (game.isKeyPressed('KeyS') || game.isKeyPressed('ArrowDown')) moveY = this.speed
       
-      // Health regeneration
-      const health = self.getVariable('health')
-      const maxHealth = self.getVariable('maxHealth')
-      if (health < maxHealth && Math.random() < 0.001) {
-        self.setVariable('health', Math.min(maxHealth, health + 1))
-      }
-    })
-
-    // DRAW event - called every frame for rendering
-    this.addEventScript(GameEvent.DRAW, (self) => {
-      // Draw the player sprite if we have one, otherwise draw a rectangle
-      if (self.sprite) {
-        // Ensure sprite is drawn at integer pixel positions to avoid jitter
-        const drawX = Math.round(self.x)
-        const drawY = Math.round(self.y)
+      // Apply movement to high-precision logical coordinates
+      if (moveX !== 0 || moveY !== 0) {
+        realX += moveX
+        realY += moveY
         
-        // Temporarily set rounded position for drawing
-        const originalX = self.x
-        const originalY = self.y
-        self.x = drawX
-        self.y = drawY
-        
-        self.drawSelf()
-        
-        // Restore original position
-        self.x = originalX
-        self.y = originalY
-      } else {
-        // Fallback rectangle if no sprite
-        const drawing = self.getDrawingSystem()
-        if (drawing) {
-          const drawX = Math.round(self.x)
-          const drawY = Math.round(self.y)
-          drawing.drawRectangle(
-            drawX - 25, drawY - 25,
-            drawX + 25, drawY + 25,
-            true, 0x00FF00, 1.0  // Green, fully opaque
-          )
+        // Keep player within canvas bounds (logical position)
+        const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
+        if (canvas) {
+          const spriteSize = 32
+          const halfSprite = spriteSize / 2
+          realX = Math.max(halfSprite, Math.min(canvas.width - halfSprite, realX))
+          realY = Math.max(halfSprite, Math.min(canvas.height - halfSprite, realY))
         }
+        
+        // Store updated logical position in class properties
+        this.realX = realX
+        this.realY = realY
+        
+        // Update visual position for rendering (will be rounded during draw)
+        this.x = realX
+        this.y = realY
       }
-    })
+    }
+    
+    // Health regeneration using class properties
+    if (this.health < this.maxHealth && Math.random() < 0.001) {
+      this.health = Math.min(this.maxHealth, this.health + 1)
+    }
+  }
 
-    // COLLISION event - handle collisions with other objects
-    this.addEventScript(GameEvent.COLLISION, (_self, eventData) => {
-      const other = eventData?.other
-      if (!other) return
+  /**
+   * DRAW event - called every frame for rendering
+   */
+  public onDraw(): void {
+    // Draw the player sprite if we have one, otherwise draw a rectangle
+    this.drawSelf()      
+  }
 
-      switch (other.objectType) {
-        case 'Enemy':
-          this.takeDamage(15)
-          break
-        case 'Item':
-          this.collectItem(other)
-          break
-      }
-    })
+  /**
+   * COLLISION event - handle collisions with other objects
+   */
+  public onCollision(other: GameObject): void {
+    if (!other) return
 
-    // DESTROY event - cleanup when player is destroyed
-    this.addEventScript(GameEvent.DESTROY, () => {
-      console.log('🎮 Player DESTROY event - Player removed!')
-    })
+    switch (other.objectType) {
+      case 'Enemy':
+        this.takeDamage(15)
+        break
+      case 'Item':
+        this.collectItem(other)
+        break
+    }
+  }
+
+  /**
+   * DESTROY event - cleanup when player is destroyed
+   */
+  public onDestroy(): void {
+    console.log('🎮 Player DESTROY event - Player removed!')
   }
 
   /**
@@ -212,21 +180,21 @@ export class Player extends GameObject {
    * Get player health
    */
   public getHealth(): number {
-    return this.getVariable('health') || 100
+    return this.health
   }
 
   /**
    * Get player max health
    */
   public getMaxHealth(): number {
-    return this.getVariable('maxHealth') || 100
+    return this.maxHealth
   }
 
   /**
    * Set player health
    */
   public setHealth(health: number): void {
-    this.setVariable('health', Math.max(0, health))
+    this.health = Math.max(0, health)
     console.log(`❤️ Player health: ${this.getHealth()}/${this.getMaxHealth()}`)
   }
 
@@ -242,7 +210,7 @@ export class Player extends GameObject {
     
     if (newHealth <= 0) {
       console.log('💀 Player has died!')
-      this.setVariable('isAlive', false)
+      this.alive = false
     }
   }
 
@@ -262,7 +230,7 @@ export class Player extends GameObject {
    * Get player score
    */
   public getScore(): number {
-    return this.getVariable('score') || 0
+    return this.score
   }
 
   /**
@@ -270,7 +238,7 @@ export class Player extends GameObject {
    */
   public addScore(points: number): void {
     const currentScore = this.getScore()
-    this.setVariable('score', currentScore + points)
+    this.score = currentScore + points
     console.log(`⭐ Player scored ${points} points! Total: ${this.getScore()}`)
   }
 
@@ -278,21 +246,21 @@ export class Player extends GameObject {
    * Check if player is alive
    */
   public isAlive(): boolean {
-    return this.getVariable('isAlive') === true && this.getHealth() > 0
+    return this.alive === true && this.getHealth() > 0
   }
 
   /**
    * Get player speed
    */
   public getSpeed(): number {
-    return this.getVariable('speed') || 5
+    return this.speed
   }
 
   /**
    * Set player speed
    */
   public setSpeed(speed: number): void {
-    this.setVariable('speed', Math.max(1, speed))
+    this.speed = Math.max(1, speed)
     console.log(`🏃 Player speed: ${this.getSpeed()}`)
   }
 

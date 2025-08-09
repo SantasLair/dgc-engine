@@ -1,2 +1,1 @@
-export { GameRoom } from './GameRoom'
-export { MenuRoom } from './MenuRoom'
+export { SpriteMoveTestRoom } from './SpriteMoveTestRoom'

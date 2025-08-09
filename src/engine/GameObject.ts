@@ -548,4 +548,82 @@ export class GameObject {
       this.imageAlpha
     )
   }
+  
+  // ========================================
+  // VIRTUAL EVENT METHODS
+  // Override these in subclasses for clean event handling
+  // ========================================
+  
+  /**
+   * Called once when the object is created
+   * Override this instead of using addEventScript(GameEvent.CREATE, ...)
+   */
+  public onCreate(): void {
+    // Override in subclasses
+  }
+  
+  /**
+   * Called every frame before step
+   * Override this instead of using addEventScript(GameEvent.STEP_BEGIN, ...)
+   */
+  public onStepBegin(): void {
+    // Override in subclasses
+  }
+  
+  /**
+   * Called every frame for main game logic
+   * Override this instead of using addEventScript(GameEvent.STEP, ...)
+   */
+  public onStep(): void {
+    // Override in subclasses
+  }
+  
+  /**
+   * Called every frame after step
+   * Override this instead of using addEventScript(GameEvent.STEP_END, ...)
+   */
+  public onStepEnd(): void {
+    // Override in subclasses
+  }
+  
+  /**
+   * Called every frame before drawing
+   * Override this instead of using addEventScript(GameEvent.DRAW_BEGIN, ...)
+   */
+  public onDrawBegin(): void {
+    // Override in subclasses
+  }
+  
+  /**
+   * Called every frame for drawing
+   * Override this instead of using addEventScript(GameEvent.DRAW, ...)
+   */
+  public onDraw(): void {
+    // Override in subclasses - default behavior is to draw sprite
+    this.drawSelf()
+  }
+  
+  /**
+   * Called every frame after drawing
+   * Override this instead of using addEventScript(GameEvent.DRAW_END, ...)
+   */
+  public onDrawEnd(): void {
+    // Override in subclasses
+  }
+  
+  /**
+   * Called when the object is destroyed
+   * Override this instead of using addEventScript(GameEvent.DESTROY, ...)
+   */
+  public onDestroy(): void {
+    // Override in subclasses
+  }
+  
+  /**
+   * Called when collision occurs with another object
+   * Override this instead of using addEventScript(GameEvent.COLLISION, ...)
+   */
+  public onCollision(_other: GameObject): void {
+    // Override in subclasses
+  }
 }

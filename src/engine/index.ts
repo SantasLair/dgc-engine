@@ -7,11 +7,7 @@ export { type DGCEngineConfig, createDGCEngineConfig } from './DGCEngineConfig'
 export { GameObject, GameEvent, type EventScript, type GameObjectProperties } from './GameObject'
 export { EventManager, type EventListener } from './EventManager'
 export { GameObjectManager, type ObjectFilter } from './GameObjectManager'
-export { Room, RoomManager, type RoomConfig } from './Room'
-
-// Data-driven room system
-export { RoomFactory, type RoomData, type RoomDataFile, type RoomFactoryConfig, type RoomObjectData } from './RoomFactory'
-export type { RoomBackground, RoomView, RoomObjectPosition } from './RoomData'
+export { DGCRoom, type RoomConfig } from './DGCRoom'
 
 // DGC sprite system
 export { DGCSprite, DGCSpriteManager, type DGCSpriteConfig } from './DGCSprite'

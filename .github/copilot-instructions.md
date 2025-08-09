@@ -54,6 +54,14 @@ This is a turn-based movement game demo project built with:
 - Always push changes after committing
 - Track minor commits in `history/PENDING_COMMITS.md` for milestone grouping
 
+## Experimentation Guidelines
+
+- **Avoid duplicating files for experiments** - use git branching instead of creating parallel implementations
+- When experimenting with changes, modify the actual files and use version control to safely revert if needed
+- Create feature branches for experimental work rather than duplicate classes/files
+- This prevents accumulation of unused experimental code and keeps the codebase clean
+- Leverage git's strength for safe experimentation rather than maintaining multiple implementations
+
 ## Code Style
 
 - Use descriptive variable and function names

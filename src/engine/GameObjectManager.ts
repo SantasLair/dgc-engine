@@ -56,6 +56,13 @@ export class GameObjectManager {
     console.log(`🎮 Executing CREATE event for ${gameObject.objectType}`)
     gameObject.executeEventSync(GameEvent.CREATE)
     
+    // Also call the virtual onCreate method
+    try {
+      gameObject.onCreate()
+    } catch (error) {
+      console.error(`Error executing onCreate on ${gameObject.objectType}:`, error)
+    }
+    
     return gameObject
   }
 
@@ -83,6 +90,13 @@ export class GameObjectManager {
     // Execute create event immediately
     console.log(`🎮 Executing CREATE event for ${gameObject.objectType}`)
     gameObject.executeEventSync(GameEvent.CREATE)
+    
+    // Also call the virtual onCreate method
+    try {
+      gameObject.onCreate()
+    } catch (error) {
+      console.error(`Error executing onCreate on ${gameObject.objectType}:`, error)
+    }
   }
   
   /**

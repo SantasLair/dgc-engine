@@ -152,30 +152,42 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - **Future Consideration**: GameMaker compatibility may be reconsidered when core engine reaches maturity
 - **Commits**: `52b30d9`, `c0c4b6a` (feature/engine-refinement branch)
 
-### [Session 17: Engine Simplification & JSON-Only Data (August 9, 2025) - Current Session](./milestones/00017-engine-simplification.md) 🎯
-**Engine Simplification for Enhanced Development Experience** - Strategic removal of GameMaker compatibility layer to focus on core feature development
-- **Key Achievement**: Streamlined engine architecture by removing GameMaker compatibility while preserving GameMaker paradigms
-- **Philosophy**: Simplification to facilitate rapid feature development and improve personal development experience
-- **Technology**: Modern TypeScript patterns + JSON-only room data + Simplified build pipeline + Clean architecture
-- **Major Changes**:
+### [Session 17: Engine Simplification & FPS Monitoring (August 9, 2025) - Current Session](./milestones/00017-simplification-fps.md) 🎯📊
+**Dual Achievement: Engine Simplification + FPS Monitoring** - Strategic simplification combined with GameMaker-style performance monitoring
+- **Key Achievements**: 
+  1. Streamlined engine architecture by removing GameMaker compatibility while preserving paradigms
+  2. Implemented professional FPS monitoring system with visual performance graphs
+- **Philosophy**: Simplification to facilitate rapid feature development while adding essential developer tools
+- **Technology**: Modern TypeScript patterns + JSON-only room data + FPS Monitor GameObject + Improved frame timing
+- **Engine Simplification Changes**:
   - **GameMaker Compatibility Removal**: Eliminated GML compatibility layer, GameMaker constants, and wrapper functions
   - **Modern TypeScript APIs**: Replaced GameMaker-style functions with clean TypeScript methods (getObjectsByType, getNearestObject, etc.)
   - **JSON-Only Room Data**: Removed MessagePack binary compilation, simplified to direct JSON file usage
   - **Build Pipeline Simplification**: Eliminated MessagePack conversion step, faster build times with transparent data
   - **Dependency Cleanup**: Removed @msgpack/msgpack dependency and related binary processing
   - **Code Modernization**: Updated all APIs to use modern TypeScript patterns and ObjectFilter types
-- **Development Strategy**: Focus on feature development first, GameMaker compatibility can be reconsidered when engine matures
-- **Developer Experience**: Improved transparency, faster builds, easier debugging with human-readable JSON data
-- **Architecture**: Maintained GameMaker paradigms (GameObject events, Room system, Event-driven architecture) using modern TypeScript
-- **Future Consideration**: GameMaker compatibility layer can be re-added as optional feature once core engine is stable
-- **Personal Experience**: Prioritized enjoyable development workflow over compatibility constraints
-- **Commits**: TBD (simplification branch)
+- **FPS Monitoring System**:
+  - **Visual Graph**: Real-time FPS bars similar to GameMaker's fps_real monitoring with 60-sample history
+  - **Performance Analytics**: Current, average, min/max FPS with frame time variance analysis
+  - **Target Reference**: Yellow 60 FPS reference line for visual performance comparison
+  - **Detailed Logging**: Console output with comprehensive performance metrics every 5 seconds
+  - **GameMaker Style**: Implemented as GameObject with proper CREATE/STEP/DRAW events
+- **Engine Stability Improvements**:
+  - **Enhanced Frame Limiting**: Upgraded from simple time-based to accumulator-based system
+  - **Fixed Timestep**: More consistent frame pacing preventing performance fluctuations
+  - **Frame Time Capping**: Prevents "spiral of death" scenarios during performance drops
+  - **Stable 60 FPS**: Achieved consistent frame rates with minimal variance
+- **Development Strategy**: Focus on feature development with professional debugging tools
+- **Developer Experience**: Improved transparency, faster builds, easier debugging, plus essential performance monitoring
+- **Architecture**: Maintained GameMaker paradigms using modern TypeScript with professional developer tools
+- **Performance Achievement**: Solved FPS instability issues with accumulator-based frame limiting
+- **Commits**: `39ce37f`, `31e7ea5`, `528db34` (FPS monitoring), plus simplification commits
 
 ---
 
 ## Current State (August 9, 2025)
 
-### Project Status: � **Simplified Modern TypeScript Engine with GameMaker Paradigms**
+### Project Status: 🎯📊 **Simplified Modern TypeScript Engine with Professional Performance Monitoring**
 
 **Core Capabilities:**
 - ✅ **Event-Driven Architecture**: GameMaker-style events (CREATE, STEP, DRAW, DESTROY)
@@ -192,6 +204,8 @@ This project began as a simple turn-based movement game and evolved into a sophi
 - ✅ **Visual Rendering**: Working Rapid.js immediate mode rendering with functional sprite display
 - ✅ **Simplified Build Pipeline**: JSON-only room data with fast, transparent builds
 - ✅ **Clean Architecture**: Modern TypeScript patterns without compatibility overhead
+- ✅ **FPS Monitoring**: Professional GameMaker-style performance monitoring with visual graphs
+- ✅ **Stable Frame Rate**: Accumulator-based frame limiting for consistent 60 FPS performance
 
 **Simplified Features:**
 - ✅ **JSON-Only Room Data**: Human-readable, debuggable room files without binary conversion
