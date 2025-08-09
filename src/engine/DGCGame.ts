@@ -2,7 +2,7 @@ import { DGCEngine } from './DGCEngine'
 import type { DGCEngineConfig } from './DGCEngineConfig'
 import { createDGCEngineConfig } from './DGCEngineConfig'
 import { GameObject } from './GameObject'
-import { RoomManager } from './DGCRoom.ts'
+import { DGCRoom } from './DGCRoom'
 import type { Rapid } from 'rapid-render'
 
 /**
@@ -12,7 +12,8 @@ import type { Rapid } from 'rapid-render'
 export abstract class DGCGame {
   protected canvas: HTMLCanvasElement
   protected engine: DGCEngine
-  protected roomManager: RoomManager
+  protected rooms: Map<string, DGCRoom> = new Map()
+  protected currentRoom?: DGCRoom
   protected isInitialized: boolean = false
 
   constructor(canvas: HTMLCanvasElement) {
@@ -27,16 +28,7 @@ export abstract class DGCGame {
     
     this.engine = new DGCEngine(config)
     
-    // Initialize room manager as part of the engine
-    this.roomManager = new RoomManager({
-      dataPath: '/data/rooms/',
-      objectTypes: new Map(),
-      roomClasses: new Map()
-    })
-    
-    // Set this game instance on the room manager for object management
-    this.roomManager.setGameInstance(this)
-    console.log('🏗️ RoomManager initialized in engine')
+    console.log('🏗️ DGCGame initialized with direct room management')
   }
 
   /**
@@ -112,10 +104,76 @@ export abstract class DGCGame {
   }
 
   /**
-   * Get the room manager
+   * Add a room to the game
    */
-  public getRoomManager(): RoomManager {
-    return this.roomManager
+  public addRoom(room: DGCRoom): void {
+    this.rooms.set(room.name, room)
+    room.initialize()
+    console.log(`🏠 Added room: ${room.name}`)
+  }
+
+  /**
+   * Go to a specific room
+   */
+  public async goToRoom(roomName: string): Promise<boolean> {
+    const newRoom = this.rooms.get(roomName)
+    if (!newRoom) {
+      console.warn(`Room '${roomName}' not found`)
+      return false
+    }
+
+    // Deactivate and cleanup current room
+    if (this.currentRoom) {
+      // Remove all game objects from the engine
+      for (const gameObject of this.currentRoom.getGameObjects()) {
+        this.removeGameObject(gameObject)
+      }
+      console.log(`🧹 Removed ${this.currentRoom.getGameObjects().size} objects from engine`)
+      
+      // Fully destroy the room and all its game objects
+      await this.currentRoom.destroy()
+    }
+
+    // Activate new room
+    this.currentRoom = newRoom
+    await newRoom.activate()
+    
+    // Add all game objects from the new room to the engine
+    for (const gameObject of newRoom.getGameObjects()) {
+      this.addGameObject(gameObject)
+    }
+    console.log(`🎮 Added ${newRoom.getGameObjects().size} objects to engine for room: ${roomName}`)
+    
+    // Additional verification
+    if (newRoom.getGameObjects().size > 0) {
+      console.log('🎯 SPRITE RENDERING FIX: Objects successfully transferred to engine!')
+      for (const obj of newRoom.getGameObjects()) {
+        console.log(`  - ${obj.objectType} at (${obj.x}, ${obj.y}) with sprite:`, (obj as any).sprite)
+      }
+    }
+    
+    return true
+  }
+
+  /**
+   * Get the current active room
+   */
+  public getCurrentRoom(): DGCRoom | undefined {
+    return this.currentRoom
+  }
+
+  /**
+   * Get a room by name
+   */
+  public getRoom(roomName: string): DGCRoom | undefined {
+    return this.rooms.get(roomName)
+  }
+
+  /**
+   * Get all room names
+   */
+  public getRoomNames(): string[] {
+    return Array.from(this.rooms.keys())
   }
 
   /**
@@ -230,5 +288,25 @@ export abstract class DGCGame {
    */
   public get isGameInitialized(): boolean {
     return this.isInitialized
+  }
+
+  /**
+   * Execute step logic for the current room
+   * Called automatically by the engine's game loop
+   */
+  public async step(): Promise<void> {
+    if (this.currentRoom) {
+      await this.currentRoom.step()
+    }
+  }
+
+  /**
+   * Execute draw logic for the current room
+   * Called automatically by the engine's game loop
+   */
+  public async draw(): Promise<void> {
+    if (this.currentRoom) {
+      await this.currentRoom.draw()
+    }
   }
 }

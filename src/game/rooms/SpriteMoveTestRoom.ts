@@ -7,8 +7,6 @@ import { Player } from '../gameobjects'
  * Simple hardcoded room for testing sprite movement without JSON dependencies
  */
 export class SpriteMoveTestRoom extends DGCRoom {
-  private game: Game
-
   constructor(game: Game) {
     const config: RoomConfig = {
       name: 'sprite_move_test',
@@ -36,9 +34,8 @@ export class SpriteMoveTestRoom extends DGCRoom {
         }
       ]
     }
-    super(config)
+    super(config, game)
 
-    this.game = game
     console.log('🏠 SpriteMoveTestRoom created')
   }
 
@@ -70,15 +67,15 @@ export class SpriteMoveTestRoom extends DGCRoom {
     }
   }
 
-  public override async onRoomStart(): Promise<void> {
+  public async onRoomStart(): Promise<void> {
     console.log('🚀 SpriteMoveTestRoom started - all setup complete')
   }
 
-  public override async onRoomUpdate(): Promise<void> {
+  public async onRoomUpdate(): Promise<void> {
     // Room update logic if needed
   }
 
-  public override onRoomEnd(): void {
+  public onRoomEnd(): void {
     console.log('🏠 SpriteMoveTestRoom ended')
   }
 }

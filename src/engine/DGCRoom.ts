@@ -1,6 +1,6 @@
 import { GameObject, GameEvent, type EventScript } from './GameObject'
 import { SpriteManager, type SpriteLoadConfig } from './SpriteManager'
-import { RoomFactory, type RoomFactoryConfig, type RoomData } from './RoomFactory'
+import type { DGCGame } from './DGCGame'
 
 /**
  * Room configuration interface
@@ -68,11 +68,15 @@ export class DGCRoom {
   private isActive: boolean = false
   private isCreated: boolean = false
 
-  constructor(config: RoomConfig) {
+  /** Game instance reference */
+  protected game: DGCGame
+
+  constructor(config: RoomConfig, game: DGCGame) {
     this.name = config.name
     this.width = config.width
     this.height = config.height
     this.background = config.background
+    this.game = game
     
     // Store required sprites
     this.requiredSprites = config.sprites || []
@@ -326,187 +330,3 @@ export class DGCRoom {
   }
 }
 
-/**
- * Room manager for handling multiple rooms
- */
-/**
- * Room Manager with Data-Driven Room Support
- * 
- * Manages room lifecycle and supports both traditional Room classes
- * and data-driven room creation from JSON files.
- */
-export class RoomManager {
-  private rooms: Map<string, DGCRoom> = new Map()
-  private currentRoom?: DGCRoom
-  private roomFactory: RoomFactory
-  private gameInstance?: any  // Reference to the game instance for adding/removing objects
-
-  constructor(factoryConfig?: RoomFactoryConfig) {
-    this.roomFactory = new RoomFactory(factoryConfig)
-  }
-
-  /**
-   * Set the game instance for object management
-   */
-  public setGameInstance(game: any): void {
-    this.gameInstance = game
-  }
-
-  /**
-   * Get the room factory for registering object types and room classes
-   */
-  public getFactory(): RoomFactory {
-    return this.roomFactory
-  }
-
-  /**
-   * Initialize the room manager
-   */
-  public initialize(): void {
-    // Initialize all existing rooms
-    for (const room of this.rooms.values()) {
-      room.initialize()
-    }
-  }
-
-  /**
-   * Add a room to the manager
-   */
-  public addRoom(room: DGCRoom): void {
-    this.rooms.set(room.name, room)
-    
-    // Initialize room when added
-    room.initialize()
-  }
-
-  /**
-   * Create and add a room from data
-   */
-  public addRoomFromData(roomData: RoomData): Room {
-    const room = this.roomFactory.createRoomFromData(roomData)
-    this.addRoom(room)
-    return room
-  }
-
-  /**
-   * Create and add a room from a data file
-   */
-  public async addRoomFromFile(filename: string): Promise<Room> {
-    const room = await this.roomFactory.createRoomFromFile(filename)
-    this.addRoom(room)
-    return room
-  }
-
-  /**
-   * Remove a room from the manager
-   */
-  public async removeRoom(roomName: string): Promise<void> {
-    const room = this.rooms.get(roomName)
-    if (room) {
-      // Switch away from this room if it's current
-      if (this.currentRoom === room) {
-        this.currentRoom = undefined
-      }
-      
-      await room.destroy()
-      this.rooms.delete(roomName)
-    }
-  }
-
-  /**
-   * Switch to a different room
-   */
-  public async goToRoom(roomName: string): Promise<boolean> {
-    const newRoom = this.rooms.get(roomName)
-    if (!newRoom) {
-      console.warn(`Room '${roomName}' not found`)
-      return false
-    }
-
-    // Deactivate and cleanup current room
-    if (this.currentRoom) {
-      // Remove all game objects from the engine
-      if (this.gameInstance) {
-        for (const gameObject of this.currentRoom.getGameObjects()) {
-          this.gameInstance.removeGameObject(gameObject)
-        }
-        console.log(`🧹 Removed ${this.currentRoom.getGameObjects().size} objects from engine`)
-      }
-      
-      // Fully destroy the room and all its game objects
-      await this.currentRoom.destroy()
-    }
-
-    // Activate new room
-    this.currentRoom = newRoom
-    await newRoom.activate()
-    
-    // Add all game objects from the new room to the engine
-    if (this.gameInstance) {
-      for (const gameObject of newRoom.getGameObjects()) {
-        this.gameInstance.addGameObject(gameObject)
-      }
-      console.log(`🎮 Added ${newRoom.getGameObjects().size} objects to engine for room: ${roomName}`)
-      
-      // Additional verification
-      if (newRoom.getGameObjects().size > 0) {
-        console.log('🎯 SPRITE RENDERING FIX: Objects successfully transferred to engine!')
-        for (const obj of newRoom.getGameObjects()) {
-          console.log(`  - ${obj.objectType} at (${obj.x}, ${obj.y}) with sprite:`, (obj as any).sprite)
-        }
-      }
-    }
-    
-    return true
-  }
-
-  /**
-   * Get the current active room
-   */
-  public getCurrentRoom(): Room | undefined {
-    return this.currentRoom
-  }
-
-  /**
-   * Get a room by name
-   */
-  public getRoom(roomName: string): Room | undefined {
-    return this.rooms.get(roomName)
-  }
-
-  /**
-   * Get all room names
-   */
-  public getRoomNames(): string[] {
-    return Array.from(this.rooms.keys())
-  }
-
-  /**
-   * Execute step logic for the current room
-   */
-  public async step(): Promise<void> {
-    if (this.currentRoom) {
-      await this.currentRoom.step()
-    }
-  }
-
-  /**
-   * Execute draw logic for the current room
-   */
-  public async draw(): Promise<void> {
-    if (this.currentRoom) {
-      await this.currentRoom.draw()
-    }
-  }
-
-  /**
-   * Cleanup all rooms
-   */
-  public async cleanup(): Promise<void> {
-    for (const room of this.rooms.values()) {
-      await room.destroy()
-    }
-    this.rooms.clear()
-    this.currentRoom = undefined
-  }
-}

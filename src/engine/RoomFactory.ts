@@ -6,6 +6,7 @@
  */
 
 import { DGCRoom, type RoomConfig } from './DGCRoom'
+import type { DGCGame } from './DGCGame'
 import type { 
   RoomData, 
   RoomDataFile, 
@@ -24,6 +25,7 @@ export class RoomFactory {
   private objectTypes: Map<string, new (...args: any[]) => GameObject> = new Map()
   private roomClasses: Map<string, new (...args: any[]) => DGCRoom> = new Map()
   private dataPath: string = '/data/rooms/'
+  private gameInstance?: DGCGame
 
   constructor(config?: RoomFactoryConfig) {
     if (config?.dataPath) {
@@ -35,6 +37,13 @@ export class RoomFactory {
     if (config?.roomClasses) {
       this.roomClasses = config.roomClasses
     }
+  }
+
+  /**
+   * Set the game instance for room creation
+   */
+  public setGameInstance(game: DGCGame): void {
+    this.gameInstance = game
   }
 
   /**
@@ -77,7 +86,7 @@ export class RoomFactory {
         throw new Error(`Unsupported file format. Use .json files only.`)
       }
       
-      return this.createRoomFromData(roomDataFile.DGCRoom)
+      return this.createRoomFromData(roomDataFile.room)
     } catch (error) {
       console.error(`❌ Error loading DGCRoom from file '${filename}':`, error)
       throw error
@@ -90,20 +99,24 @@ export class RoomFactory {
   public createRoomFromData(roomData: RoomData): DGCRoom {
     console.log(`🏭 Creating DGCRoom from data: ${roomData.name}`)
     
+    if (!this.gameInstance) {
+      throw new Error('Game instance must be set before creating rooms')
+    }
+    
     // If a custom DGCRoom class is specified, use it
     if (roomData.customClass && this.roomClasses.has(roomData.customClass)) {
       const RoomClass = this.roomClasses.get(roomData.customClass)!
-      const DGCRoom = new RoomClass(this.convertToRoomConfig(roomData))
-      this.setupRoomObjects(DGCRoom, roomData.objects || [])
-      return DGCRoom
+      const room = new RoomClass(this.convertToRoomConfig(roomData), this.gameInstance)
+      this.setupRoomObjects(room, roomData.objects || [])
+      return room
     }
     
     // Otherwise create a standard data-driven DGCRoom
     const roomConfig = this.convertToRoomConfig(roomData)
-    const DGCRoom = new DGCRoom(roomConfig)
-    this.setupRoomObjects(DGCRoom, roomData.objects || [])
+    const room = new DGCRoom(roomConfig, this.gameInstance)
+    this.setupRoomObjects(room, roomData.objects || [])
     
-    return DGCRoom
+    return room
   }
 
   /**
@@ -228,7 +241,7 @@ export class RoomFactory {
   public exportRoomDataAsJson(roomData: RoomData): string {
     const roomDataFile: RoomDataFile = {
       version: '1.0.0',
-      DGCRoom: roomData
+      room: roomData
     }
     return JSON.stringify(roomDataFile, null, 2)
   }
