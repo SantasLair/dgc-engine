@@ -74,7 +74,7 @@ export class DGCEngine {
    * Main game loop using requestAnimationFrame
    * Follows GameMaker's complete event order
    */
-  private gameLoop = async (): Promise<void> => {
+  private gameLoop = (): void => {
     if (!this.isRunning) {
       return
     }
@@ -86,27 +86,30 @@ export class DGCEngine {
     if (deltaTime >= this.targetFrameTime) {
       // === GameMaker Event Order ===
       
+      // Cache objects list for performance (avoid 8+ getAllObjects() calls)
+      const allObjects = this.gameObjectManager.getAllObjects()
+      
       // Input and Timer Events
       this.processInputEvents()
       this.processTimerEvents(deltaTime)
       
-      // Step Phase
-      await this.beginStep()
-      await this.step()
-      await this.collision()
-      await this.endStep()
+      // Step Phase (using cached objects)
+      this.processGameMakerEvent('step_begin', allObjects)
+      this.processGameMakerEvent('step', allObjects)
+      this.processGameMakerEvent('collision', allObjects)
+      this.processGameMakerEvent('step_end', allObjects)
       
       // Animation Updates
       this.processAnimationEvents()
       
-      // Draw Phase
+      // Draw Phase (using cached objects)
       this.startRender()
-      await this.beginDraw()
-      await this.draw()
-      await this.endDraw()
-      await this.beginDrawGUI()
-      await this.drawGUI()
-      await this.endDrawGUI()
+      this.processGameMakerEvent('draw_begin', allObjects)
+      this.processGameMakerEvent('draw', allObjects)
+      this.processGameMakerEvent('draw_end', allObjects)
+      this.processGameMakerEvent('draw_gui_begin', allObjects)
+      this.processGameMakerEvent('draw_gui', allObjects)
+      this.processGameMakerEvent('draw_gui_end', allObjects)
       this.endRender()
       
       // Cleanup
@@ -258,45 +261,19 @@ export class DGCEngine {
   }
 
   /**
-   * Process a specific GameMaker event for all game objects
+   * Process a specific GameMaker event for all game objects (optimized version)
    */
-  private async processGameMakerEvent(eventName: string): Promise<void> {
-    for (const gameObject of this.gameObjectManager.getAllObjects()) {
+  private processGameMakerEvent(eventName: string, cachedObjects?: GameObject[]): void {
+    const objects = cachedObjects || this.gameObjectManager.getAllObjects()
+    
+    for (const gameObject of objects) {
       if (!gameObject.active && eventName !== 'destroy') continue
       
-      await gameObject.executeEvent(eventName as any, { deltaTime: 0 })
+      gameObject.executeEventSync(eventName as any, { deltaTime: 0 })
     }
   }
 
-  // === GameMaker Event Methods ===
-
-  /**
-   * Step Begin Event - First step event of the frame
-   */
-  private async beginStep(): Promise<void> {
-    await this.processGameMakerEvent('step_begin')
-  }
-
-  /**
-   * Step Event - Main game logic update
-   */
-  private async step(): Promise<void> {
-    await this.processGameMakerEvent('step')
-  }
-
-  /**
-   * Collision Event - Handle object collisions
-   */
-  private async collision(): Promise<void> {
-    await this.processGameMakerEvent('collision')
-  }
-
-  /**
-   * Step End Event - Last step event of the frame
-   */
-  private async endStep(): Promise<void> {
-    await this.processGameMakerEvent('step_end')
-  }
+  // === Render Control Methods ===
 
   /**
    * Start Render - Initialize rendering phase
@@ -304,48 +281,6 @@ export class DGCEngine {
   private startRender(): void {
     this.rapid.startRender()
     this.drawingSystem.clearFrame()
-  }
-
-  /**
-   * Draw Begin Event - First draw event
-   */
-  private async beginDraw(): Promise<void> {
-    await this.processGameMakerEvent('draw_begin')
-  }
-
-  /**
-   * Draw Event - Main drawing phase
-   */
-  private async draw(): Promise<void> {
-    await this.processGameMakerEvent('draw')
-  }
-
-  /**
-   * Draw End Event - Last standard draw event
-   */
-  private async endDraw(): Promise<void> {
-    await this.processGameMakerEvent('draw_end')
-  }
-
-  /**
-   * Draw GUI Begin Event - First GUI draw event
-   */
-  private async beginDrawGUI(): Promise<void> {
-    await this.processGameMakerEvent('draw_gui_begin')
-  }
-
-  /**
-   * Draw GUI Event - GUI drawing phase
-   */
-  private async drawGUI(): Promise<void> {
-    await this.processGameMakerEvent('draw_gui')
-  }
-
-  /**
-   * Draw GUI End Event - Last GUI draw event
-   */
-  private async endDrawGUI(): Promise<void> {
-    await this.processGameMakerEvent('draw_gui_end')
   }
 
   /**

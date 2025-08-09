@@ -298,6 +298,22 @@ export class GameObject {
       }
     }
   }
+
+  /**
+   * Execute all scripts for a given event synchronously (for game loop performance)
+   */
+  public executeEventSync(event: GameEvent, eventData?: any): void {
+    const scripts = this.eventScripts.get(event) || []
+    
+    for (const script of scripts) {
+      try {
+        // Call script synchronously - if it returns a Promise, we ignore it
+        script(this, eventData)
+      } catch (error) {
+        console.error(`Error executing ${event} event for ${this.objectType}:`, error)
+      }
+    }
+  }
   
   /**
    * Set the position
