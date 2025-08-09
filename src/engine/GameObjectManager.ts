@@ -7,8 +7,10 @@ import type { EventManager } from './EventManager'
  */
 export class GameObjectManager {
   private gameObjects: Map<number, GameObject> = new Map()
+  private activeGameObjects: Map<number, GameObject> = new Map()
+  private inactiveGameObjects: Map<number, GameObject> = new Map()
+  private pendingDestroyObjects: Map<number, GameObject> = new Map()
   private objectsByType: Map<string, Set<GameObject>> = new Map()
-  private objectsToDestroy: Set<number> = new Set()
   private eventManager: EventManager
   private drawingSystem: IDrawingSystem | null = null
   
@@ -35,6 +37,13 @@ export class GameObjectManager {
     // Add to collections
     this.gameObjects.set(gameObject.id, gameObject)
     
+    // Objects are active by default
+    if (gameObject.active) {
+      this.activeGameObjects.set(gameObject.id, gameObject)
+    } else {
+      this.inactiveGameObjects.set(gameObject.id, gameObject)
+    }
+    
     if (!this.objectsByType.has(objectType)) {
       this.objectsByType.set(objectType, new Set())
     }
@@ -55,6 +64,13 @@ export class GameObjectManager {
     // Add to collections
     this.gameObjects.set(gameObject.id, gameObject)
     
+    // Add to appropriate active/inactive collection
+    if (gameObject.active) {
+      this.activeGameObjects.set(gameObject.id, gameObject)
+    } else {
+      this.inactiveGameObjects.set(gameObject.id, gameObject)
+    }
+    
     if (!this.objectsByType.has(gameObject.objectType)) {
       this.objectsByType.set(gameObject.objectType, new Set())
     }
@@ -68,7 +84,15 @@ export class GameObjectManager {
    * Mark an object for destruction
    */
   public destroyObject(objectId: number): void {
-    this.objectsToDestroy.add(objectId)
+    const gameObject = this.gameObjects.get(objectId)
+    if (gameObject) {
+      // Move to pending destroy collection
+      this.pendingDestroyObjects.set(objectId, gameObject)
+      
+      // Remove from active/inactive collections
+      this.activeGameObjects.delete(objectId)
+      this.inactiveGameObjects.delete(objectId)
+    }
   }
   
   /**
@@ -91,6 +115,46 @@ export class GameObjectManager {
    */
   public getAllObjects(): GameObject[] {
     return Array.from(this.gameObjects.values())
+  }
+  
+  /**
+   * Get all active game objects
+   */
+  public getAllActiveObjects(): GameObject[] {
+    return Array.from(this.activeGameObjects.values())
+  }
+  
+  /**
+   * Get all inactive game objects
+   */
+  public getAllInactiveObjects(): GameObject[] {
+    return Array.from(this.inactiveGameObjects.values())
+  }
+  
+  /**
+   * Get all objects pending destruction
+   */
+  public getPendingDestroyObjects(): GameObject[] {
+    return Array.from(this.pendingDestroyObjects.values())
+  }
+  
+  /**
+   * Update object's active state - moves object between active/inactive collections
+   * This should be called when an object's active property changes
+   */
+  public updateObjectActiveState(gameObject: GameObject): void {
+    const objectId = gameObject.id
+    
+    // Remove from both collections first
+    this.activeGameObjects.delete(objectId)
+    this.inactiveGameObjects.delete(objectId)
+    
+    // Add to appropriate collection based on current state
+    if (gameObject.active) {
+      this.activeGameObjects.set(objectId, gameObject)
+    } else {
+      this.inactiveGameObjects.set(objectId, gameObject)
+    }
   }
   
   /**
@@ -221,24 +285,21 @@ export class GameObjectManager {
    * Clean up objects marked for destruction
    */
   private cleanupDestroyedObjects(): void {
-    for (const objectId of this.objectsToDestroy) {
-      const gameObject = this.gameObjects.get(objectId)
-      if (gameObject) {
-        // Remove from type collection
-        const typeSet = this.objectsByType.get(gameObject.objectType)
-        if (typeSet) {
-          typeSet.delete(gameObject)
-          if (typeSet.size === 0) {
-            this.objectsByType.delete(gameObject.objectType)
-          }
+    for (const gameObject of this.pendingDestroyObjects.values()) {
+      // Remove from type collection
+      const typeSet = this.objectsByType.get(gameObject.objectType)
+      if (typeSet) {
+        typeSet.delete(gameObject)
+        if (typeSet.size === 0) {
+          this.objectsByType.delete(gameObject.objectType)
         }
-        
-        // Remove from main collection
-        this.gameObjects.delete(objectId)
       }
+      
+      // Remove from main collection
+      this.gameObjects.delete(gameObject.id)
     }
     
-    this.objectsToDestroy.clear()
+    this.pendingDestroyObjects.clear()
   }
   
   /**
@@ -251,8 +312,10 @@ export class GameObjectManager {
     }
     
     this.gameObjects.clear()
+    this.activeGameObjects.clear()
+    this.inactiveGameObjects.clear()
+    this.pendingDestroyObjects.clear()
     this.objectsByType.clear()
-    this.objectsToDestroy.clear()
   }
   
   /**

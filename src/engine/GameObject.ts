@@ -89,7 +89,7 @@ export class GameObject {
   public xPrevious: number = 0
   public yPrevious: number = 0
   public visible: boolean = true
-  public active: boolean = true
+  private _active: boolean = true
   public depth: number = 0
   public solid: boolean = false
   public persistent: boolean = false
@@ -122,6 +122,21 @@ export class GameObject {
   // References
   private gameObjectManager: IGameObjectManager | null = null
   private drawingSystem: IDrawingSystem | null = null
+  
+  // Active property with state management
+  public get active(): boolean {
+    return this._active
+  }
+  
+  public set active(value: boolean) {
+    if (this._active !== value) {
+      this._active = value
+      // Notify the game object manager about the state change
+      if (this.gameObjectManager && 'updateObjectActiveState' in this.gameObjectManager) {
+        (this.gameObjectManager as any).updateObjectActiveState(this)
+      }
+    }
+  }
   
   constructor(objectType: string, properties: GameObjectProperties = {}) {
     this.id = GameObject.nextId++

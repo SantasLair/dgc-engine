@@ -86,30 +86,30 @@ export class DGCEngine {
     if (deltaTime >= this.targetFrameTime) {
       // === GameMaker Event Order ===
       
-      // Cache objects list for performance (avoid 8+ getAllObjects() calls)
-      const allObjects = this.gameObjectManager.getAllObjects()
+      // Cache active objects list for performance (avoid 8+ getAllActiveObjects() calls)
+      const allActiveObjects = this.gameObjectManager.getAllActiveObjects()
       
       // Input and Timer Events
       this.processInputEvents()
       this.processTimerEvents(deltaTime)
       
-      // Step Phase (using cached objects)
-      this.processGameMakerEvent('step_begin', allObjects)
-      this.processGameMakerEvent('step', allObjects)
-      this.processGameMakerEvent('collision', allObjects)
-      this.processGameMakerEvent('step_end', allObjects)
+      // Step Phase (using cached active objects)
+      this.processGameMakerEvent('step_begin', allActiveObjects)
+      this.processGameMakerEvent('step', allActiveObjects)
+      this.processGameMakerEvent('collision', allActiveObjects)
+      this.processGameMakerEvent('step_end', allActiveObjects)
       
       // Animation Updates
       this.processAnimationEvents()
       
-      // Draw Phase (using cached objects)
+      // Draw Phase (using cached active objects)
       this.startRender()
-      this.processGameMakerEvent('draw_begin', allObjects)
-      this.processGameMakerEvent('draw', allObjects)
-      this.processGameMakerEvent('draw_end', allObjects)
-      this.processGameMakerEvent('draw_gui_begin', allObjects)
-      this.processGameMakerEvent('draw_gui', allObjects)
-      this.processGameMakerEvent('draw_gui_end', allObjects)
+      this.processGameMakerEvent('draw_begin', allActiveObjects)
+      this.processGameMakerEvent('draw', allActiveObjects)
+      this.processGameMakerEvent('draw_end', allActiveObjects)
+      this.processGameMakerEvent('draw_gui_begin', allActiveObjects)
+      this.processGameMakerEvent('draw_gui', allActiveObjects)
+      this.processGameMakerEvent('draw_gui_end', allActiveObjects)
       this.endRender()
       
       // Cleanup
@@ -196,9 +196,7 @@ export class DGCEngine {
    */
   private processInputEvents(): void {
     // Check for key press/release events and trigger object events
-    for (const gameObject of this.gameObjectManager.getAllObjects()) {
-      if (!gameObject.active) continue
-      
+    for (const gameObject of this.gameObjectManager.getAllActiveObjects()) {
       // Check for any key that was just pressed
       // Note: In GameMaker, specific key events are usually handled by individual objects
       // This is a simplified version - objects can listen for specific keys in their event scripts
@@ -239,9 +237,7 @@ export class DGCEngine {
    */
   private processTimerEvents(deltaTime: number): void {
     // Update timers for all game objects
-    for (const gameObject of this.gameObjectManager.getAllObjects()) {
-      if (!gameObject.active) continue
-      
+    for (const gameObject of this.gameObjectManager.getAllActiveObjects()) {
       // Update any timers this object might have
       gameObject.updateTimers(deltaTime)
     }
@@ -252,8 +248,8 @@ export class DGCEngine {
    */
   private processAnimationEvents(): void {
     // Update sprite animations for all game objects
-    for (const gameObject of this.gameObjectManager.getAllObjects()) {
-      if (!gameObject.active || !gameObject.visible) continue
+    for (const gameObject of this.gameObjectManager.getAllActiveObjects()) {
+      if (!gameObject.visible) continue
       
       // Update sprite animation if object has one
       gameObject.updateAnimation()
@@ -264,11 +260,9 @@ export class DGCEngine {
    * Process a specific GameMaker event for all game objects (optimized version)
    */
   private processGameMakerEvent(eventName: string, cachedObjects?: GameObject[]): void {
-    const objects = cachedObjects || this.gameObjectManager.getAllObjects()
+    const objects = cachedObjects || this.gameObjectManager.getAllActiveObjects()
     
     for (const gameObject of objects) {
-      if (!gameObject.active && eventName !== 'destroy') continue
-      
       gameObject.executeEventSync(eventName as any, { deltaTime: 0 })
     }
   }
