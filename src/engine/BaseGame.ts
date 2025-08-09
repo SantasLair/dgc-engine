@@ -2,7 +2,7 @@ import { DGCEngine } from './DGCEngine'
 import type { DGCEngineConfig } from './DGCEngineConfig'
 import { createDGCEngineConfig } from './DGCEngineConfig'
 import { GameObject } from './GameObject'
-import { DGCRoom } from './DGCRoom'
+import { Room } from './Room.ts'
 import type { Rapid } from 'rapid-render'
 
 /**
@@ -12,8 +12,8 @@ import type { Rapid } from 'rapid-render'
 export abstract class DGCGame {
   protected canvas: HTMLCanvasElement
   protected engine: DGCEngine
-  protected rooms: Map<string, DGCRoom> = new Map()
-  protected currentRoom?: DGCRoom
+  protected rooms: Map<string, Room> = new Map()
+  protected currentRoom?: Room
   protected isInitialized: boolean = false
 
   constructor(canvas: HTMLCanvasElement) {
@@ -106,7 +106,7 @@ export abstract class DGCGame {
   /**
    * Add a room to the game
    */
-  public addRoom(room: DGCRoom): void {
+  public addRoom(room: Room): void {
     this.rooms.set(room.name, room)
     room.initialize()
     console.log(`🏠 Added room: ${room.name}`)
@@ -158,14 +158,14 @@ export abstract class DGCGame {
   /**
    * Get the current active room
    */
-  public getCurrentRoom(): DGCRoom | undefined {
+  public getCurrentRoom(): Room | undefined {
     return this.currentRoom
   }
 
   /**
    * Get a room by name
    */
-  public getRoom(roomName: string): DGCRoom | undefined {
+  public getRoom(roomName: string): Room | undefined {
     return this.rooms.get(roomName)
   }
 

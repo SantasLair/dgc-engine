@@ -2,7 +2,7 @@ import { Rapid } from 'rapid-render'
 import { EventManager } from './EventManager'
 import { GameObjectManager, type ObjectFilter } from './GameObjectManager'
 import { GameObject } from './GameObject'
-import { DGCDrawingSystem } from './DGCDrawingSystem'
+import { DrawingSystem } from './DrawingSystem.ts'
 import type { DGCEngineConfig } from './DGCEngineConfig'
 import { createDGCEngineConfig } from './DGCEngineConfig'
 import { InputManager } from './InputManager'
@@ -17,7 +17,7 @@ export class DGCEngine {
   private eventManager: EventManager
   private gameObjectManager: GameObjectManager
   private inputManager: InputManager
-  private drawingSystem: DGCDrawingSystem
+  private drawingSystem: DrawingSystem
   private lastTime: number = 0
   private targetFrameTime: number
   private isRunning: boolean = false
@@ -36,7 +36,7 @@ export class DGCEngine {
     })
     
     // Initialize the GameMaker-style drawing system
-    this.drawingSystem = new DGCDrawingSystem(this.rapid)
+    this.drawingSystem = new DrawingSystem(this.rapid)
     
     // Initialize managers
     this.eventManager = new EventManager()
@@ -155,7 +155,7 @@ export class DGCEngine {
   /**
    * Get the drawing system for immediate mode drawing
    */
-  public getDrawingSystem(): DGCDrawingSystem {
+  public getDrawingSystem(): DrawingSystem {
     return this.drawingSystem
   }
   
