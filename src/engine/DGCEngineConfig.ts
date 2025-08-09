@@ -11,12 +11,6 @@ export interface DGCEngineConfig {
   canvas?: HTMLCanvasElement
   
   /**
-   * Game grid dimensions
-   */
-  gridWidth: number
-  gridHeight: number
-  
-  /**
    * Target frames per second
    */
   targetFPS?: number
@@ -25,16 +19,6 @@ export interface DGCEngineConfig {
    * Rapid.js renderer settings
    */
   rapidConfig?: Partial<IRapidOptions>
-  
-  /**
-   * Grid cell size in pixels
-   */
-  cellSize?: number
-  
-  /**
-   * Grid offset from canvas edges
-   */
-  gridOffset?: { x: number; y: number }
 }
 
 /**
@@ -42,8 +26,6 @@ export interface DGCEngineConfig {
  */
 export const DEFAULT_CONFIG: Partial<DGCEngineConfig> = {
   targetFPS: 60,
-  cellSize: 30,
-  gridOffset: { x: 50, y: 50 },
   rapidConfig: {
     backgroundColor: Color.fromHex("333333"),
     antialias: true

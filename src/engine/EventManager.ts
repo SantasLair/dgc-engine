@@ -87,6 +87,38 @@ export class EventManager {
       }
     }
   }
+
+  /**
+   * Process only step-related events (GameMaker-style step phase)
+   */
+  public async processStepEvents(): Promise<void> {
+    const stepEvents = ['step_begin', 'step', 'collision', 'step_end', 'timer', 'key_pressed', 'key_released', 'mouse_left_pressed', 'mouse_left_released', 'mouse_right_pressed', 'mouse_right_released']
+    
+    const eventsToProcess = this.objectEventQueue.filter(event => stepEvents.includes(event.event))
+    this.objectEventQueue = this.objectEventQueue.filter(event => !stepEvents.includes(event.event))
+    
+    for (const { gameObject, event, eventData } of eventsToProcess) {
+      if (gameObject.active || event === 'destroy') {
+        await gameObject.executeEvent(event, eventData)
+      }
+    }
+  }
+
+  /**
+   * Process only draw-related events (GameMaker-style draw phase)
+   */
+  public async processDrawEvents(): Promise<void> {
+    const drawEvents = ['draw_begin', 'draw', 'draw_end', 'draw_gui_begin', 'draw_gui', 'draw_gui_end', 'animation_end']
+    
+    const eventsToProcess = this.objectEventQueue.filter(event => drawEvents.includes(event.event))
+    this.objectEventQueue = this.objectEventQueue.filter(event => !drawEvents.includes(event.event))
+    
+    for (const { gameObject, event, eventData } of eventsToProcess) {
+      if (gameObject.active || event === 'destroy') {
+        await gameObject.executeEvent(event, eventData)
+      }
+    }
+  }
   
   /**
    * Clear all event listeners and queues

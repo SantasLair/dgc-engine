@@ -1,23 +1,23 @@
 /**
- * Enhanced Game Class with Data-Driven Room Support
+ * Demo Game Class with Data-Driven Room Support
  * 
- * Example showing how to use the new room data system alongside 
+ * Example showing how to use the new room data system alongside
  * traditional custom room classes.
  */
 
-import { DGCGame, type DGCEngineConfig, RoomManager } from '../engine'
+import { GridGame } from './GridGame'
+import type { GridGameConfig } from './GridGameConfig'
 import { GameRoom, MenuRoom } from './rooms'
 import { Player, Enemy, GameBoard } from './gameobjects'
 
-export class EnhancedGame extends DGCGame {
-  public roomManager!: RoomManager
+export class DemoGame extends GridGame {
   private currentRoomName: string = 'sprite_demo' // Changed to test sprite demo directly
 
   constructor(canvas: HTMLCanvasElement) {
     super(canvas)
   }
 
-  public getEngineConfig(): DGCEngineConfig {
+  public getGridConfig(): GridGameConfig {
     return {
       gridWidth: 20,
       gridHeight: 15,
@@ -32,18 +32,8 @@ export class EnhancedGame extends DGCGame {
     console.log('🎮 Current working directory and config check')
     
     try {
-      // Initialize room manager with factory configuration
-      console.log('🏗️ Creating RoomManager...')
-      this.roomManager = new RoomManager({
-        dataPath: '/data/rooms/',
-        objectTypes: new Map(),
-        roomClasses: new Map()
-      })
-      console.log('✅ RoomManager created successfully')
-      
-      // Set this game instance on the room manager for object management
-      this.roomManager.setGameInstance(this)
-      console.log('✅ Game instance set on RoomManager')
+      // Room manager is already initialized in the base DGCGame class
+      console.log('✅ RoomManager available from engine')
       
       // Register object types that can be created in data-driven rooms
       console.log('🏗️ Setting up object types...')
@@ -117,10 +107,10 @@ export class EnhancedGame extends DGCGame {
     console.log('🏠 Setting up rooms...')
     
     try {
-      // Load data-driven rooms from TOML files (automatically copied from src/game/rooms/data/)
-      await this.roomManager.addRoomFromFile('main_menu.toml')
-      await this.roomManager.addRoomFromFile('test_level.toml')
-      await this.roomManager.addRoomFromFile('sprite_demo.toml')
+      // Load data-driven rooms from MessagePack files (automatically converted from JSON during build)
+      await this.roomManager.addRoomFromFile('main_menu.dgcroom')
+      await this.roomManager.addRoomFromFile('test_level.dgcroom')
+      await this.roomManager.addRoomFromFile('sprite_demo.dgcroom')
       
       console.log('✅ Loaded data-driven rooms: main_menu, test_level, sprite_demo')
       
@@ -188,13 +178,6 @@ export class EnhancedGame extends DGCGame {
   }
 
   /**
-   * Get the room manager (for compatibility with existing room classes)
-   */
-  public getRoomManager(): RoomManager {
-    return this.roomManager
-  }
-
-  /**
    * Get all available room names
    */
   public getAvailableRooms(): string[] {
@@ -245,6 +228,6 @@ export class EnhancedGame extends DGCGame {
       currentRoom.height
     )
     
-    return factory.exportRoomData(roomData)
+    return factory.exportRoomDataAsJson(roomData)
   }
 }

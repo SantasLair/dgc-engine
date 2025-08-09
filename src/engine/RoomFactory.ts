@@ -1,11 +1,11 @@
 /**
  * Room Factory System
  * 
- * Creates room instances from TOML data files or data objects.
+ * Creates room instances from JSON or MessagePack data files.
  * Supports both pure data-driven rooms and custom room classes.
  */
 
-import { parse as parseToml, stringify as stringifyToml } from 'smol-toml'
+import { encode, decode } from '@msgpack/msgpack'
 import { Room, type RoomConfig } from './Room'
 import type { 
   RoomData, 
@@ -55,7 +55,7 @@ export class RoomFactory {
   }
 
   /**
-   * Create a room from a data file (supports both TOML and JSON)
+   * Create a room from a data file (supports JSON and MessagePack formats)
    */
   public async createRoomFromFile(filename: string): Promise<Room> {
     try {
@@ -67,16 +67,20 @@ export class RoomFactory {
         throw new Error(`Failed to load room file: ${response.statusText}`)
       }
       
-      const fileContent = await response.text()
-      
-      // Determine file format and parse accordingly
       let roomDataFile: RoomDataFile
-      if (filename.endsWith('.toml')) {
-        roomDataFile = parseToml(fileContent) as unknown as RoomDataFile
+      
+      if (filename.endsWith('.dgcroom')) {
+        // Load MessagePack binary format
+        console.log('📦 Parsing MessagePack data...')
+        const arrayBuffer = await response.arrayBuffer()
+        roomDataFile = decode(new Uint8Array(arrayBuffer)) as RoomDataFile
       } else if (filename.endsWith('.json')) {
+        // Load JSON format (development)
+        console.log('📄 Parsing JSON data...')
+        const fileContent = await response.text()
         roomDataFile = JSON.parse(fileContent) as RoomDataFile
       } else {
-        throw new Error(`Unsupported file format. Use .toml or .json files.`)
+        throw new Error(`Unsupported file format. Use .json or .dgcroom files.`)
       }
       
       return this.createRoomFromData(roomDataFile.room)
@@ -127,11 +131,11 @@ export class RoomFactory {
       // TODO: Handle image backgrounds when needed
     }
 
-    // Handle room events - TOML files should not contain scripts
+    // Handle room events - JSON files should not contain scripts
     // Scripts should be handled by companion TypeScript files
     if (roomData.events) {
       // Skip script compilation for now - use companion TS files for scripts
-      console.log('⚠️ Room events found in TOML - consider using companion TypeScript files for scripts')
+      console.log('⚠️ Room events found in JSON - consider using companion TypeScript files for scripts')
     }
 
     return config
@@ -236,22 +240,22 @@ export class RoomFactory {
   }
 
   /**
-   * Export room data to TOML string for saving
+   * Export room data to MessagePack binary format
    */
-  public exportRoomDataAsToml(roomData: RoomData): string {
+  public exportRoomDataAsMessagePack(roomData: RoomData): Uint8Array {
     const roomDataFile: RoomDataFile = {
       version: '1.0.0',
       room: roomData
     }
-    return stringifyToml(roomDataFile as any)
+    return encode(roomDataFile)
   }
 
   /**
-   * Export room data (defaults to TOML format)
+   * Export room data (defaults to JSON format)
    */
-  public exportRoomData(roomData: RoomData, format: 'toml' | 'json' = 'toml'): string {
-    return format === 'toml' 
-      ? this.exportRoomDataAsToml(roomData)
+  public exportRoomData(roomData: RoomData, format: 'json' | 'msgpack' = 'json'): string | Uint8Array {
+    return format === 'msgpack' 
+      ? this.exportRoomDataAsMessagePack(roomData)
       : this.exportRoomDataAsJson(roomData)
   }
 }

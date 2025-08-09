@@ -5,110 +5,8 @@ import { GameObject } from './GameObject'
 import { DGCDrawingSystem } from './DGCDrawingSystem'
 import type { DGCEngineConfig } from './DGCEngineConfig'
 import { createDGCEngineConfig } from './DGCEngineConfig'
-
-/**
- * Input manager for handling keyboard and mouse events
- */
-class InputManager {
-  private keysPressed: Set<string> = new Set()
-  private keysJustPressed: Set<string> = new Set()
-  private keysJustReleased: Set<string> = new Set()
-  private mouseX: number = 0
-  private mouseY: number = 0
-  private mouseButtons: Set<number> = new Set()
-  private mouseJustPressed: Set<number> = new Set()
-  private mouseJustReleased: Set<number> = new Set()
-  
-  constructor() {
-    this.setupEventListeners()
-  }
-  
-  private setupEventListeners(): void {
-    // Keyboard events
-    window.addEventListener('keydown', (e) => {
-      // Prevent default behavior for game control keys
-      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
-        e.preventDefault()
-      }
-      
-      if (!this.keysPressed.has(e.code)) {
-        this.keysJustPressed.add(e.code)
-      }
-      this.keysPressed.add(e.code)
-    })
-    
-    window.addEventListener('keyup', (e) => {
-      // Prevent default behavior for game control keys
-      if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
-        e.preventDefault()
-      }
-      
-      this.keysPressed.delete(e.code)
-      this.keysJustReleased.add(e.code)
-    })
-    
-    // Mouse events
-    window.addEventListener('mousemove', (e) => {
-      const rect = (e.target as HTMLCanvasElement)?.getBoundingClientRect()
-      if (rect) {
-        this.mouseX = e.clientX - rect.left
-        this.mouseY = e.clientY - rect.top
-      }
-    })
-    
-    window.addEventListener('mousedown', (e) => {
-      this.mouseJustPressed.add(e.button)
-      this.mouseButtons.add(e.button)
-    })
-    
-    window.addEventListener('mouseup', (e) => {
-      this.mouseButtons.delete(e.button)
-      this.mouseJustReleased.add(e.button)
-    })
-  }
-  
-  // Keyboard methods
-  public isKeyPressed(key: string): boolean {
-    return this.keysPressed.has(key)
-  }
-  
-  public isKeyJustPressed(key: string): boolean {
-    return this.keysJustPressed.has(key)
-  }
-  
-  public isKeyJustReleased(key: string): boolean {
-    return this.keysJustReleased.has(key)
-  }
-  
-  // Mouse methods - GameMaker style
-  public getMouseX(): number {
-    return this.mouseX
-  }
-  
-  public getMouseY(): number {
-    return this.mouseY
-  }
-  
-  public isMouseButtonPressed(button: number): boolean {
-    return this.mouseButtons.has(button)
-  }
-  
-  public isMouseButtonJustPressed(button: number): boolean {
-    return this.mouseJustPressed.has(button)
-  }
-  
-  public isMouseButtonJustReleased(button: number): boolean {
-    return this.mouseJustReleased.has(button)
-  }
-  
-  // Clear just-pressed/released states (called at end of frame)
-  public endFrame(): void {
-    this.keysJustPressed.clear()
-    this.keysJustReleased.clear()
-    this.mouseJustPressed.clear()
-    this.mouseJustReleased.clear()
-  }
-}
+import { InputManager } from './InputManager'
+import { type ObjectTypeOrAll } from './GameObjectTypes'
 
 /**
  * DGC game engine powered by Rapid.js
@@ -124,7 +22,6 @@ export class DGCEngine {
   private lastTime: number = 0
   private targetFrameTime: number
   private isRunning: boolean = false
-  private isInitialized: boolean = false
   private animationFrameId: number | null = null
   
   constructor(config: DGCEngineConfig) {
@@ -137,39 +34,21 @@ export class DGCEngine {
       canvas: this.config.canvas
     })
     
-    // Initialize managers
-    this.eventManager = new EventManager()
-    
     // Initialize the GameMaker-style drawing system
     this.drawingSystem = new DGCDrawingSystem(this.rapid)
     
-    // Initialize game object manager with drawing system
+    // Initialize managers
+    this.eventManager = new EventManager()
     this.gameObjectManager = new GameObjectManager(this.eventManager, this.drawingSystem)
-    this.inputManager = new InputManager()
-  }
-  
-  /**
-   * Initialize the Rapid.js engine
-   */
-  public async initialize(): Promise<void> {
-    try {
-      // Rapid.js initialization is handled in constructor
-      this.isInitialized = true
-      console.log('🎮 DGCRapidEngine initialized successfully with Rapid.js')
-    } catch (error) {
-      console.error('Failed to initialize DGC Rapid engine:', error)
-      throw error
-    }
+    this.inputManager = new InputManager(this.config.canvas)
+    
+    console.log('🎮 DGCEngine initialized successfully with Rapid.js')
   }
   
   /**
    * Start the game engine
    */
   public start(): void {
-    if (!this.isInitialized) {
-      throw new Error('Engine must be initialized before starting')
-    }
-    
     if (this.isRunning) {
       return
     }
@@ -188,12 +67,15 @@ export class DGCEngine {
       cancelAnimationFrame(this.animationFrameId)
       this.animationFrameId = null
     }
+  // Dispose input listeners
+  this.inputManager.dispose()
   }
   
   /**
    * Main game loop using requestAnimationFrame
+   * Follows GameMaker's complete event order
    */
-  private gameLoop = async (): Promise<void> => {
+  private gameLoop = (): void => {
     if (!this.isRunning) {
       return
     }
@@ -203,43 +85,40 @@ export class DGCEngine {
     
     // Update at target FPS
     if (deltaTime >= this.targetFrameTime) {
-      this.update(deltaTime)
-      await this.render()
+      // === GameMaker Event Order ===
+      
+      // Cache active objects array for performance (avoid 8+ array allocations)
+      const allActiveObjects = this.gameObjectManager.getAllActiveObjects()
+      
+      // Input and Timer Events
+      this.processInputEvents()
+      this.processTimerEvents(deltaTime)
+      
+      // Step Phase (using cached active objects)
+      this.processGameMakerEvent('step_begin', allActiveObjects)
+      this.processGameMakerEvent('step', allActiveObjects)
+      this.processGameMakerEvent('collision', allActiveObjects)
+      this.processGameMakerEvent('step_end', allActiveObjects)
+      
+      // Animation Updates
+      this.processAnimationEvents()
+      
+      // Draw Phase (using cached active objects)
+      this.startRender()
+      this.processGameMakerEvent('draw_begin', allActiveObjects)
+      this.processGameMakerEvent('draw', allActiveObjects)
+      this.processGameMakerEvent('draw_end', allActiveObjects)
+      this.processGameMakerEvent('draw_gui_begin', allActiveObjects)
+      this.processGameMakerEvent('draw_gui', allActiveObjects)
+      this.processGameMakerEvent('draw_gui_end', allActiveObjects)
+      this.endRender()
+      
+      // Cleanup
+      this.inputManager.endFrame()
       this.lastTime = currentTime
     }
     
     this.animationFrameId = requestAnimationFrame(this.gameLoop)
-  }
-  
-  /**
-   * Update game logic
-   */
-  private update(deltaTime: number): void {
-    // Update all game objects
-    this.gameObjectManager.update(deltaTime)
-    
-    // Clear input state at end of frame
-    this.inputManager.endFrame()
-  }
-  
-  /**
-   * Render the game using Rapid.js immediate mode rendering
-   */
-  private async render(): Promise<void> {
-    // Start Rapid.js render cycle
-    this.rapid.startRender()
-    
-    // Clear the drawing system (though Rapid.js handles this automatically)
-    this.drawingSystem.clearFrame()
-    
-    // Render all game objects with their draw events
-    this.gameObjectManager.draw()
-    
-    // Process all queued draw events immediately for immediate mode rendering
-    await this.eventManager.processObjectEvents()
-    
-    // End Rapid.js render cycle
-    this.rapid.endRender()
   }
   
   /**
@@ -312,32 +191,126 @@ export class DGCEngine {
     // Simple FPS calculation based on target frame time
     return Math.round(1000 / this.targetFrameTime)
   }
-  
+
+  // === GameMaker-Style Instance Functions ===
+
   /**
-   * Convert grid X coordinate to screen X coordinate
+   * GameMaker-style instance_number function
+   * Returns the number of instances of an object type
+   * @param objectType - Object type name or 'all' for all objects
    */
-  public gridToScreenX(gridX: number): number {
-    return this.config.gridOffset.x + gridX * this.config.cellSize
+  public instance_number(objectType: ObjectTypeOrAll): number {
+    return this.gameObjectManager.instance_number(objectType)
   }
-  
+
   /**
-   * Convert grid Y coordinate to screen Y coordinate
+   * GameMaker-style instance_exists function
+   * Checks if any instances of an object type exist
+   * @param objectType - Object type name or 'all' for all objects
    */
-  public gridToScreenY(gridY: number): number {
-    return this.config.gridOffset.y + gridY * this.config.cellSize
+  public instance_exists(objectType: ObjectTypeOrAll): boolean {
+    return this.gameObjectManager.instance_exists(objectType)
   }
-  
+
   /**
-   * Convert screen X coordinate to grid X coordinate
+   * GameMaker-style instance_destroy function
+   * Destroys all instances of a specific object type
+   * @param objectType - Object type name or 'all' for all objects
    */
-  public screenToGridX(screenX: number): number {
-    return Math.floor((screenX - this.config.gridOffset.x) / this.config.cellSize)
+  public instance_destroy(objectType: ObjectTypeOrAll): void {
+    this.gameObjectManager.instance_destroy(objectType)
   }
-  
+
   /**
-   * Convert screen Y coordinate to grid Y coordinate
+   * Process input events (GameMaker-style keyboard and mouse events)
    */
-  public screenToGridY(screenY: number): number {
-    return Math.floor((screenY - this.config.gridOffset.y) / this.config.cellSize)
+  private processInputEvents(): void {
+    // Check for key press/release events and trigger object events
+    for (const gameObject of this.gameObjectManager.getAllActiveObjects()) {
+      // Check for any key that was just pressed
+      // Note: In GameMaker, specific key events are usually handled by individual objects
+      // This is a simplified version - objects can listen for specific keys in their event scripts
+      
+      // Mouse events
+      if (this.inputManager.isMouseButtonJustPressed(0)) { // Left mouse
+        this.eventManager.queueObjectEvent(gameObject, 'mouse_left_pressed', {
+          mouseX: this.inputManager.getMouseX(),
+          mouseY: this.inputManager.getMouseY()
+        })
+      }
+      
+      if (this.inputManager.isMouseButtonJustReleased(0)) { // Left mouse
+        this.eventManager.queueObjectEvent(gameObject, 'mouse_left_released', {
+          mouseX: this.inputManager.getMouseX(),
+          mouseY: this.inputManager.getMouseY()
+        })
+      }
+      
+      if (this.inputManager.isMouseButtonJustPressed(2)) { // Right mouse
+        this.eventManager.queueObjectEvent(gameObject, 'mouse_right_pressed', {
+          mouseX: this.inputManager.getMouseX(),
+          mouseY: this.inputManager.getMouseY()
+        })
+      }
+      
+      if (this.inputManager.isMouseButtonJustReleased(2)) { // Right mouse
+        this.eventManager.queueObjectEvent(gameObject, 'mouse_right_released', {
+          mouseX: this.inputManager.getMouseX(),
+          mouseY: this.inputManager.getMouseY()
+        })
+      }
+    }
+  }
+
+  /**
+   * Process timer/alarm events (GameMaker-style alarms)
+   */
+  private processTimerEvents(deltaTime: number): void {
+    // Update timers for all game objects
+    for (const gameObject of this.gameObjectManager.getAllActiveObjects()) {
+      // Update any timers this object might have
+      gameObject.updateTimers(deltaTime)
+    }
+  }
+
+  /**
+   * Process animation events (sprite animation frame changes)
+   */
+  private processAnimationEvents(): void {
+    // Update sprite animations for all game objects
+    for (const gameObject of this.gameObjectManager.getAllActiveObjects()) {
+      if (!gameObject.visible) continue
+      
+      // Update sprite animation if object has one
+      gameObject.updateAnimation()
+    }
+  }
+
+  /**
+   * Process a specific GameMaker event for all game objects (optimized version)
+   */
+  private processGameMakerEvent(eventName: string, cachedObjects?: GameObject[]): void {
+    const objects = cachedObjects || this.gameObjectManager.getAllActiveObjects()
+    
+    for (const gameObject of objects) {
+      gameObject.executeEventSync(eventName as any, { deltaTime: 0 })
+    }
+  }
+
+  // === Render Control Methods ===
+
+  /**
+   * Start Render - Initialize rendering phase
+   */
+  private startRender(): void {
+    this.rapid.startRender()
+    this.drawingSystem.clearFrame()
+  }
+
+  /**
+   * End Render - Finalize rendering phase
+   */
+  private endRender(): void {
+    this.rapid.endRender()
   }
 }

@@ -1,10 +1,6 @@
-import { GameObject, type GameObjectProperties, GameEvent } from './GameObject'
+import { GameObject, type GameObjectProperties, GameEvent, type IDrawingSystem } from './GameObject'
 import type { EventManager } from './EventManager'
-
-// Forward declaration for drawing system
-interface IDrawingSystem {
-  drawSpriteFromSprite(sprite: any, x: number, y: number, frame?: number, scaleX?: number, scaleY?: number, rotation?: number, alpha?: number): void
-}
+import { all, noone, type ObjectTypeOrAll } from './GameObjectTypes'
 
 /**
  * Manages all game objects in the engine
@@ -12,8 +8,10 @@ interface IDrawingSystem {
  */
 export class GameObjectManager {
   private gameObjects: Map<number, GameObject> = new Map()
+  private activeGameObjects: Map<number, GameObject> = new Map()
+  private inactiveGameObjects: Map<number, GameObject> = new Map()
+  private pendingDestroyObjects: Map<number, GameObject> = new Map()
   private objectsByType: Map<string, Set<GameObject>> = new Map()
-  private objectsToDestroy: Set<number> = new Set()
   private eventManager: EventManager
   private drawingSystem: IDrawingSystem | null = null
   
@@ -40,6 +38,13 @@ export class GameObjectManager {
     // Add to collections
     this.gameObjects.set(gameObject.id, gameObject)
     
+    // Objects are active by default
+    if (gameObject.active) {
+      this.activeGameObjects.set(gameObject.id, gameObject)
+    } else {
+      this.inactiveGameObjects.set(gameObject.id, gameObject)
+    }
+    
     if (!this.objectsByType.has(objectType)) {
       this.objectsByType.set(objectType, new Set())
     }
@@ -60,6 +65,13 @@ export class GameObjectManager {
     // Add to collections
     this.gameObjects.set(gameObject.id, gameObject)
     
+    // Add to appropriate active/inactive collection
+    if (gameObject.active) {
+      this.activeGameObjects.set(gameObject.id, gameObject)
+    } else {
+      this.inactiveGameObjects.set(gameObject.id, gameObject)
+    }
+    
     if (!this.objectsByType.has(gameObject.objectType)) {
       this.objectsByType.set(gameObject.objectType, new Set())
     }
@@ -73,7 +85,15 @@ export class GameObjectManager {
    * Mark an object for destruction
    */
   public destroyObject(objectId: number): void {
-    this.objectsToDestroy.add(objectId)
+    const gameObject = this.gameObjects.get(objectId)
+    if (gameObject) {
+      // Move to pending destroy collection
+      this.pendingDestroyObjects.set(objectId, gameObject)
+      
+      // Remove from active/inactive collections
+      this.activeGameObjects.delete(objectId)
+      this.inactiveGameObjects.delete(objectId)
+    }
   }
   
   /**
@@ -86,8 +106,11 @@ export class GameObjectManager {
   /**
    * Get all objects of a specific type
    */
-  public getObjectsByType(objectType: string): GameObject[] {
-    const objectSet = this.objectsByType.get(objectType)
+  public getObjectsByType(objectType: ObjectTypeOrAll): GameObject[] {
+    if (objectType === all) {
+      return this.getAllObjects()
+    }
+    const objectSet = this.objectsByType.get(objectType as string)
     return objectSet ? Array.from(objectSet) : []
   }
   
@@ -99,10 +122,50 @@ export class GameObjectManager {
   }
   
   /**
+   * Get all active game objects
+   */
+  public getAllActiveObjects(): GameObject[] {
+    return Array.from(this.activeGameObjects.values())
+  }
+  
+  /**
+   * Get all inactive game objects
+   */
+  public getAllInactiveObjects(): GameObject[] {
+    return Array.from(this.inactiveGameObjects.values())
+  }
+  
+  /**
+   * Get all objects pending destruction
+   */
+  public getPendingDestroyObjects(): GameObject[] {
+    return Array.from(this.pendingDestroyObjects.values())
+  }
+  
+  /**
+   * Update object's active state - moves object between active/inactive collections
+   * This should be called when an object's active property changes
+   */
+  public updateObjectActiveState(gameObject: GameObject): void {
+    const objectId = gameObject.id
+    
+    // Remove from both collections first
+    this.activeGameObjects.delete(objectId)
+    this.inactiveGameObjects.delete(objectId)
+    
+    // Add to appropriate collection based on current state
+    if (gameObject.active) {
+      this.activeGameObjects.set(objectId, gameObject)
+    } else {
+      this.inactiveGameObjects.set(objectId, gameObject)
+    }
+  }
+  
+  /**
    * Get objects within a certain distance of a position - GameMaker style
    */
-  public getObjectsNear(x: number, y: number, radius: number, objectType?: string): GameObject[] {
-    const objects = objectType ? this.getObjectsByType(objectType) : this.getAllObjects()
+  public getObjectsNear(x: number, y: number, radius: number, objectType?: ObjectTypeOrAll): GameObject[] {
+    const objects = objectType && objectType !== all ? this.getObjectsByType(objectType) : this.getAllObjects()
     
     return objects.filter(obj => {
       const distance = Math.sqrt(
@@ -115,8 +178,8 @@ export class GameObjectManager {
   /**
    * Get the nearest object to a position - GameMaker style
    */
-  public getNearestObject(x: number, y: number, objectType?: string): GameObject | null {
-    const objects = objectType ? this.getObjectsByType(objectType) : this.getAllObjects()
+  public getNearestObject(x: number, y: number, objectType?: ObjectTypeOrAll): GameObject | null {
+    const objects = objectType && objectType !== all ? this.getObjectsByType(objectType) : this.getAllObjects()
     
     if (objects.length === 0) return null
     
@@ -226,24 +289,21 @@ export class GameObjectManager {
    * Clean up objects marked for destruction
    */
   private cleanupDestroyedObjects(): void {
-    for (const objectId of this.objectsToDestroy) {
-      const gameObject = this.gameObjects.get(objectId)
-      if (gameObject) {
-        // Remove from type collection
-        const typeSet = this.objectsByType.get(gameObject.objectType)
-        if (typeSet) {
-          typeSet.delete(gameObject)
-          if (typeSet.size === 0) {
-            this.objectsByType.delete(gameObject.objectType)
-          }
+    for (const gameObject of this.pendingDestroyObjects.values()) {
+      // Remove from type collection
+      const typeSet = this.objectsByType.get(gameObject.objectType)
+      if (typeSet) {
+        typeSet.delete(gameObject)
+        if (typeSet.size === 0) {
+          this.objectsByType.delete(gameObject.objectType)
         }
-        
-        // Remove from main collection
-        this.gameObjects.delete(objectId)
       }
+      
+      // Remove from main collection
+      this.gameObjects.delete(gameObject.id)
     }
     
-    this.objectsToDestroy.clear()
+    this.pendingDestroyObjects.clear()
   }
   
   /**
@@ -256,18 +316,64 @@ export class GameObjectManager {
     }
     
     this.gameObjects.clear()
+    this.activeGameObjects.clear()
+    this.inactiveGameObjects.clear()
+    this.pendingDestroyObjects.clear()
     this.objectsByType.clear()
-    this.objectsToDestroy.clear()
   }
   
   /**
    * Get count of objects of a specific type
    */
-  public getObjectCount(objectType?: string): number {
-    if (objectType) {
-      const typeSet = this.objectsByType.get(objectType)
-      return typeSet ? typeSet.size : 0
+  public getObjectCount(objectType?: ObjectTypeOrAll): number {
+    if (!objectType || objectType === all) {
+      return this.gameObjects.size
     }
-    return this.gameObjects.size
+    const typeSet = this.objectsByType.get(objectType as string)
+    return typeSet ? typeSet.size : 0
+  }
+
+  /**
+   * GameMaker-style instance_number function
+   * Returns the number of instances of an object type
+   */
+  public instance_number(objectType: ObjectTypeOrAll): number {
+    return this.getObjectCount(objectType)
+  }
+
+  /**
+   * GameMaker-style instance_exists function
+   * Checks if any instances of an object type exist
+   */
+  public instance_exists(objectType: ObjectTypeOrAll): boolean {
+    return this.getObjectCount(objectType) > 0
+  }
+
+  /**
+   * GameMaker-style instance_destroy function
+   * Destroys all instances of a specific object type
+   */
+  public instance_destroy(objectType: ObjectTypeOrAll): void {
+    const objects = this.getObjectsByType(objectType)
+    for (const obj of objects) {
+      this.destroyObject(obj.id)
+    }
+  }
+
+  /**
+   * GameMaker-style instance_find function
+   * Returns the first instance of an object type, or noone if not found
+   */
+  public instance_find(objectType: ObjectTypeOrAll, index: number = 0): GameObject | typeof noone {
+    const objects = this.getObjectsByType(objectType)
+    return objects[index] || noone
+  }
+
+  /**
+   * GameMaker-style instance_nearest function  
+   * Returns the nearest instance to a position, or noone if not found
+   */
+  public instance_nearest(x: number, y: number, objectType: ObjectTypeOrAll): GameObject | typeof noone {
+    return this.getNearestObject(x, y, objectType) || noone
   }
 }

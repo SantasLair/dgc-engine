@@ -5,12 +5,12 @@
   "type": "module",
   "license": "MIT",
   "author": "SantasLair",
-  "description": "A GameMaker-style game engine built with TypeScript and Rapid.js featuring room management, event-driven GameObjects, and immediate mode rendering",
+  "description": "A GameMaker-style game engine built with TypeScript and rapid-render featuring room management, event-driven GameObjects, and immediate mode rendering",
   "keywords": [
     "game-engine",
     "gamemaker",
     "typescript",
-    "rapid-js",
+    "rapid-render",
     "immediate-mode",
     "turn-based",
     "2d-game",
@@ -32,8 +32,8 @@
     "vite": "^7.0.4"
   },
   "dependencies": {
+    "@msgpack/msgpack": "^3.1.2",
     "easystarjs": "^0.4.4",
-    "rapid-render": "^0.1.21",
-    "smol-toml": "^1.4.1"
+    "rapid-render": "^0.1.21"
   }
 }

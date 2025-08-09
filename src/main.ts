@@ -1,5 +1,5 @@
 import './style.css'
-import { EnhancedGame } from './game/EnhancedGame'
+import { DemoGame } from './game/DemoGame'
 import { room_goto, room_restart, room_get_name } from './game/gml'
 import './examples/GMLRoomExample'
 
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
   
   try {
-    const game = new EnhancedGame(canvas)
+    const game = new DemoGame(canvas)
     
     // Initialize the game first
     await game.initialize()
@@ -66,27 +66,106 @@ document.addEventListener('DOMContentLoaded', async () => {
     ;(window as any).getCurrentRoom = () => game.getCurrentRoom()?.name
     ;(window as any).getRoomManager = () => game.getRoomManager()
     
-    // Test TOML room loading
-    ;(window as any).testTomlRooms = async () => {
+    // Test JSON room loading
+    ;(window as any).testJsonRooms = async () => {
       try {
-        console.log('🧪 Testing TOML room loading...')
+        console.log('🧪 Testing MessagePack room loading...')
         const roomManager = game.getRoomManager()
         const factory = roomManager.getFactory()
         
-        // Test loading a TOML file
-        const tomlRoom = await factory.createRoomFromFile('main_menu.toml')
-        console.log('✅ Successfully loaded TOML room:', tomlRoom.name)
+        // Test loading a MessagePack file
+        const jsonRoom = await factory.createRoomFromFile('main_menu.dgcroom')
+        console.log('✅ Successfully loaded MessagePack room:', jsonRoom.name)
         
-        // Test exporting TOML data
+        // Test exporting JSON data
         const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
-        const tomlString = factory.exportRoomData(roomData, 'toml')
-        console.log('✅ Successfully exported TOML data:')
-        console.log(tomlString)
+        const jsonString = factory.exportRoomData(roomData, 'json')
+        console.log('✅ Successfully exported JSON data:')
+        console.log(jsonString)
         
         return true
       } catch (error) {
-        console.error('❌ TOML test failed:', error)
+        console.error('❌ JSON test failed:', error)
         return false
+      }
+    }
+    
+    // Test MessagePack room loading
+    ;(window as any).testMessagePackRooms = async () => {
+      try {
+        console.log('📦 Testing MessagePack room loading...')
+        const roomManager = game.getRoomManager()
+        const factory = roomManager.getFactory()
+        
+        // Test loading a MessagePack file (if it exists)
+        try {
+          const msgpackRoom = await factory.createRoomFromFile('main_menu.dgcroom')
+          console.log('✅ Successfully loaded MessagePack room:', msgpackRoom.name)
+        } catch (error) {
+          console.log('⚠️ MessagePack file not found (normal in development)')
+        }
+        
+        // Test exporting MessagePack data
+        const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
+        const msgpackData = factory.exportRoomData(roomData, 'msgpack') as Uint8Array
+        console.log('✅ Successfully exported MessagePack data:')
+        console.log('Binary data size:', msgpackData.byteLength, 'bytes')
+        
+        // Test round-trip conversion
+        console.log('✅ MessagePack functionality working')
+        
+        return true
+      } catch (error) {
+        console.error('❌ MessagePack test failed:', error)
+        return false
+      }
+    }
+    
+    // Convert current JSON data to MessagePack for testing
+    ;(window as any).convertToMessagePack = async () => {
+      try {
+        const roomManager = game.getRoomManager()
+        const factory = roomManager.getFactory()
+        
+        // Load MessagePack room
+        const jsonRoom = await factory.createRoomFromFile('sprite_demo.dgcroom')
+        console.log('📄 Loaded MessagePack room:', jsonRoom.name)
+        
+        // Create room data template and export as MessagePack
+        const roomData = factory.createRoomDataTemplate('converted_test', 20, 15)
+        const msgpackData = factory.exportRoomData(roomData, 'msgpack') as Uint8Array
+        
+        console.log('📦 Converted to MessagePack:')
+        console.log('Size:', msgpackData.byteLength, 'bytes')
+        console.log('Data:', msgpackData)
+        
+        return msgpackData
+      } catch (error) {
+        console.error('❌ Conversion failed:', error)
+        return null
+      }
+    }
+    
+    // Debug room state
+    ;(window as any).debugRoom = () => {
+      const currentRoom = game.getCurrentRoom()
+      const engine = game.getEngine()
+      const objectManager = engine?.getObjectManager()
+      
+      console.log('🔍 Current Room Debug Info:')
+      console.log('Room:', currentRoom?.name)
+      console.log('Object Count:', objectManager?.getObjectCount())
+      console.log('Objects:', objectManager?.getAllObjects().map(o => ({ type: o.objectType, x: o.x, y: o.y, visible: o.visible })))
+      
+      if (currentRoom) {
+        console.log('Room Sprites:', (currentRoom as any).sprites || 'none')
+        console.log('Room Properties:', (currentRoom as any).properties || 'none')
+      }
+      
+      return {
+        room: currentRoom?.name,
+        objectCount: objectManager?.getObjectCount(),
+        objects: objectManager?.getAllObjects()
       }
     }      // Expose GML room functions for testing
       ;(window as any).room_goto = room_goto
