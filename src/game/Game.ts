@@ -35,18 +35,26 @@ export class Game extends DGCGame {
     // Start with main menu first to test basic room loading
     await this.goToRoom('main_menu')
     
-    // Create a test player for the demo
+    // Create a test player for the demo - use regular Player first to confirm visibility
+    console.log('🎮 Creating regular Player to test visibility')
     const testPlayer = new Player(200, 150)
     testPlayer.visible = true
     this.addGameObject(testPlayer)
     
-    // Set the player sprite
+    // Set the player sprite to pixel-player
     const currentRoom = this.roomManager.getCurrentRoom()
     if (currentRoom) {
-      const logoSprite = currentRoom.getSprite('logo_sprite')
-      if (logoSprite) {
-        testPlayer.sprite = logoSprite
-        console.log('🎮 Player ready with sprite at (200, 150)')
+      const pixelPlayerSprite = currentRoom.getSprite('pixel_player_sprite')
+      if (pixelPlayerSprite) {
+        testPlayer.sprite = pixelPlayerSprite
+        console.log('🎮 Player ready with pixel-player sprite at (200, 150)')
+      } else {
+        console.warn('⚠️ pixel_player_sprite not found, falling back to logo_sprite')
+        const logoSprite = currentRoom.getSprite('logo_sprite')
+        if (logoSprite) {
+          testPlayer.sprite = logoSprite
+          console.log('🎮 Player using fallback logo sprite')
+        }
       }
     }
   }
