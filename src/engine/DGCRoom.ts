@@ -3,26 +3,26 @@ import { SpriteManager, type SpriteLoadConfig } from './SpriteManager'
 import { RoomFactory, type RoomFactoryConfig, type RoomData } from './RoomFactory'
 
 /**
- * DGCRoom configuration interface
+ * Room configuration interface
  */
 export interface RoomConfig {
-  /** DGCRoom identifier */
+  /** Room identifier */
   name: string
-  /** DGCRoom width in grid units */
+  /** Room width in grid units */
   width: number
-  /** DGCRoom height in grid units */
+  /** Room height in grid units */
   height: number
   /** Background color or image */
   background?: string | HTMLImageElement
   /** Sprites to load for this room */
   sprites?: SpriteLoadConfig[]
-  /** DGCRoom creation script */
+  /** Room creation script */
   onCreate?: EventScript
-  /** DGCRoom step script (called every frame) */
+  /** Room step script (called every frame) */
   onStep?: EventScript
-  /** DGCRoom draw script (called during rendering) */
+  /** Room draw script (called during rendering) */
   onDraw?: EventScript
-  /** DGCRoom cleanup script */
+  /** Room cleanup script */
   onDestroy?: EventScript
 }
 
@@ -39,10 +39,10 @@ export interface RoomConfig {
  * Follows GameMaker-style room architecture with Rapid.js immediate mode rendering
  */
 export class DGCRoom {
-  /** DGCRoom identifier */
+  /** Room identifier */
   public readonly name: string
   
-  /** DGCRoom dimensions (logical game units) */
+  /** Room dimensions (logical game units) */
   public readonly width: number
   public readonly height: number
   
@@ -52,7 +52,7 @@ export class DGCRoom {
   /** Rendering handled by immediate mode Rapid.js drawing system */
   // Rapid.js uses immediate mode rendering - no retained containers needed
   
-  /** DGCRoom event scripts */
+  /** Room event scripts */
   private eventScripts: Map<string, EventScript> = new Map()
   
   /** Game objects currently in this room */
@@ -64,7 +64,7 @@ export class DGCRoom {
   /** Sprites to load for this room */
   private requiredSprites: SpriteLoadConfig[] = []
   
-  /** DGCRoom state */
+  /** Room state */
   private isActive: boolean = false
   private isCreated: boolean = false
 
@@ -94,10 +94,10 @@ export class DGCRoom {
 
   /**
    * Initialize the room
-   * Note: DGCRoom primarily manages game objects which handle their own lifecycle
+   * Note: Room primarily manages game objects which handle their own lifecycle
    */
   public initialize(): void {
-    // DGCRoom initialization logic can be added here if needed
+    // Room initialization logic can be added here if needed
   }
 
   /**
@@ -327,12 +327,12 @@ export class DGCRoom {
 }
 
 /**
- * DGCRoom manager for handling multiple rooms
+ * Room manager for handling multiple rooms
  */
 /**
- * DGCRoom Manager with Data-Driven DGCRoom Support
+ * Room Manager with Data-Driven Room Support
  * 
- * Manages room lifecycle and supports both traditional DGCRoom classes
+ * Manages room lifecycle and supports both traditional Room classes
  * and data-driven room creation from JSON files.
  */
 export class RoomManager {
@@ -382,7 +382,7 @@ export class RoomManager {
   /**
    * Create and add a room from data
    */
-  public addRoomFromData(roomData: RoomData): DGCRoom {
+  public addRoomFromData(roomData: RoomData): Room {
     const room = this.roomFactory.createRoomFromData(roomData)
     this.addRoom(room)
     return room
@@ -391,7 +391,7 @@ export class RoomManager {
   /**
    * Create and add a room from a data file
    */
-  public async addRoomFromFile(filename: string): Promise<DGCRoom> {
+  public async addRoomFromFile(filename: string): Promise<Room> {
     const room = await this.roomFactory.createRoomFromFile(filename)
     this.addRoom(room)
     return room
@@ -463,14 +463,14 @@ export class RoomManager {
   /**
    * Get the current active room
    */
-  public getCurrentRoom(): DGCRoom | undefined {
+  public getCurrentRoom(): Room | undefined {
     return this.currentRoom
   }
 
   /**
    * Get a room by name
    */
-  public getRoom(roomName: string): DGCRoom | undefined {
+  public getRoom(roomName: string): Room | undefined {
     return this.rooms.get(roomName)
   }
 

@@ -1,11 +1,11 @@
 /**
- * Room Factory System
+ * DGCRoom Factory System
  * 
- * Creates room instances from JSON data files.
- * Supports both pure data-driven rooms and custom room classes.
+ * Creates DGCRoom instances from JSON data files.
+ * Supports both pure data-driven rooms and custom DGCRoom classes.
  */
 
-import { Room, type RoomConfig } from './Room'
+import { DGCRoom, type RoomConfig } from './DGCRoom'
 import type { 
   RoomData, 
   RoomDataFile, 
@@ -22,7 +22,7 @@ export type { RoomData, RoomDataFile, RoomFactoryConfig, RoomObjectData } from '
  */
 export class RoomFactory {
   private objectTypes: Map<string, new (...args: any[]) => GameObject> = new Map()
-  private roomClasses: Map<string, new (...args: any[]) => Room> = new Map()
+  private roomClasses: Map<string, new (...args: any[]) => DGCRoom> = new Map()
   private dataPath: string = '/data/rooms/'
 
   constructor(config?: RoomFactoryConfig) {
@@ -46,24 +46,24 @@ export class RoomFactory {
   }
 
   /**
-   * Register a custom room class
+   * Register a custom DGCRoom class
    */
-  public registerRoomClass(name: string, roomClass: new (...args: any[]) => Room): void {
+  public registerRoomClass(name: string, roomClass: new (...args: any[]) => DGCRoom): void {
     this.roomClasses.set(name, roomClass)
-    console.log(`🏭 Registered room class: ${name}`)
+    console.log(`🏭 Registered DGCRoom class: ${name}`)
   }
 
   /**
-   * Create a room from a JSON data file
+   * Create a DGCRoom from a JSON data file
    */
-  public async createRoomFromFile(filename: string): Promise<Room> {
+  public async createRoomFromFile(filename: string): Promise<DGCRoom> {
     try {
       const fullPath = this.dataPath + filename
-      console.log(`🏭 Loading room data from: ${fullPath}`)
+      console.log(`🏭 Loading DGCRoom data from: ${fullPath}`)
       
       const response = await fetch(fullPath)
       if (!response.ok) {
-        throw new Error(`Failed to load room file: ${response.statusText}`)
+        throw new Error(`Failed to load DGCRoom file: ${response.statusText}`)
       }
       
       let roomDataFile: RoomDataFile
@@ -77,37 +77,37 @@ export class RoomFactory {
         throw new Error(`Unsupported file format. Use .json files only.`)
       }
       
-      return this.createRoomFromData(roomDataFile.room)
+      return this.createRoomFromData(roomDataFile.DGCRoom)
     } catch (error) {
-      console.error(`❌ Error loading room from file '${filename}':`, error)
+      console.error(`❌ Error loading DGCRoom from file '${filename}':`, error)
       throw error
     }
   }
 
   /**
-   * Create a room from room data object
+   * Create a DGCRoom from DGCRoom data object
    */
-  public createRoomFromData(roomData: RoomData): Room {
-    console.log(`🏭 Creating room from data: ${roomData.name}`)
+  public createRoomFromData(roomData: RoomData): DGCRoom {
+    console.log(`🏭 Creating DGCRoom from data: ${roomData.name}`)
     
-    // If a custom room class is specified, use it
+    // If a custom DGCRoom class is specified, use it
     if (roomData.customClass && this.roomClasses.has(roomData.customClass)) {
       const RoomClass = this.roomClasses.get(roomData.customClass)!
-      const room = new RoomClass(this.convertToRoomConfig(roomData))
-      this.setupRoomObjects(room, roomData.objects || [])
-      return room
+      const DGCRoom = new RoomClass(this.convertToRoomConfig(roomData))
+      this.setupRoomObjects(DGCRoom, roomData.objects || [])
+      return DGCRoom
     }
     
-    // Otherwise create a standard data-driven room
+    // Otherwise create a standard data-driven DGCRoom
     const roomConfig = this.convertToRoomConfig(roomData)
-    const room = new Room(roomConfig)
-    this.setupRoomObjects(room, roomData.objects || [])
+    const DGCRoom = new DGCRoom(roomConfig)
+    this.setupRoomObjects(DGCRoom, roomData.objects || [])
     
-    return room
+    return DGCRoom
   }
 
   /**
-   * Convert RoomData to RoomConfig for the Room constructor
+   * Convert RoomData to RoomConfig for the DGCRoom constructor
    */
   private convertToRoomConfig(roomData: RoomData): RoomConfig {
     const config: RoomConfig = {
@@ -125,28 +125,28 @@ export class RoomFactory {
       // TODO: Handle image backgrounds when needed
     }
 
-    // Handle room events - JSON files should not contain scripts
+    // Handle DGCRoom events - JSON files should not contain scripts
     // Scripts should be handled by companion TypeScript files
     if (roomData.events) {
       // Skip script compilation for now - use companion TS files for scripts
-      console.log('⚠️ Room events found in JSON - consider using companion TypeScript files for scripts')
+      console.log('⚠️ DGCRoom events found in JSON - consider using companion TypeScript files for scripts')
     }
 
     return config
   }
 
   /**
-   * Create and add objects to a room based on object data
+   * Create and add objects to a DGCRoom based on object data
    */
-  private setupRoomObjects(room: Room, objectsData: RoomObjectData[]): void {
-    console.log(`🎯 Setting up ${objectsData.length} objects in room: ${room.name}`)
+  private setupRoomObjects(DGCRoom: DGCRoom, objectsData: RoomObjectData[]): void {
+    console.log(`🎯 Setting up ${objectsData.length} objects in DGCRoom: ${DGCRoom.name}`)
     
     for (const objectData of objectsData) {
       try {
         const gameObject = this.createObject(objectData)
         if (gameObject) {
-          room.addGameObject(gameObject)
-          console.log(`🏭 Added ${objectData.objectType} to room at (${objectData.position.x}, ${objectData.position.y})`)
+          DGCRoom.addGameObject(gameObject)
+          console.log(`🏭 Added ${objectData.objectType} to DGCRoom at (${objectData.position.x}, ${objectData.position.y})`)
         }
       } catch (error) {
         console.error(`❌ Failed to create object ${objectData.objectType}:`, error)
@@ -193,7 +193,7 @@ export class RoomFactory {
   }
 
   /**
-   * Create a room data template for easy authoring
+   * Create a DGCRoom data template for easy authoring
    */
   public createRoomDataTemplate(name: string, width: number, height: number): RoomData {
     return {
@@ -214,7 +214,7 @@ export class RoomFactory {
       events: {},
       properties: {},
       metadata: {
-        description: `Room: ${name}`,
+        description: `DGCRoom: ${name}`,
         author: 'DGC Engine',
         version: '1.0.0',
         tags: []
@@ -223,18 +223,18 @@ export class RoomFactory {
   }
 
   /**
-   * Export room data to JSON string for saving
+   * Export DGCRoom data to JSON string for saving
    */
   public exportRoomDataAsJson(roomData: RoomData): string {
     const roomDataFile: RoomDataFile = {
       version: '1.0.0',
-      room: roomData
+      DGCRoom: roomData
     }
     return JSON.stringify(roomDataFile, null, 2)
   }
 
   /**
-   * Export room data as JSON
+   * Export DGCRoom data as JSON
    */
   public exportRoomData(roomData: RoomData): string {
     return this.exportRoomDataAsJson(roomData)

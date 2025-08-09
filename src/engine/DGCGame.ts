@@ -2,7 +2,7 @@ import { DGCEngine } from './DGCEngine'
 import type { DGCEngineConfig } from './DGCEngineConfig'
 import { createDGCEngineConfig } from './DGCEngineConfig'
 import { GameObject } from './GameObject'
-import { RoomManager } from './Room'
+import { RoomManager } from './DGCRoom.ts'
 import type { Rapid } from 'rapid-render'
 
 /**

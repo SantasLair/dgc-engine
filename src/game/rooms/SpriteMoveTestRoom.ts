@@ -1,4 +1,4 @@
-import { Room, type RoomConfig } from '../../engine'
+import { DGCRoom, type RoomConfig } from '../../engine'
 import type { Game } from '../Game'
 import { Player } from '../gameobjects'
 
@@ -6,7 +6,7 @@ import { Player } from '../gameobjects'
  * Sprite Movement Test Room
  * Simple hardcoded room for testing sprite movement without JSON dependencies
  */
-export class SpriteMoveTestRoom extends Room {
+export class SpriteMoveTestRoom extends DGCRoom {
   private game: Game
 
   constructor(game: Game) {
@@ -37,7 +37,7 @@ export class SpriteMoveTestRoom extends Room {
       ]
     }
     super(config)
-    
+
     this.game = game
     console.log('🏠 SpriteMoveTestRoom created')
   }
@@ -45,14 +45,14 @@ export class SpriteMoveTestRoom extends Room {
   /**
    * Preload hook - called after sprites are loaded but before room creation
    */
-  protected async preload(): Promise<void> {
+  protected override async preload(): Promise<void> {
     console.log('🔄 SpriteMoveTestRoom preload - creating game objects with sprites')
-    
+
     // Create the test player
     const testPlayer = new Player(200, 150)
     testPlayer.visible = true
     this.game.addGameObject(testPlayer)
-    
+
     // Assign sprite to player (sprites are guaranteed to be loaded at this point)
     const pixelPlayerSprite = this.getSprite('pixel_player_sprite')
     if (pixelPlayerSprite) {
@@ -70,15 +70,15 @@ export class SpriteMoveTestRoom extends Room {
     }
   }
 
-  public async onRoomStart(): Promise<void> {
-    console.log('� SpriteMoveTestRoom started - all setup complete')
+  public override async onRoomStart(): Promise<void> {
+    console.log('🚀 SpriteMoveTestRoom started - all setup complete')
   }
 
-  public async onRoomUpdate(): Promise<void> {
+  public override async onRoomUpdate(): Promise<void> {
     // Room update logic if needed
   }
 
-  public onRoomEnd(): void {
+  public override onRoomEnd(): void {
     console.log('🏠 SpriteMoveTestRoom ended')
   }
 }
