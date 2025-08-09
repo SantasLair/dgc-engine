@@ -3,26 +3,26 @@ import { SpriteManager, type SpriteLoadConfig } from './SpriteManager'
 import { RoomFactory, type RoomFactoryConfig, type RoomData } from './RoomFactory'
 
 /**
- * Room configuration interface
+ * DGCRoom configuration interface
  */
 export interface RoomConfig {
-  /** Room identifier */
+  /** DGCRoom identifier */
   name: string
-  /** Room width in grid units */
+  /** DGCRoom width in grid units */
   width: number
-  /** Room height in grid units */
+  /** DGCRoom height in grid units */
   height: number
   /** Background color or image */
   background?: string | HTMLImageElement
   /** Sprites to load for this room */
   sprites?: SpriteLoadConfig[]
-  /** Room creation script */
+  /** DGCRoom creation script */
   onCreate?: EventScript
-  /** Room step script (called every frame) */
+  /** DGCRoom step script (called every frame) */
   onStep?: EventScript
-  /** Room draw script (called during rendering) */
+  /** DGCRoom draw script (called during rendering) */
   onDraw?: EventScript
-  /** Room cleanup script */
+  /** DGCRoom cleanup script */
   onDestroy?: EventScript
 }
 
@@ -38,11 +38,11 @@ export interface RoomConfig {
  * 
  * Follows GameMaker-style room architecture with Rapid.js immediate mode rendering
  */
-export class Room {
-  /** Room identifier */
+export class DGCRoom {
+  /** DGCRoom identifier */
   public readonly name: string
   
-  /** Room dimensions (logical game units) */
+  /** DGCRoom dimensions (logical game units) */
   public readonly width: number
   public readonly height: number
   
@@ -52,7 +52,7 @@ export class Room {
   /** Rendering handled by immediate mode Rapid.js drawing system */
   // Rapid.js uses immediate mode rendering - no retained containers needed
   
-  /** Room event scripts */
+  /** DGCRoom event scripts */
   private eventScripts: Map<string, EventScript> = new Map()
   
   /** Game objects currently in this room */
@@ -64,7 +64,7 @@ export class Room {
   /** Sprites to load for this room */
   private requiredSprites: SpriteLoadConfig[] = []
   
-  /** Room state */
+  /** DGCRoom state */
   private isActive: boolean = false
   private isCreated: boolean = false
 
@@ -94,10 +94,10 @@ export class Room {
 
   /**
    * Initialize the room
-   * Note: Room primarily manages game objects which handle their own lifecycle
+   * Note: DGCRoom primarily manages game objects which handle their own lifecycle
    */
   public initialize(): void {
-    // Room initialization logic can be added here if needed
+    // DGCRoom initialization logic can be added here if needed
   }
 
   /**
@@ -327,17 +327,17 @@ export class Room {
 }
 
 /**
- * Room manager for handling multiple rooms
+ * DGCRoom manager for handling multiple rooms
  */
 /**
- * Room Manager with Data-Driven Room Support
+ * DGCRoom Manager with Data-Driven DGCRoom Support
  * 
- * Manages room lifecycle and supports both traditional Room classes
+ * Manages room lifecycle and supports both traditional DGCRoom classes
  * and data-driven room creation from JSON files.
  */
 export class RoomManager {
-  private rooms: Map<string, Room> = new Map()
-  private currentRoom?: Room
+  private rooms: Map<string, DGCRoom> = new Map()
+  private currentRoom?: DGCRoom
   private roomFactory: RoomFactory
   private gameInstance?: any  // Reference to the game instance for adding/removing objects
 
@@ -372,7 +372,7 @@ export class RoomManager {
   /**
    * Add a room to the manager
    */
-  public addRoom(room: Room): void {
+  public addRoom(room: DGCRoom): void {
     this.rooms.set(room.name, room)
     
     // Initialize room when added
@@ -382,7 +382,7 @@ export class RoomManager {
   /**
    * Create and add a room from data
    */
-  public addRoomFromData(roomData: RoomData): Room {
+  public addRoomFromData(roomData: RoomData): DGCRoom {
     const room = this.roomFactory.createRoomFromData(roomData)
     this.addRoom(room)
     return room
@@ -391,7 +391,7 @@ export class RoomManager {
   /**
    * Create and add a room from a data file
    */
-  public async addRoomFromFile(filename: string): Promise<Room> {
+  public async addRoomFromFile(filename: string): Promise<DGCRoom> {
     const room = await this.roomFactory.createRoomFromFile(filename)
     this.addRoom(room)
     return room
@@ -463,14 +463,14 @@ export class RoomManager {
   /**
    * Get the current active room
    */
-  public getCurrentRoom(): Room | undefined {
+  public getCurrentRoom(): DGCRoom | undefined {
     return this.currentRoom
   }
 
   /**
    * Get a room by name
    */
-  public getRoom(roomName: string): Room | undefined {
+  public getRoom(roomName: string): DGCRoom | undefined {
     return this.rooms.get(roomName)
   }
 
