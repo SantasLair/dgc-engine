@@ -13,17 +13,21 @@ export class FPSMonitor extends GameObject {
   private graphX: number = 20
   private graphY: number = 20
   
-  // FPS tracking
+  // FPS tracking with better precision
   private lastTime: number = 0
+  private lastFrameTime: number = 0  // Time of the last frame for instantaneous FPS
   private frameCount: number = 0
   private fps: number = 0
-  private fpsUpdateInterval: number = 100  // Update FPS display every 100ms
+  private fpsUpdateInterval: number = 250  // Update FPS display every 250ms for more stability
+  private instantFPS: number = 0  // Track instantaneous FPS
+  private frameTimeHistory: number[] = []  // Track individual frame times
 
   constructor(x: number = 20, y: number = 20) {
     super('FPSMonitor', { x, y })
     this.persistent = true  // Keep across room changes
     this.depth = -1000  // Draw on top of everything
     this.lastTime = performance.now()
+    this.lastFrameTime = performance.now()
     console.log('📊 FPS Monitor created')
   }
 
@@ -39,11 +43,32 @@ export class FPSMonitor extends GameObject {
    */
   public onStep(): void {
     const currentTime = performance.now()
+    
+    // Track instantaneous FPS (per frame)
+    if (this.lastFrameTime > 0) {
+      const deltaTime = currentTime - this.lastFrameTime
+      if (deltaTime > 0) {
+        this.instantFPS = 1000 / deltaTime
+        this.frameTimeHistory.push(deltaTime)
+        
+        // Keep frame time history limited
+        if (this.frameTimeHistory.length > 60) {
+          this.frameTimeHistory.shift()
+        }
+      }
+    }
+    this.lastFrameTime = currentTime
     this.frameCount++
     
-    // Update FPS calculation every interval
+    // Initialize lastTime on first frame
+    if (this.lastTime === 0) {
+      this.lastTime = currentTime
+      return
+    }
+    
+    // Update averaged FPS calculation every interval
     if (currentTime - this.lastTime >= this.fpsUpdateInterval) {
-      // Calculate actual FPS
+      // Calculate actual FPS over the interval
       this.fps = (this.frameCount * 1000) / (currentTime - this.lastTime)
       
       // Add current fps to the sample buffer
@@ -127,10 +152,24 @@ export class FPSMonitor extends GameObject {
     )
     
     // Note: Text drawing would need to be implemented in the drawing system
-    // For now, we'll log the FPS to console occasionally
+    // For now, we'll log detailed FPS statistics to console occasionally
     if (this.frameCount === 0 && this.frameSamples.length > 0) { // Only log when FPS updates
       const avgFps = this.frameSamples.reduce((a, b) => a + b, 0) / this.frameSamples.length
-      console.log(`📊 FPS: ${this.fps.toFixed(1)} | Avg: ${avgFps.toFixed(1)} | Samples: ${this.frameSamples.length}`)
+      const minFps = Math.min(...this.frameSamples)
+      const maxFps = Math.max(...this.frameSamples)
+      
+      // Calculate frame time variance for stability analysis
+      let frameTimeVariance = 0
+      if (this.frameTimeHistory.length > 1) {
+        const avgFrameTime = this.frameTimeHistory.reduce((a, b) => a + b, 0) / this.frameTimeHistory.length
+        frameTimeVariance = this.frameTimeHistory.reduce((acc, time) => acc + Math.pow(time - avgFrameTime, 2), 0) / this.frameTimeHistory.length
+      }
+      
+      console.log(`📊 FPS Analysis:`)
+      console.log(`  Current: ${this.fps.toFixed(1)} | Instant: ${this.instantFPS.toFixed(1)}`)
+      console.log(`  Avg: ${avgFps.toFixed(1)} | Min: ${minFps.toFixed(1)} | Max: ${maxFps.toFixed(1)}`)
+      console.log(`  Frame Time Variance: ${frameTimeVariance.toFixed(2)}ms² (lower = more stable)`)
+      console.log(`  Samples: ${this.frameSamples.length}/${this.sampleCount}`)
     }
   }
 

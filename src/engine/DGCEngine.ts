@@ -22,6 +22,8 @@ export class DGCEngine {
   private targetFrameTime: number
   private isRunning: boolean = false
   private animationFrameId: number | null = null
+  private accumulator: number = 0  // For frame rate smoothing
+  private maxFrameTime: number = 50  // Cap maximum frame time to prevent spiral of death
   
   constructor(config: DGCEngineConfig) {
     this.config = createDGCEngineConfig(config)
@@ -41,7 +43,7 @@ export class DGCEngine {
     this.gameObjectManager = new GameObjectManager(this.eventManager, this.drawingSystem)
     this.inputManager = new InputManager(this.config.canvas)
     
-    console.log('🎮 DGCEngine initialized successfully with Rapid.js')
+    console.log(`🎮 DGCEngine initialized successfully with Rapid.js targeting ${this.config.targetFPS} FPS`)
   }
   
   /**
@@ -80,10 +82,13 @@ export class DGCEngine {
     }
     
     const currentTime = performance.now()
-    const deltaTime = currentTime - this.lastTime
+    const deltaTime = Math.min(currentTime - this.lastTime, this.maxFrameTime)
     
-    // Update at target FPS
-    if (deltaTime >= this.targetFrameTime) {
+    // Accumulate time for stable frame rate
+    this.accumulator += deltaTime
+    
+    // Process frames at consistent intervals
+    while (this.accumulator >= this.targetFrameTime) {
       // === GameMaker Event Order ===
       
       // Cache active objects array for performance (avoid 8+ array allocations)
@@ -91,7 +96,7 @@ export class DGCEngine {
       
       // Input and Timer Events
       this.processInputEvents()
-      this.processTimerEvents(deltaTime)
+      this.processTimerEvents(this.targetFrameTime) // Use fixed timestep
       
       // Step Phase (using cached active objects)
       this.processGameMakerEvent('step_begin', allActiveObjects)
@@ -109,26 +114,31 @@ export class DGCEngine {
       // Animation Updates
       this.processAnimationEvents()
       
-      // Draw Phase (using cached active objects)
-      this.startRender()
-      this.processGameMakerEvent('draw_begin', allActiveObjects)
-      this.processVirtualEvents('onDrawBegin', allActiveObjects)
-      
-      this.processGameMakerEvent('draw', allActiveObjects)
-      this.processVirtualEvents('onDraw', allActiveObjects)
-      
-      this.processGameMakerEvent('draw_end', allActiveObjects)
-      this.processVirtualEvents('onDrawEnd', allActiveObjects)
-      
-      this.processGameMakerEvent('draw_gui_begin', allActiveObjects)
-      this.processGameMakerEvent('draw_gui', allActiveObjects)
-      this.processGameMakerEvent('draw_gui_end', allActiveObjects)
-      this.endRender()
-      
-      // Cleanup
-      this.inputManager.endFrame()
-      this.lastTime = currentTime
+      // Subtract processed time
+      this.accumulator -= this.targetFrameTime
     }
+    
+    // Always render (interpolation could be added here for smoothness)
+    // Draw Phase (using cached active objects)
+    const allActiveObjects = this.gameObjectManager.getAllActiveObjects()
+    this.startRender()
+    this.processGameMakerEvent('draw_begin', allActiveObjects)
+    this.processVirtualEvents('onDrawBegin', allActiveObjects)
+    
+    this.processGameMakerEvent('draw', allActiveObjects)
+    this.processVirtualEvents('onDraw', allActiveObjects)
+    
+    this.processGameMakerEvent('draw_end', allActiveObjects)
+    this.processVirtualEvents('onDrawEnd', allActiveObjects)
+    
+    this.processGameMakerEvent('draw_gui_begin', allActiveObjects)
+    this.processGameMakerEvent('draw_gui', allActiveObjects)
+    this.processGameMakerEvent('draw_gui_end', allActiveObjects)
+    this.endRender()
+    
+    // Cleanup
+    this.inputManager.endFrame()
+    this.lastTime = currentTime
     
     this.animationFrameId = requestAnimationFrame(this.gameLoop)
   }
