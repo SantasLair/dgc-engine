@@ -127,9 +127,8 @@ export class Player extends GameObject {
   public onDraw(): void {
     // Draw the player sprite if we have one, otherwise draw a rectangle
     if (this.sprite) {
-      // Ensure sprite is drawn at integer pixel positions to avoid jitter
-      const drawX = Math.round(this.x)
-      const drawY = Math.round(this.y)
+      const drawX = this.x
+      const drawY = this.y
       
       // Temporarily set rounded position for drawing
       const originalX = this.x
