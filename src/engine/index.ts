@@ -6,7 +6,7 @@ export { type DGCEngineConfig, createDGCEngineConfig } from './DGCEngineConfig'
 // Core engine components
 export { GameObject, GameEvent, type EventScript, type GameObjectProperties } from './GameObject'
 export { EventManager, type EventListener } from './EventManager'
-export { GameObjectManager } from './GameObjectManager'
+export { GameObjectManager, type ObjectFilter } from './GameObjectManager'
 export { Room, RoomManager, type RoomConfig } from './Room'
 
 // Data-driven room system
@@ -20,11 +20,5 @@ export { SpriteManager, type SpriteLoadConfig } from './SpriteManager'
 // Drawing systems
 export { DGCDrawingSystem } from './DGCDrawingSystem'
 
-// GameMaker constants and types
-export { all, noone, type ObjectTypeOrAll } from './GameMakerConstants'
-
-// GameMaker object types (unquoted object type constants)
-export { 
-  Player, Enemy, PowerUp, Bullet, Boss,
-  type GameObjectType, type ObjectTypeOrAll as ObjectTypeOrAllFromTypes
-} from './GameObjectTypes'
+// Input management
+export { InputManager } from './InputManager'

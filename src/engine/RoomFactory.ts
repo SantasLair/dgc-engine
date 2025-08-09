@@ -1,11 +1,10 @@
 /**
  * Room Factory System
  * 
- * Creates room instances from JSON or MessagePack data files.
+ * Creates room instances from JSON data files.
  * Supports both pure data-driven rooms and custom room classes.
  */
 
-import { encode, decode } from '@msgpack/msgpack'
 import { Room, type RoomConfig } from './Room'
 import type { 
   RoomData, 
@@ -55,7 +54,7 @@ export class RoomFactory {
   }
 
   /**
-   * Create a room from a data file (supports JSON and MessagePack formats)
+   * Create a room from a JSON data file
    */
   public async createRoomFromFile(filename: string): Promise<Room> {
     try {
@@ -69,18 +68,13 @@ export class RoomFactory {
       
       let roomDataFile: RoomDataFile
       
-      if (filename.endsWith('.dgcroom')) {
-        // Load MessagePack binary format
-        console.log('📦 Parsing MessagePack data...')
-        const arrayBuffer = await response.arrayBuffer()
-        roomDataFile = decode(new Uint8Array(arrayBuffer)) as RoomDataFile
-      } else if (filename.endsWith('.json')) {
-        // Load JSON format (development)
+      if (filename.endsWith('.json')) {
+        // Load JSON format
         console.log('📄 Parsing JSON data...')
         const fileContent = await response.text()
         roomDataFile = JSON.parse(fileContent) as RoomDataFile
       } else {
-        throw new Error(`Unsupported file format. Use .json or .dgcroom files.`)
+        throw new Error(`Unsupported file format. Use .json files only.`)
       }
       
       return this.createRoomFromData(roomDataFile.room)
@@ -240,22 +234,9 @@ export class RoomFactory {
   }
 
   /**
-   * Export room data to MessagePack binary format
+   * Export room data as JSON
    */
-  public exportRoomDataAsMessagePack(roomData: RoomData): Uint8Array {
-    const roomDataFile: RoomDataFile = {
-      version: '1.0.0',
-      room: roomData
-    }
-    return encode(roomDataFile)
-  }
-
-  /**
-   * Export room data (defaults to JSON format)
-   */
-  public exportRoomData(roomData: RoomData, format: 'json' | 'msgpack' = 'json'): string | Uint8Array {
-    return format === 'msgpack' 
-      ? this.exportRoomDataAsMessagePack(roomData)
-      : this.exportRoomDataAsJson(roomData)
+  public exportRoomData(roomData: RoomData): string {
+    return this.exportRoomDataAsJson(roomData)
   }
 }

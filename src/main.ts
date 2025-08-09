@@ -1,7 +1,5 @@
 import './style.css'
 import { DemoGame } from './game/DemoGame'
-import { room_goto, room_restart, room_get_name } from './game/gml'
-import './examples/GMLRoomExample'
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
@@ -69,17 +67,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Test JSON room loading
     ;(window as any).testJsonRooms = async () => {
       try {
-        console.log('🧪 Testing MessagePack room loading...')
+        console.log('🧪 Testing JSON room loading...')
         const roomManager = game.getRoomManager()
         const factory = roomManager.getFactory()
         
-        // Test loading a MessagePack file
-        const jsonRoom = await factory.createRoomFromFile('main_menu.dgcroom')
-        console.log('✅ Successfully loaded MessagePack room:', jsonRoom.name)
+        // Test loading a JSON file
+        const jsonRoom = await factory.createRoomFromFile('main_menu.json')
+        console.log('✅ Successfully loaded JSON room:', jsonRoom.name)
         
         // Test exporting JSON data
         const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
-        const jsonString = factory.exportRoomData(roomData, 'json')
+        const jsonString = factory.exportRoomData(roomData)
         console.log('✅ Successfully exported JSON data:')
         console.log(jsonString)
         
@@ -97,19 +95,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const roomManager = game.getRoomManager()
         const factory = roomManager.getFactory()
         
-        // Test loading a MessagePack file (if it exists)
+        // Test loading a JSON file
         try {
-          const msgpackRoom = await factory.createRoomFromFile('main_menu.dgcroom')
-          console.log('✅ Successfully loaded MessagePack room:', msgpackRoom.name)
+          const jsonRoom = await factory.createRoomFromFile('main_menu.json')
+          console.log('✅ Successfully loaded JSON room:', jsonRoom.name)
         } catch (error) {
-          console.log('⚠️ MessagePack file not found (normal in development)')
+          console.log('⚠️ JSON file not found')
         }
         
-        // Test exporting MessagePack data
+        // Test exporting JSON data
         const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
-        const msgpackData = factory.exportRoomData(roomData, 'msgpack') as Uint8Array
-        console.log('✅ Successfully exported MessagePack data:')
-        console.log('Binary data size:', msgpackData.byteLength, 'bytes')
+        const jsonData = factory.exportRoomData(roomData)
+        console.log('✅ Successfully exported JSON data:')
+        console.log('JSON string length:', jsonData.length, 'characters')
         
         // Test round-trip conversion
         console.log('✅ MessagePack functionality working')
@@ -127,19 +125,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         const roomManager = game.getRoomManager()
         const factory = roomManager.getFactory()
         
-        // Load MessagePack room
-        const jsonRoom = await factory.createRoomFromFile('sprite_demo.dgcroom')
-        console.log('📄 Loaded MessagePack room:', jsonRoom.name)
+        // Load JSON room
+        const jsonRoom = await factory.createRoomFromFile('sprite_demo.json')
+        console.log('📄 Loaded JSON room:', jsonRoom.name)
         
-        // Create room data template and export as MessagePack
+        // Create room data template and export as JSON
         const roomData = factory.createRoomDataTemplate('converted_test', 20, 15)
-        const msgpackData = factory.exportRoomData(roomData, 'msgpack') as Uint8Array
+        const jsonData = factory.exportRoomData(roomData)
         
-        console.log('📦 Converted to MessagePack:')
-        console.log('Size:', msgpackData.byteLength, 'bytes')
-        console.log('Data:', msgpackData)
+        console.log('� Converted to JSON:')
+        console.log('Size:', jsonData.length, 'characters')
+        console.log('Data preview:', jsonData.substring(0, 200) + '...')
         
-        return msgpackData
+        return jsonData
       } catch (error) {
         console.error('❌ Conversion failed:', error)
         return null
@@ -167,10 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         objectCount: objectManager?.getObjectCount(),
         objects: objectManager?.getAllObjects()
       }
-    }      // Expose GML room functions for testing
-      ;(window as any).room_goto = room_goto
-      ;(window as any).room_restart = room_restart
-      ;(window as any).room_get_name = room_get_name
+    }
       
       // Expose dev UI toggle for testing
       ;(window as any).toggleDevUI = () => {
@@ -184,12 +179,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.log('  goToMenu() - Switch to menu room')
       console.log('  getCurrentRoom() - Get current room name')
       console.log('  getRoomManager() - Get room manager')
-      console.log('')
-      console.log('🎮 GML Functions available:')
-      console.log('  room_goto("game") - Switch to game room (GML style)')
-      console.log('  room_goto("menu") - Switch to menu room (GML style)')
-      console.log('  room_restart() - Restart current room')
-      console.log('  room_get_name() - Get current room name')
       console.log('')
       console.log('⌨️  Hotkeys:')
       console.log('  F12 or Ctrl+D - Toggle dev UI visibility')

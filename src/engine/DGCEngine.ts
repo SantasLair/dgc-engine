@@ -1,12 +1,11 @@
 import { Rapid } from 'rapid-render'
 import { EventManager } from './EventManager'
-import { GameObjectManager } from './GameObjectManager'
+import { GameObjectManager, type ObjectFilter } from './GameObjectManager'
 import { GameObject } from './GameObject'
 import { DGCDrawingSystem } from './DGCDrawingSystem'
 import type { DGCEngineConfig } from './DGCEngineConfig'
 import { createDGCEngineConfig } from './DGCEngineConfig'
 import { InputManager } from './InputManager'
-import { type ObjectTypeOrAll } from './GameObjectTypes'
 
 /**
  * DGC game engine powered by Rapid.js
@@ -192,37 +191,37 @@ export class DGCEngine {
     return Math.round(1000 / this.targetFrameTime)
   }
 
-  // === GameMaker-Style Instance Functions ===
+  // === Object Management Methods ===
 
   /**
-   * GameMaker-style instance_number function
-   * Returns the number of instances of an object type
+   * Get the number of objects of a specific type
    * @param objectType - Object type name or 'all' for all objects
    */
-  public instance_number(objectType: ObjectTypeOrAll): number {
-    return this.gameObjectManager.instance_number(objectType)
+  public getObjectCount(objectType?: ObjectFilter): number {
+    return this.gameObjectManager.getObjectCount(objectType)
   }
 
   /**
-   * GameMaker-style instance_exists function
-   * Checks if any instances of an object type exist
+   * Check if any objects of a specific type exist
    * @param objectType - Object type name or 'all' for all objects
    */
-  public instance_exists(objectType: ObjectTypeOrAll): boolean {
-    return this.gameObjectManager.instance_exists(objectType)
+  public hasObjects(objectType?: ObjectFilter): boolean {
+    return this.gameObjectManager.getObjectCount(objectType) > 0
   }
 
   /**
-   * GameMaker-style instance_destroy function
-   * Destroys all instances of a specific object type
+   * Destroy all objects of a specific type
    * @param objectType - Object type name or 'all' for all objects
    */
-  public instance_destroy(objectType: ObjectTypeOrAll): void {
-    this.gameObjectManager.instance_destroy(objectType)
+  public destroyObjects(objectType: ObjectFilter): void {
+    const objects = this.gameObjectManager.getObjectsByType(objectType)
+    for (const obj of objects) {
+      this.gameObjectManager.destroyObject(obj.id)
+    }
   }
 
   /**
-   * Process input events (GameMaker-style keyboard and mouse events)
+   * Process input events
    */
   private processInputEvents(): void {
     // Check for key press/release events and trigger object events

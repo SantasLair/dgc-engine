@@ -3,6 +3,5 @@ export { Enemy } from './Enemy'
 export { Item } from './Item'
 export { GameBoard } from './GameBoard'
 
-// Export Grid classes and GML compatibility layer
+// Export Grid classes
 export { Grid } from '../Grid'
-export * from '../gml'

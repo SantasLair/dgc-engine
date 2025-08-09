@@ -107,10 +107,10 @@ export class DemoGame extends GridGame {
     console.log('🏠 Setting up rooms...')
     
     try {
-      // Load data-driven rooms from MessagePack files (automatically converted from JSON during build)
-      await this.roomManager.addRoomFromFile('main_menu.dgcroom')
-      await this.roomManager.addRoomFromFile('test_level.dgcroom')
-      await this.roomManager.addRoomFromFile('sprite_demo.dgcroom')
+      // Load data-driven rooms from JSON files
+      await this.roomManager.addRoomFromFile('main_menu.json')
+      await this.roomManager.addRoomFromFile('test_level.json')
+      await this.roomManager.addRoomFromFile('sprite_demo.json')
       
       console.log('✅ Loaded data-driven rooms: main_menu, test_level, sprite_demo')
       
