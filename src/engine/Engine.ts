@@ -25,6 +25,11 @@ export class Engine {
   private accumulator: number = 0  // For frame rate smoothing
   private maxFrameTime: number = 50  // Cap maximum frame time to prevent spiral of death
   
+  // Performance monitoring
+  private frameCount: number = 0
+  private lastFPSUpdate: number = 0
+  private currentFPS: number = 0
+  
   constructor(config: EngineConfig) {
     this.config = createDGCEngineConfig(config)
     this.targetFrameTime = 1000 / this.config.targetFPS
@@ -56,6 +61,7 @@ export class Engine {
     
     this.isRunning = true
     this.lastTime = performance.now()
+    this.lastFPSUpdate = this.lastTime // Initialize FPS timer
     this.gameLoop()
   }
   
@@ -86,15 +92,20 @@ export class Engine {
     // Accumulate time for stable frame rate
     this.accumulator += deltaTime
     
+    // Cache active objects array for performance (single allocation per frame)
+    let allActiveObjects: GameObject[] | null = null
+    
     // Process frames at consistent intervals
     while (this.accumulator >= this.targetFrameTime) {
       // === GameMaker Event Order ===
 
-      // Cache active objects array for performance (avoid 8+ array allocations)
-      const allActiveObjects = this.gameObjectManager.getAllActiveObjects()
+      // Cache active objects array for performance (avoid multiple array allocations)
+      if (!allActiveObjects) {
+        allActiveObjects = this.gameObjectManager.getAllActiveObjects()
+      }
 
       // Input and Timer Events
-      this.processInputEvents(allActiveObjects)
+      this.processInputEvents()
       this.processTimerEvents(this.targetFrameTime, allActiveObjects) // Use fixed timestep
 
       // Step Phase (using cached active objects)
@@ -109,8 +120,10 @@ export class Engine {
     }
     
     // Always render (interpolation could be added here for smoothness)
-    // Draw Phase (using cached active objects)
-    const allActiveObjects = this.gameObjectManager.getAllActiveObjects()
+    // Draw Phase (reuse cached active objects from step phase, or get fresh if no steps occurred)
+    if (!allActiveObjects) {
+      allActiveObjects = this.gameObjectManager.getAllActiveObjects()
+    }
     this.startRender()
     this.invokeVirtualForAll('onDrawBegin', allActiveObjects)
     this.invokeVirtualForAll('onDraw', allActiveObjects)
@@ -119,6 +132,16 @@ export class Engine {
     
     // Cleanup
     this.inputManager.endFrame()
+    this.eventManager.clearObjectEventQueue() // Clear any orphaned events
+    
+    // Update FPS calculation
+    this.frameCount++
+    if (currentTime - this.lastFPSUpdate >= 1000) { // Update FPS every second
+      this.currentFPS = Math.round((this.frameCount * 1000) / (currentTime - this.lastFPSUpdate))
+      this.frameCount = 0
+      this.lastFPSUpdate = currentTime
+    }
+    
     this.lastTime = currentTime
     
     this.animationFrameId = requestAnimationFrame(this.gameLoop)
@@ -191,8 +214,7 @@ export class Engine {
    * Get current FPS (frames per second)
    */
   public getFPS(): number {
-    // Simple FPS calculation based on target frame time
-    return Math.round(1000 / this.targetFrameTime)
+    return this.currentFPS || Math.round(1000 / this.targetFrameTime)
   }
 
   // === Object Management Methods ===
@@ -227,42 +249,13 @@ export class Engine {
   /**
    * Process input events
    */
-  private processInputEvents(gameObjects?: GameObject[]): void {
-    const objects = gameObjects || this.gameObjectManager.getAllActiveObjects()
-
-    // Check for key press/release events and trigger object events
-    for (const gameObject of objects) {
-      // Check for any key that was just pressed
-      
-      // Mouse events
-      if (this.inputManager.isMouseButtonJustPressed(0)) { // Left mouse
-        this.eventManager.queueObjectEvent(gameObject, 'mouse_left_pressed', {
-          mouseX: this.inputManager.getMouseX(),
-          mouseY: this.inputManager.getMouseY()
-        })
-      }
-      
-      if (this.inputManager.isMouseButtonJustReleased(0)) { // Left mouse
-        this.eventManager.queueObjectEvent(gameObject, 'mouse_left_released', {
-          mouseX: this.inputManager.getMouseX(),
-          mouseY: this.inputManager.getMouseY()
-        })
-      }
-      
-      if (this.inputManager.isMouseButtonJustPressed(2)) { // Right mouse
-        this.eventManager.queueObjectEvent(gameObject, 'mouse_right_pressed', {
-          mouseX: this.inputManager.getMouseX(),
-          mouseY: this.inputManager.getMouseY()
-        })
-      }
-      
-      if (this.inputManager.isMouseButtonJustReleased(2)) { // Right mouse
-        this.eventManager.queueObjectEvent(gameObject, 'mouse_right_released', {
-          mouseX: this.inputManager.getMouseX(),
-          mouseY: this.inputManager.getMouseY()
-        })
-      }
-    }
+  private processInputEvents(): void {
+    // Input events are now processed via the InputManager and accessed directly by objects
+    // Objects can check input state directly using this.inputManager in their virtual methods
+    // No need to iterate through objects or queue events here
+    
+    // Optional: Process global input events that affect the engine itself
+    // (reserved for future engine-level input handling)
   }
 
   /**
