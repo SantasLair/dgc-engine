@@ -1,5 +1,5 @@
 import './style.css'
-import { EnhancedGame } from './game/EnhancedGame'
+import { DemoGame } from './game/DemoGame'
 import { room_goto, room_restart, room_get_name } from './game/gml'
 import './examples/GMLRoomExample'
 
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
   
   try {
-    const game = new EnhancedGame(canvas)
+    const game = new DemoGame(canvas)
     
     // Initialize the game first
     await game.initialize()

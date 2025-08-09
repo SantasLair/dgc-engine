@@ -1,5 +1,5 @@
 /**
- * Enhanced Game Class with Data-Driven Room Support
+ * Demo Game Class with Data-Driven Room Support
  * 
  * Example showing how to use the new room data system alongside
  * traditional custom room classes.
@@ -10,7 +10,7 @@ import type { GridGameConfig } from './GridGameConfig'
 import { GameRoom, MenuRoom } from './rooms'
 import { Player, Enemy, GameBoard } from './gameobjects'
 
-export class EnhancedGame extends GridGame {
+export class DemoGame extends GridGame {
   private currentRoomName: string = 'sprite_demo' // Changed to test sprite demo directly
 
   constructor(canvas: HTMLCanvasElement) {

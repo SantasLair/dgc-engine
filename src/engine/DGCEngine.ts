@@ -72,6 +72,7 @@ export class DGCEngine {
   
   /**
    * Main game loop using requestAnimationFrame
+   * Follows GameMaker's complete event order
    */
   private gameLoop = async (): Promise<void> => {
     if (!this.isRunning) {
@@ -83,43 +84,37 @@ export class DGCEngine {
     
     // Update at target FPS
     if (deltaTime >= this.targetFrameTime) {
-      this.update(deltaTime)
-      await this.render()
+      // === GameMaker Event Order ===
+      
+      // Input and Timer Events
+      this.processInputEvents()
+      this.processTimerEvents(deltaTime)
+      
+      // Step Phase
+      await this.beginStep()
+      await this.step()
+      await this.collision()
+      await this.endStep()
+      
+      // Animation Updates
+      this.processAnimationEvents()
+      
+      // Draw Phase
+      this.startRender()
+      await this.beginDraw()
+      await this.draw()
+      await this.endDraw()
+      await this.beginDrawGUI()
+      await this.drawGUI()
+      await this.endDrawGUI()
+      this.endRender()
+      
+      // Cleanup
+      this.inputManager.endFrame()
       this.lastTime = currentTime
     }
     
     this.animationFrameId = requestAnimationFrame(this.gameLoop)
-  }
-  
-  /**
-   * Update game logic
-   */
-  private update(deltaTime: number): void {
-    // Update all game objects
-    this.gameObjectManager.update(deltaTime)
-    
-    // Clear input state at end of frame
-    this.inputManager.endFrame()
-  }
-  
-  /**
-   * Render the game using Rapid.js immediate mode rendering
-   */
-  private async render(): Promise<void> {
-    // Start Rapid.js render cycle
-    this.rapid.startRender()
-    
-    // Clear the drawing system (though Rapid.js handles this automatically)
-    this.drawingSystem.clearFrame()
-    
-    // Render all game objects with their draw events
-    this.gameObjectManager.draw()
-    
-    // Process all queued draw events immediately for immediate mode rendering
-    await this.eventManager.processObjectEvents()
-    
-    // End Rapid.js render cycle
-    this.rapid.endRender()
   }
   
   /**
@@ -191,5 +186,172 @@ export class DGCEngine {
   public getFPS(): number {
     // Simple FPS calculation based on target frame time
     return Math.round(1000 / this.targetFrameTime)
+  }
+
+  /**
+   * Process input events (GameMaker-style keyboard and mouse events)
+   */
+  private processInputEvents(): void {
+    // Check for key press/release events and trigger object events
+    for (const gameObject of this.gameObjectManager.getAllObjects()) {
+      if (!gameObject.active) continue
+      
+      // Check for any key that was just pressed
+      // Note: In GameMaker, specific key events are usually handled by individual objects
+      // This is a simplified version - objects can listen for specific keys in their event scripts
+      
+      // Mouse events
+      if (this.inputManager.isMouseButtonJustPressed(0)) { // Left mouse
+        this.eventManager.queueObjectEvent(gameObject, 'mouse_left_pressed', {
+          mouseX: this.inputManager.getMouseX(),
+          mouseY: this.inputManager.getMouseY()
+        })
+      }
+      
+      if (this.inputManager.isMouseButtonJustReleased(0)) { // Left mouse
+        this.eventManager.queueObjectEvent(gameObject, 'mouse_left_released', {
+          mouseX: this.inputManager.getMouseX(),
+          mouseY: this.inputManager.getMouseY()
+        })
+      }
+      
+      if (this.inputManager.isMouseButtonJustPressed(2)) { // Right mouse
+        this.eventManager.queueObjectEvent(gameObject, 'mouse_right_pressed', {
+          mouseX: this.inputManager.getMouseX(),
+          mouseY: this.inputManager.getMouseY()
+        })
+      }
+      
+      if (this.inputManager.isMouseButtonJustReleased(2)) { // Right mouse
+        this.eventManager.queueObjectEvent(gameObject, 'mouse_right_released', {
+          mouseX: this.inputManager.getMouseX(),
+          mouseY: this.inputManager.getMouseY()
+        })
+      }
+    }
+  }
+
+  /**
+   * Process timer/alarm events (GameMaker-style alarms)
+   */
+  private processTimerEvents(deltaTime: number): void {
+    // Update timers for all game objects
+    for (const gameObject of this.gameObjectManager.getAllObjects()) {
+      if (!gameObject.active) continue
+      
+      // Update any timers this object might have
+      gameObject.updateTimers(deltaTime)
+    }
+  }
+
+  /**
+   * Process animation events (sprite animation frame changes)
+   */
+  private processAnimationEvents(): void {
+    // Update sprite animations for all game objects
+    for (const gameObject of this.gameObjectManager.getAllObjects()) {
+      if (!gameObject.active || !gameObject.visible) continue
+      
+      // Update sprite animation if object has one
+      gameObject.updateAnimation()
+    }
+  }
+
+  /**
+   * Process a specific GameMaker event for all game objects
+   */
+  private async processGameMakerEvent(eventName: string): Promise<void> {
+    for (const gameObject of this.gameObjectManager.getAllObjects()) {
+      if (!gameObject.active && eventName !== 'destroy') continue
+      
+      await gameObject.executeEvent(eventName as any, { deltaTime: 0 })
+    }
+  }
+
+  // === GameMaker Event Methods ===
+
+  /**
+   * Step Begin Event - First step event of the frame
+   */
+  private async beginStep(): Promise<void> {
+    await this.processGameMakerEvent('step_begin')
+  }
+
+  /**
+   * Step Event - Main game logic update
+   */
+  private async step(): Promise<void> {
+    await this.processGameMakerEvent('step')
+  }
+
+  /**
+   * Collision Event - Handle object collisions
+   */
+  private async collision(): Promise<void> {
+    await this.processGameMakerEvent('collision')
+  }
+
+  /**
+   * Step End Event - Last step event of the frame
+   */
+  private async endStep(): Promise<void> {
+    await this.processGameMakerEvent('step_end')
+  }
+
+  /**
+   * Start Render - Initialize rendering phase
+   */
+  private startRender(): void {
+    this.rapid.startRender()
+    this.drawingSystem.clearFrame()
+  }
+
+  /**
+   * Draw Begin Event - First draw event
+   */
+  private async beginDraw(): Promise<void> {
+    await this.processGameMakerEvent('draw_begin')
+  }
+
+  /**
+   * Draw Event - Main drawing phase
+   */
+  private async draw(): Promise<void> {
+    await this.processGameMakerEvent('draw')
+  }
+
+  /**
+   * Draw End Event - Last standard draw event
+   */
+  private async endDraw(): Promise<void> {
+    await this.processGameMakerEvent('draw_end')
+  }
+
+  /**
+   * Draw GUI Begin Event - First GUI draw event
+   */
+  private async beginDrawGUI(): Promise<void> {
+    await this.processGameMakerEvent('draw_gui_begin')
+  }
+
+  /**
+   * Draw GUI Event - GUI drawing phase
+   */
+  private async drawGUI(): Promise<void> {
+    await this.processGameMakerEvent('draw_gui')
+  }
+
+  /**
+   * Draw GUI End Event - Last GUI draw event
+   */
+  private async endDrawGUI(): Promise<void> {
+    await this.processGameMakerEvent('draw_gui_end')
+  }
+
+  /**
+   * End Render - Finalize rendering phase
+   */
+  private endRender(): void {
+    this.rapid.endRender()
   }
 }

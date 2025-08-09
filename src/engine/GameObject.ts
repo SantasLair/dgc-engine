@@ -24,8 +24,12 @@ export const GameEvent = {
   STEP: 'step',
   STEP_BEGIN: 'step_begin',
   STEP_END: 'step_end',
+  DRAW_BEGIN: 'draw_begin',
   DRAW: 'draw',
+  DRAW_END: 'draw_end',
+  DRAW_GUI_BEGIN: 'draw_gui_begin',
   DRAW_GUI: 'draw_gui',
+  DRAW_GUI_END: 'draw_gui_end',
   COLLISION: 'collision',
   MOUSE_LEFT_PRESSED: 'mouse_left_pressed',
   MOUSE_LEFT_RELEASED: 'mouse_left_released',
@@ -405,6 +409,22 @@ export class GameObject {
         this.executeEvent(GameEvent.TIMER, { timerName: name })
       }
     }
+  }
+
+  /**
+   * Update sprite animation (called during animation event phase)
+   */
+  public updateAnimation(): void {
+    // TODO: Implement sprite animation system
+    // This would update sprite frame based on animation speed
+    // and trigger ANIMATION_END events when animations complete
+    
+    // For now, this is a placeholder for future sprite animation system
+    // When implemented, this would:
+    // 1. Update current animation frame based on deltaTime and animation speed
+    // 2. Handle animation looping
+    // 3. Trigger ANIMATION_END event when non-looping animations finish
+    // 4. Handle animation blending/transitions
   }
   
   /**
