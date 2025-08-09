@@ -52,8 +52,9 @@ export class GameObjectManager {
     }
     this.objectsByType.get(objectType)!.add(gameObject)
     
-    // Queue create event
-    this.eventManager.queueObjectEvent(gameObject, GameEvent.CREATE)
+    // Execute create event immediately
+    console.log(`🎮 Executing CREATE event for ${gameObject.objectType}`)
+    gameObject.executeEventSync(GameEvent.CREATE)
     
     return gameObject
   }
@@ -79,8 +80,9 @@ export class GameObjectManager {
     }
     this.objectsByType.get(gameObject.objectType)!.add(gameObject)
     
-    // Queue create event
-    this.eventManager.queueObjectEvent(gameObject, GameEvent.CREATE)
+    // Execute create event immediately
+    console.log(`🎮 Executing CREATE event for ${gameObject.objectType}`)
+    gameObject.executeEventSync(GameEvent.CREATE)
   }
   
   /**

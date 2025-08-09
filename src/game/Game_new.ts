@@ -32,23 +32,8 @@ export class Game extends DGCGame {
     // Register object types that can be created from JSON data
     this.setupObjectTypes()
     
-    // Start with main menu first to test basic room loading
+    // Load the initial room
     await this.goToRoom('main_menu')
-    
-    // Create a test player for the demo
-    const testPlayer = new Player(200, 150)
-    testPlayer.visible = true
-    this.addGameObject(testPlayer)
-    
-    // Set the player sprite
-    const currentRoom = this.roomManager.getCurrentRoom()
-    if (currentRoom) {
-      const logoSprite = currentRoom.getSprite('logo_sprite')
-      if (logoSprite) {
-        testPlayer.sprite = logoSprite
-        console.log('🎮 Player ready with sprite at (200, 150)')
-      }
-    }
   }
 
   /**
@@ -76,18 +61,12 @@ export class Game extends DGCGame {
       const existingRoom = roomManager.getRoom(roomName)
       if (!existingRoom) {
         console.log(`📁 Loading room from file: ${roomName}.json`)
-        try {
-          await roomManager.addRoomFromFile(`${roomName}.json`)
-          console.log(`✅ Room file loaded successfully: ${roomName}.json`)
-        } catch (fileError) {
-          console.error(`❌ Failed to load room file ${roomName}.json:`, fileError)
-          throw fileError
-        }
-      } else {
-        console.log(`♻️  Room ${roomName} already loaded`)
+        const factory = roomManager.getFactory()
+        const room = await factory.createRoomFromFile(roomName)
+        console.log(`✅ Room file loaded successfully: ${roomName}.json`)
+        roomManager.addRoom(room)
       }
       
-      // Now try to go to the room
       console.log(`🚀 Switching to room: ${roomName}`)
       const success = await roomManager.goToRoom(roomName)
       

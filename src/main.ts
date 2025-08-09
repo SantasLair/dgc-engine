@@ -1,5 +1,6 @@
 import './style.css'
-import { DemoGame } from './game/DemoGame'
+import { Game } from './game/Game'
+import { Player } from './game/gameobjects/Player'
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   })
   
   try {
-    const game = new DemoGame(canvas)
+    const game = new Game(canvas)
     
     // Initialize the game first
     await game.initialize()
@@ -45,10 +46,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (statusDiv) {
       setInterval(() => {
         const engine = game.getEngine()
-        const objectManager = engine.getObjectManager()
-        const objectCount = objectManager.getObjectCount()
-        const currentRoom = game.getCurrentRoom()
-        statusDiv.innerHTML = `Room: ${currentRoom?.name || 'none'}<br>Objects: ${objectCount}<br>Engine: ${engine ? 'OK' : 'ERROR'}`
+        // Basic status update for simplified game
+        statusDiv.innerHTML = `
+          <div>Game Status: Running</div>
+          <div>Engine: ${engine ? 'Active' : 'Inactive'}</div>
+          <div>Use WASD to move (when player is added)</div>
+        `
       }, 1000)
     }
     
@@ -57,143 +60,94 @@ document.addEventListener('DOMContentLoaded', async () => {
       ;(window as any).game = game
       console.log('Game instance exposed to window.game for debugging')
       
-    // Expose room functionality for testing
-    ;(window as any).goToGame = async () => await game.goToRoom('game')
-    ;(window as any).goToMenu = async () => await game.goToRoom('menu')
-    ;(window as any).goToSpriteDemo = async () => await game.goToRoom('sprite_demo')
-    ;(window as any).getCurrentRoom = () => game.getCurrentRoom()?.name
-    ;(window as any).getRoomManager = () => game.getRoomManager()
-    
-    // Test JSON room loading
-    ;(window as any).testJsonRooms = async () => {
-      try {
-        console.log('🧪 Testing JSON room loading...')
-        const roomManager = game.getRoomManager()
-        const factory = roomManager.getFactory()
-        
-        // Test loading a JSON file
-        const jsonRoom = await factory.createRoomFromFile('main_menu.json')
-        console.log('✅ Successfully loaded JSON room:', jsonRoom.name)
-        
-        // Test exporting JSON data
-        const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
-        const jsonString = factory.exportRoomData(roomData)
-        console.log('✅ Successfully exported JSON data:')
-        console.log(jsonString)
-        
-        return true
-      } catch (error) {
-        console.error('❌ JSON test failed:', error)
-        return false
+      // Expose room functionality for testing
+      ;(window as any).goToMenu = async () => await game.goToRoom('main_menu')
+      ;(window as any).goToSpriteDemo = async () => await game.goToRoom('sprite_demo')
+      ;(window as any).goToTestLevel = async () => await game.goToRoom('test_level')
+      ;(window as any).getCurrentRoom = () => game.getRoomManager().getCurrentRoom()?.name
+      ;(window as any).getRoomManager = () => game.getRoomManager()
+      
+      // Debug functions for player visibility
+      ;(window as any).createTestPlayer = () => {
+        const testPlayer = new Player(300, 300)
+        game.addGameObject(testPlayer)
+        console.log('Created test player at (300, 300)')
+        return testPlayer
       }
-    }
-    
-    // Test MessagePack room loading
-    ;(window as any).testMessagePackRooms = async () => {
-      try {
-        console.log('📦 Testing MessagePack room loading...')
-        const roomManager = game.getRoomManager()
-        const factory = roomManager.getFactory()
-        
-        // Test loading a JSON file
-        try {
-          const jsonRoom = await factory.createRoomFromFile('main_menu.json')
-          console.log('✅ Successfully loaded JSON room:', jsonRoom.name)
-        } catch (error) {
-          console.log('⚠️ JSON file not found')
+      
+      ;(window as any).debugEngine = () => {
+        const engine = game.getEngine()
+        const canvas = game.getCanvas()
+        const drawing = engine.getDrawingSystem()
+        console.log('Engine state:', {
+          isRunning: engine ? 'Yes' : 'No',
+          objectCount: engine ? (engine as any).gameObjectManager?.getObjectCount() : 'N/A',
+          canvasSize: canvas ? `${canvas.width}x${canvas.height}` : 'N/A',
+          drawingSystem: drawing ? 'Available' : 'Missing'
+        })
+        return { engine, canvas, drawing }
+      }
+      
+      ;(window as any).debugCanvas = () => {
+        const canvas = game.getCanvas()
+        const rect = canvas.getBoundingClientRect()
+        console.log('Canvas debug:', {
+          actualSize: `${canvas.width}x${canvas.height}`,
+          displaySize: `${rect.width}x${rect.height}`,
+          position: `top: ${rect.top}, left: ${rect.left}`,
+          visible: canvas.style.display !== 'none'
+        })
+        return canvas
+      }
+      
+      ;(window as any).testDraw = (x = 50, y = 50) => {
+        const engine = game.getEngine()
+        const drawingSystem = engine.getDrawingSystem()
+        if (drawingSystem) {
+          console.log(`🎨 Testing manual rectangle draw at ${x}, ${y}`)
+          drawingSystem.drawRectangle(x, y, x + 50, y + 50, true, 0xFF0000)  // Red rectangle
+          console.log('🎨 Manual draw command sent')
+        } else {
+          console.log('❌ Drawing system not available')
         }
-        
-        // Test exporting JSON data
-        const roomData = factory.createRoomDataTemplate('test_export', 10, 8)
-        const jsonData = factory.exportRoomData(roomData)
-        console.log('✅ Successfully exported JSON data:')
-        console.log('JSON string length:', jsonData.length, 'characters')
-        
-        // Test round-trip conversion
-        console.log('✅ MessagePack functionality working')
-        
-        return true
-      } catch (error) {
-        console.error('❌ MessagePack test failed:', error)
-        return false
       }
-    }
-    
-    // Convert current JSON data to MessagePack for testing
-    ;(window as any).convertToMessagePack = async () => {
-      try {
+      
+      ;(window as any).testSprites = () => {
         const roomManager = game.getRoomManager()
-        const factory = roomManager.getFactory()
-        
-        // Load JSON room
-        const jsonRoom = await factory.createRoomFromFile('sprite_demo.json')
-        console.log('📄 Loaded JSON room:', jsonRoom.name)
-        
-        // Create room data template and export as JSON
-        const roomData = factory.createRoomDataTemplate('converted_test', 20, 15)
-        const jsonData = factory.exportRoomData(roomData)
-        
-        console.log('� Converted to JSON:')
-        console.log('Size:', jsonData.length, 'characters')
-        console.log('Data preview:', jsonData.substring(0, 200) + '...')
-        
-        return jsonData
-      } catch (error) {
-        console.error('❌ Conversion failed:', error)
-        return null
-      }
-    }
-    
-    // Debug room state
-    ;(window as any).debugRoom = () => {
-      const currentRoom = game.getCurrentRoom()
-      const engine = game.getEngine()
-      const objectManager = engine?.getObjectManager()
-      
-      console.log('🔍 Current Room Debug Info:')
-      console.log('Room:', currentRoom?.name)
-      console.log('Object Count:', objectManager?.getObjectCount())
-      console.log('Objects:', objectManager?.getAllObjects().map(o => ({ type: o.objectType, x: o.x, y: o.y, visible: o.visible })))
-      
-      if (currentRoom) {
-        console.log('Room Sprites:', (currentRoom as any).sprites || 'none')
-        console.log('Room Properties:', (currentRoom as any).properties || 'none')
+        const currentRoom = roomManager.getCurrentRoom()
+        console.log('🔍 Sprite Debug:')
+        console.log('  - Current room:', currentRoom?.name)
+        if (currentRoom) {
+          const logoSprite = currentRoom.getSprite('logo_sprite')
+          console.log('  - logo_sprite lookup:', logoSprite)
+          const buttonSprite = currentRoom.getSprite('button_sprite')
+          console.log('  - button_sprite lookup:', buttonSprite)
+          
+          // Test if sprites are loaded
+          if (logoSprite) {
+            console.log('  - logo_sprite loaded:', logoSprite.isLoaded ? logoSprite.isLoaded() : 'no isLoaded method')
+          }
+        }
       }
       
-      return {
-        room: currentRoom?.name,
-        objectCount: objectManager?.getObjectCount(),
-        objects: objectManager?.getAllObjects()
-      }
-    }
-      
-      // Expose dev UI toggle for testing
-      ;(window as any).toggleDevUI = () => {
-        // Trigger the F12 key event to use the existing toggle logic
-        const event = new KeyboardEvent('keydown', { key: 'F12' })
-        document.dispatchEvent(event)
-      }
-      
-      console.log('🏠 Room system enabled! Available debug commands:')
-      console.log('  goToGame() - Switch to game room')
-      console.log('  goToMenu() - Switch to menu room')
+      console.log('🎮 Simplified Game Debug Commands:')
+      console.log('  goToMenu() - Go to main menu')
+      console.log('  goToSpriteDemo() - Go to sprite demo')
+      console.log('  goToTestLevel() - Go to test level')
       console.log('  getCurrentRoom() - Get current room name')
       console.log('  getRoomManager() - Get room manager')
-      console.log('')
-      console.log('⌨️  Hotkeys:')
-      console.log('  F12 or Ctrl+D - Toggle dev UI visibility')
-      console.log('')
-      console.log('🔧 Dev Functions:')
-      console.log('  toggleDevUI() - Toggle dev UI from console')
-      console.log('  room_get_name() - Get current room name')
+      console.log('  createTestPlayer() - Create a test player')
+      console.log('  debugEngine() - Check engine state')
+      console.log('  debugCanvas() - Check canvas dimensions')
+      console.log('  testDraw(x, y) - Draw a test rectangle at position')
+      console.log('  testSprites() - Debug sprite availability')
     }
     
   } catch (error) {
-    console.error('Error starting game:', error)
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    const errorStack = error instanceof Error ? error.stack : ''
-    console.error('Error stack:', errorStack)
-    document.body.innerHTML = `<h1>Error starting game: ${errorMessage}</h1><pre>${errorStack}</pre>`
+    console.error('Game initialization failed:', error)
+    const statusDiv = document.getElementById('status')
+    if (statusDiv) {
+      statusDiv.innerHTML = `<div style="color: red;">Game failed to start: ${error}</div>`
+    }
   }
 })
-
