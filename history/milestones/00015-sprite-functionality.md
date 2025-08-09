@@ -14,7 +14,7 @@
 
 ### 🎨 **Complete Sprite Pipeline Implementation**
 - **TOML Room Configuration**: Declarative room definition with sprites and objects
-- **Sprite Loading System**: Automatic sprite resolution from string names to loaded DGCSprite objects
+- **Sprite Loading System**: Automatic sprite resolution from string names to loaded Sprite objects
 - **Room-to-Engine Integration**: Fixed critical gap between Room object storage and engine rendering
 - **Real Image Rendering**: HTMLImageElement to Rapid.js texture conversion with proper display
 
@@ -78,7 +78,7 @@ for (const gameObject of newRoom.getGameObjects()) {
 
 #### **Rapid.js Sprite Rendering**
 ```typescript
-// DGCDrawingSystem.drawSpriteFromSprite() - Implemented real image rendering
+// DrawingSystem.drawSpriteFromSprite() - Implemented real image rendering
 this.rapid.textures.textureFromSource(sprite.image, true).then(texture => {
   this.rapid.renderSprite({
     texture: texture,
@@ -101,7 +101,7 @@ const screenY = y * 30 + 50
 TOML File → RoomFactory.createRoomFromFile() → Room.activate() → 
 Sprite Loading → Sprite Resolution → RoomManager.goToRoom() → 
 Object Transfer → GameObjectManager → DRAW Events → 
-GameObject.drawSelf() → DGCDrawingSystem.drawSpriteFromSprite() → 
+GameObject.drawSelf() → DrawingSystem.drawSpriteFromSprite() → 
 Rapid.js Texture Creation → Visual Output
 ```
 
@@ -164,7 +164,7 @@ Rapid.js Texture Creation → Visual Output
 ### **Debug Pipeline Testing**
 - **Object Count Verification**: Real-time display showing correct object count
 - **Coordinate Validation**: Grid position (10,7) correctly converts to screen position
-- **Sprite Resolution**: String sprite names resolve to loaded DGCSprite objects
+- **Sprite Resolution**: String sprite names resolve to loaded Sprite objects
 - **Rendering Verification**: HTMLImageElement successfully converts to Rapid.js texture
 
 ## Final Implementation Status
@@ -184,7 +184,7 @@ Rapid.js Texture Creation → Visual Output
 
 ### **Code Metrics**
 - **Files Modified**: 6 core engine files + TOML room data
-- **Key Classes Enhanced**: RoomManager, GameObject, DGCDrawingSystem, Player
+- **Key Classes Enhanced**: RoomManager, GameObject, DrawingSystem, Player
 - **Debug Features Added**: Status display, comprehensive logging, visual fallbacks
 - **Architecture Connection**: Room system successfully integrated with engine rendering
 

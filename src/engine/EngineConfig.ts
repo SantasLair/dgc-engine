@@ -4,7 +4,7 @@ import type { IRapidOptions } from 'rapid-render'
 /**
  * Configuration for the DGC game engine with Rapid.js
  */
-export interface DGCEngineConfig {
+export interface EngineConfig {
   /**
    * Canvas element to render to (added automatically by DGCGame)
    */
@@ -24,7 +24,7 @@ export interface DGCEngineConfig {
 /**
  * Default configuration values
  */
-export const DEFAULT_CONFIG: Partial<DGCEngineConfig> = {
+export const DEFAULT_CONFIG: Partial<EngineConfig> = {
   targetFPS: 60,
   rapidConfig: {
     backgroundColor: Color.fromHex("333333"),
@@ -35,7 +35,7 @@ export const DEFAULT_CONFIG: Partial<DGCEngineConfig> = {
 /**
  * Create a complete configuration object with defaults
  */
-export function createDGCEngineConfig(config: DGCEngineConfig, canvas?: HTMLCanvasElement): Required<DGCEngineConfig> {
+export function createDGCEngineConfig(config: EngineConfig, canvas?: HTMLCanvasElement): Required<EngineConfig> {
   const merged = {
     ...DEFAULT_CONFIG,
     ...config,
@@ -45,7 +45,7 @@ export function createDGCEngineConfig(config: DGCEngineConfig, canvas?: HTMLCanv
       ...DEFAULT_CONFIG.rapidConfig,
       ...config.rapidConfig
     }
-  } as Required<DGCEngineConfig>
+  } as Required<EngineConfig>
   
   return merged
 }

@@ -1,5 +1,5 @@
 import { DGCGame } from '../engine'
-import type { DGCEngineConfig } from '../engine'
+import type { EngineConfig } from '../engine'
 import { SpriteMoveTestRoom } from './rooms/SpriteMoveTestRoom'
 import { Color } from 'rapid-render'
 
@@ -14,7 +14,7 @@ export class Game extends DGCGame {
   /**
    * Get engine configuration
    */
-  protected getEngineConfig(): DGCEngineConfig {
+  protected getEngineConfig(): EngineConfig {
     return {
       targetFPS: 60,
       rapidConfig: {

@@ -127,4 +127,11 @@ export class EventManager {
     this.globalEventListeners.clear()
     this.objectEventQueue.length = 0
   }
+
+  /**
+   * Clear only the object event queue (for performance cleanup)
+   */
+  public clearObjectEventQueue(): void {
+    this.objectEventQueue.length = 0
+  }
 }

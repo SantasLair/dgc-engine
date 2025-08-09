@@ -1,6 +1,6 @@
 import { GameObject, GameEvent, type EventScript } from './GameObject'
 import { SpriteManager, type SpriteLoadConfig } from './SpriteManager'
-import type { DGCGame } from './DGCGame'
+import type { DGCGame } from './BaseGame.ts'
 
 /**
  * Room configuration interface
@@ -38,7 +38,7 @@ export interface RoomConfig {
  * 
  * Follows GameMaker-style room architecture with Rapid.js immediate mode rendering
  */
-export class DGCRoom {
+export class Room {
   /** Room identifier */
   public readonly name: string
   

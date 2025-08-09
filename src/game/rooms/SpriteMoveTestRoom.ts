@@ -1,4 +1,4 @@
-import { DGCRoom, type RoomConfig } from '../../engine'
+import { Room, type RoomConfig } from '../../engine'
 import type { Game } from '../Game'
 import { Player, FPSMonitor } from '../gameobjects'
 
@@ -6,7 +6,7 @@ import { Player, FPSMonitor } from '../gameobjects'
  * Sprite Movement Test Room
  * Simple hardcoded room for testing sprite movement without JSON dependencies
  */
-export class SpriteMoveTestRoom extends DGCRoom {
+export class SpriteMoveTestRoom extends Room {
   constructor(game: Game) {
     const config: RoomConfig = {
       name: 'sprite_move_test',

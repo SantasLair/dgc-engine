@@ -62,7 +62,7 @@ export interface GameObjectProperties {
   depth?: number
   solid?: boolean
   persistent?: boolean
-  sprite?: any // DGCSprite reference instead of string
+  sprite?: any // Sprite reference instead of string
   maskSprite?: string
   [key: string]: any
 }
@@ -95,7 +95,7 @@ export class GameObject {
   public persistent: boolean = false
   
   // Visual properties
-  public sprite: any | null = null // DGCSprite reference instead of string
+  public sprite: any | null = null // Sprite reference instead of string
   public imageIndex: number = 0
   public imageSpeed: number = 1
   public imageAngle: number = 0

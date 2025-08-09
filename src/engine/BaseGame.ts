@@ -1,8 +1,8 @@
-import { DGCEngine } from './DGCEngine'
-import type { DGCEngineConfig } from './DGCEngineConfig'
-import { createDGCEngineConfig } from './DGCEngineConfig'
+import { Engine } from './Engine.ts'
+import type { EngineConfig } from './EngineConfig.ts'
+import { createDGCEngineConfig } from './EngineConfig.ts'
 import { GameObject } from './GameObject'
-import { DGCRoom } from './DGCRoom'
+import { Room } from './Room.ts'
 import type { Rapid } from 'rapid-render'
 
 /**
@@ -11,9 +11,9 @@ import type { Rapid } from 'rapid-render'
  */
 export abstract class DGCGame {
   protected canvas: HTMLCanvasElement
-  protected engine: DGCEngine
-  protected rooms: Map<string, DGCRoom> = new Map()
-  protected currentRoom?: DGCRoom
+  protected engine: Engine
+  protected rooms: Map<string, Room> = new Map()
+  protected currentRoom?: Room
   protected isInitialized: boolean = false
 
   constructor(canvas: HTMLCanvasElement) {
@@ -26,7 +26,7 @@ export abstract class DGCGame {
     // Let the game configure canvas dimensions
     this.configureCanvas(config)
     
-    this.engine = new DGCEngine(config)
+    this.engine = new Engine(config)
     
     console.log('🏗️ DGCGame initialized with direct room management')
   }
@@ -35,12 +35,12 @@ export abstract class DGCGame {
    * Get the engine configuration
    * Override this method to customize the engine settings
    */
-  protected abstract getEngineConfig(): DGCEngineConfig
+  protected abstract getEngineConfig(): EngineConfig
 
   /**
    * Configure canvas dimensions - can be overridden by subclasses
    */
-  protected configureCanvas(_config: Required<DGCEngineConfig>): void {
+  protected configureCanvas(_config: Required<EngineConfig>): void {
     // Default implementation - set canvas to a reasonable size if not specified
     console.log(`🔧 Canvas dimensions before config: ${this.canvas.width}x${this.canvas.height}`)
     
@@ -99,14 +99,14 @@ export abstract class DGCGame {
   /**
    * Get the game engine
    */
-  public getEngine(): DGCEngine {
+  public getEngine(): Engine {
     return this.engine
   }
 
   /**
    * Add a room to the game
    */
-  public addRoom(room: DGCRoom): void {
+  public addRoom(room: Room): void {
     this.rooms.set(room.name, room)
     room.initialize()
     console.log(`🏠 Added room: ${room.name}`)
@@ -158,14 +158,14 @@ export abstract class DGCGame {
   /**
    * Get the current active room
    */
-  public getCurrentRoom(): DGCRoom | undefined {
+  public getCurrentRoom(): Room | undefined {
     return this.currentRoom
   }
 
   /**
    * Get a room by name
    */
-  public getRoom(roomName: string): DGCRoom | undefined {
+  public getRoom(roomName: string): Room | undefined {
     return this.rooms.get(roomName)
   }
 
@@ -265,7 +265,7 @@ export abstract class DGCGame {
   /**
    * Get the engine configuration
    */
-  public getConfig(): DGCEngineConfig {
+  public getConfig(): EngineConfig {
     return this.engine.getConfig()
   }
 

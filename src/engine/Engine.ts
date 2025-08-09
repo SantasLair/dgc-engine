@@ -2,22 +2,22 @@ import { Rapid } from 'rapid-render'
 import { EventManager } from './EventManager'
 import { GameObjectManager, type ObjectFilter } from './GameObjectManager'
 import { GameObject } from './GameObject'
-import { DGCDrawingSystem } from './DGCDrawingSystem'
-import type { DGCEngineConfig } from './DGCEngineConfig'
-import { createDGCEngineConfig } from './DGCEngineConfig'
+import { DrawingSystem } from './DrawingSystem.ts'
+import type { EngineConfig } from './EngineConfig.ts'
+import { createDGCEngineConfig } from './EngineConfig.ts'
 import { InputManager } from './InputManager'
 
 /**
  * DGC game engine powered by Rapid.js
- * This engine uses Rapid.js for immediate mode rendering that aligns with GameMaker's draw events
+ * This engine uses Rapid.js for immediate mode rendering
  */
-export class DGCEngine {
+export class Engine {
   private rapid: Rapid
-  private config: Required<DGCEngineConfig>
+  private config: Required<EngineConfig>
   private eventManager: EventManager
   private gameObjectManager: GameObjectManager
   private inputManager: InputManager
-  private drawingSystem: DGCDrawingSystem
+  private drawingSystem: DrawingSystem
   private lastTime: number = 0
   private targetFrameTime: number
   private isRunning: boolean = false
@@ -25,7 +25,12 @@ export class DGCEngine {
   private accumulator: number = 0  // For frame rate smoothing
   private maxFrameTime: number = 50  // Cap maximum frame time to prevent spiral of death
   
-  constructor(config: DGCEngineConfig) {
+  // Performance monitoring
+  private frameCount: number = 0
+  private lastFPSUpdate: number = 0
+  private currentFPS: number = 0
+  
+  constructor(config: EngineConfig) {
     this.config = createDGCEngineConfig(config)
     this.targetFrameTime = 1000 / this.config.targetFPS
     
@@ -36,7 +41,7 @@ export class DGCEngine {
     })
     
     // Initialize the GameMaker-style drawing system
-    this.drawingSystem = new DGCDrawingSystem(this.rapid)
+    this.drawingSystem = new DrawingSystem(this.rapid)
     
     // Initialize managers
     this.eventManager = new EventManager()
@@ -56,6 +61,7 @@ export class DGCEngine {
     
     this.isRunning = true
     this.lastTime = performance.now()
+    this.lastFPSUpdate = this.lastTime // Initialize FPS timer
     this.gameLoop()
   }
   
@@ -74,7 +80,6 @@ export class DGCEngine {
   
   /**
    * Main game loop using requestAnimationFrame
-   * Follows GameMaker's complete event order
    */
   private gameLoop = (): void => {
     if (!this.isRunning) {
@@ -87,57 +92,56 @@ export class DGCEngine {
     // Accumulate time for stable frame rate
     this.accumulator += deltaTime
     
+    // Cache active objects array for performance (single allocation per frame)
+    let allActiveObjects: GameObject[] | null = null
+    
     // Process frames at consistent intervals
     while (this.accumulator >= this.targetFrameTime) {
       // === GameMaker Event Order ===
-      
-      // Cache active objects array for performance (avoid 8+ array allocations)
-      const allActiveObjects = this.gameObjectManager.getAllActiveObjects()
-      
+
+      // Cache active objects array for performance (avoid multiple array allocations)
+      if (!allActiveObjects) {
+        allActiveObjects = this.gameObjectManager.getAllActiveObjects()
+      }
+
       // Input and Timer Events
       this.processInputEvents()
-      this.processTimerEvents(this.targetFrameTime) // Use fixed timestep
-      
+      this.processTimerEvents(this.targetFrameTime, allActiveObjects) // Use fixed timestep
+
       // Step Phase (using cached active objects)
-      this.processGameMakerEvent('step_begin', allActiveObjects)
-      this.processVirtualEvents('onStepBegin', allActiveObjects)
-      
-      this.processGameMakerEvent('step', allActiveObjects)
-      this.processVirtualEvents('onStep', allActiveObjects)
-      
-      this.processGameMakerEvent('collision', allActiveObjects)
-      // Note: onCollision is called per-collision, not globally
-      
-      this.processGameMakerEvent('step_end', allActiveObjects)
-      this.processVirtualEvents('onStepEnd', allActiveObjects)
-      
-      // Animation Updates
-      this.processAnimationEvents()
-      
+      this.invokeVirtualForAll('onStepBegin', allActiveObjects)
+      this.invokeVirtualForAll('onStep', allActiveObjects)
+      // ToDo: calculate collisions and other physics here
+      this.invokeVirtualForAll('onStepEnd', allActiveObjects)
+      // ToDo: update animations and other visual effects here
+
       // Subtract processed time
       this.accumulator -= this.targetFrameTime
     }
     
     // Always render (interpolation could be added here for smoothness)
-    // Draw Phase (using cached active objects)
-    const allActiveObjects = this.gameObjectManager.getAllActiveObjects()
+    // Draw Phase (reuse cached active objects from step phase, or get fresh if no steps occurred)
+    if (!allActiveObjects) {
+      allActiveObjects = this.gameObjectManager.getAllActiveObjects()
+    }
     this.startRender()
-    this.processGameMakerEvent('draw_begin', allActiveObjects)
-    this.processVirtualEvents('onDrawBegin', allActiveObjects)
-    
-    this.processGameMakerEvent('draw', allActiveObjects)
-    this.processVirtualEvents('onDraw', allActiveObjects)
-    
-    this.processGameMakerEvent('draw_end', allActiveObjects)
-    this.processVirtualEvents('onDrawEnd', allActiveObjects)
-    
-    this.processGameMakerEvent('draw_gui_begin', allActiveObjects)
-    this.processGameMakerEvent('draw_gui', allActiveObjects)
-    this.processGameMakerEvent('draw_gui_end', allActiveObjects)
+    this.invokeVirtualForAll('onDrawBegin', allActiveObjects)
+    this.invokeVirtualForAll('onDraw', allActiveObjects)
+    this.invokeVirtualForAll('onDrawEnd', allActiveObjects)
     this.endRender()
     
     // Cleanup
     this.inputManager.endFrame()
+    this.eventManager.clearObjectEventQueue() // Clear any orphaned events
+    
+    // Update FPS calculation
+    this.frameCount++
+    if (currentTime - this.lastFPSUpdate >= 1000) { // Update FPS every second
+      this.currentFPS = Math.round((this.frameCount * 1000) / (currentTime - this.lastFPSUpdate))
+      this.frameCount = 0
+      this.lastFPSUpdate = currentTime
+    }
+    
     this.lastTime = currentTime
     
     this.animationFrameId = requestAnimationFrame(this.gameLoop)
@@ -174,7 +178,7 @@ export class DGCEngine {
   /**
    * Get the drawing system for immediate mode drawing
    */
-  public getDrawingSystem(): DGCDrawingSystem {
+  public getDrawingSystem(): DrawingSystem {
     return this.drawingSystem
   }
   
@@ -195,7 +199,7 @@ export class DGCEngine {
   /**
    * Get engine configuration
    */
-  public getConfig(): Required<DGCEngineConfig> {
+  public getConfig(): Required<EngineConfig> {
     return this.config
   }
 
@@ -210,8 +214,7 @@ export class DGCEngine {
    * Get current FPS (frames per second)
    */
   public getFPS(): number {
-    // Simple FPS calculation based on target frame time
-    return Math.round(1000 / this.targetFrameTime)
+    return this.currentFPS || Math.round(1000 / this.targetFrameTime)
   }
 
   // === Object Management Methods ===
@@ -247,82 +250,30 @@ export class DGCEngine {
    * Process input events
    */
   private processInputEvents(): void {
-    // Check for key press/release events and trigger object events
-    for (const gameObject of this.gameObjectManager.getAllActiveObjects()) {
-      // Check for any key that was just pressed
-      // Note: In GameMaker, specific key events are usually handled by individual objects
-      // This is a simplified version - objects can listen for specific keys in their event scripts
-      
-      // Mouse events
-      if (this.inputManager.isMouseButtonJustPressed(0)) { // Left mouse
-        this.eventManager.queueObjectEvent(gameObject, 'mouse_left_pressed', {
-          mouseX: this.inputManager.getMouseX(),
-          mouseY: this.inputManager.getMouseY()
-        })
-      }
-      
-      if (this.inputManager.isMouseButtonJustReleased(0)) { // Left mouse
-        this.eventManager.queueObjectEvent(gameObject, 'mouse_left_released', {
-          mouseX: this.inputManager.getMouseX(),
-          mouseY: this.inputManager.getMouseY()
-        })
-      }
-      
-      if (this.inputManager.isMouseButtonJustPressed(2)) { // Right mouse
-        this.eventManager.queueObjectEvent(gameObject, 'mouse_right_pressed', {
-          mouseX: this.inputManager.getMouseX(),
-          mouseY: this.inputManager.getMouseY()
-        })
-      }
-      
-      if (this.inputManager.isMouseButtonJustReleased(2)) { // Right mouse
-        this.eventManager.queueObjectEvent(gameObject, 'mouse_right_released', {
-          mouseX: this.inputManager.getMouseX(),
-          mouseY: this.inputManager.getMouseY()
-        })
-      }
-    }
+    // Input events are now processed via the InputManager and accessed directly by objects
+    // Objects can check input state directly using this.inputManager in their virtual methods
+    // No need to iterate through objects or queue events here
+    
+    // Optional: Process global input events that affect the engine itself
+    // (reserved for future engine-level input handling)
   }
 
   /**
    * Process timer/alarm events (GameMaker-style alarms)
    */
-  private processTimerEvents(deltaTime: number): void {
+  private processTimerEvents(deltaTime: number, gameObjects?: GameObject[]): void {
+    const objects = gameObjects || this.gameObjectManager.getAllActiveObjects()
     // Update timers for all game objects
-    for (const gameObject of this.gameObjectManager.getAllActiveObjects()) {
+    for (const gameObject of objects) {
       // Update any timers this object might have
       gameObject.updateTimers(deltaTime)
     }
   }
 
   /**
-   * Process animation events (sprite animation frame changes)
-   */
-  private processAnimationEvents(): void {
-    // Update sprite animations for all game objects
-    for (const gameObject of this.gameObjectManager.getAllActiveObjects()) {
-      if (!gameObject.visible) continue
-      
-      // Update sprite animation if object has one
-      gameObject.updateAnimation()
-    }
-  }
-
-  /**
-   * Process a specific GameMaker event for all game objects (optimized version)
-   */
-  private processGameMakerEvent(eventName: string, cachedObjects?: GameObject[]): void {
-    const objects = cachedObjects || this.gameObjectManager.getAllActiveObjects()
-    
-    for (const gameObject of objects) {
-      gameObject.executeEventSync(eventName as any, { deltaTime: 0 })
-    }
-  }
-
-  /**
    * Process virtual event methods for all game objects
    */
-  private processVirtualEvents(methodName: keyof GameObject, cachedObjects?: GameObject[]): void {
+  private invokeVirtualForAll(methodName: keyof GameObject, cachedObjects?: GameObject[]): void {
     const objects = cachedObjects || this.gameObjectManager.getAllActiveObjects()
     
     for (const gameObject of objects) {
