@@ -1,6 +1,6 @@
 import { DGCRoom, type RoomConfig } from '../../engine'
 import type { Game } from '../Game'
-import { Player } from '../gameobjects'
+import { Player, FPSMonitor } from '../gameobjects'
 
 /**
  * Sprite Movement Test Room
@@ -49,6 +49,11 @@ export class SpriteMoveTestRoom extends DGCRoom {
     const testPlayer = new Player(200, 150)
     testPlayer.visible = true
     this.game.addGameObject(testPlayer)
+
+    // Create FPS monitor for testing frame rate
+    const fpsMonitor = new FPSMonitor(20, 20)
+    this.game.addGameObject(fpsMonitor)
+    console.log('📊 FPS Monitor added to room')
 
     // Assign sprite to player (sprites are guaranteed to be loaded at this point)
     const pixelPlayerSprite = this.getSprite('pixel_player_sprite')

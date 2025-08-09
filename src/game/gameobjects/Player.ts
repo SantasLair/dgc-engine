@@ -126,34 +126,7 @@ export class Player extends GameObject {
    */
   public onDraw(): void {
     // Draw the player sprite if we have one, otherwise draw a rectangle
-    if (this.sprite) {
-      const drawX = this.x
-      const drawY = this.y
-      
-      // Temporarily set rounded position for drawing
-      const originalX = this.x
-      const originalY = this.y
-      this.x = drawX
-      this.y = drawY
-      
-      this.drawSelf()
-      
-      // Restore original position
-      this.x = originalX
-      this.y = originalY
-    } else {
-      // Fallback rectangle if no sprite
-      const drawing = this.getDrawingSystem()
-      if (drawing) {
-        const drawX = Math.round(this.x)
-        const drawY = Math.round(this.y)
-        drawing.drawRectangle(
-          drawX - 25, drawY - 25,
-          drawX + 25, drawY + 25,
-          true, 0x00FF00, 1.0  // Green, fully opaque
-        )
-      }
-    }
+    this.drawSelf()      
   }
 
   /**
