@@ -3,7 +3,7 @@
  * Define your custom object types here to use them without quotes
  */
 
-import { all } from './GameMakerConstants'
+import { all, noone } from './GameMakerConstants'
 
 // Define your custom object types as constants
 export const Player = 'Player' as const
@@ -29,5 +29,5 @@ export type GameObjectType =
 // Combined type for functions that accept object types or 'all'
 export type ObjectTypeOrAll = GameObjectType | typeof all
 
-// Re-export all for convenience
-export { all }
+// Re-export all GameMaker keywords for convenience
+export { all, noone }

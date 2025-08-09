@@ -1,6 +1,6 @@
 import { GameObject, type GameObjectProperties, GameEvent, type IDrawingSystem } from './GameObject'
 import type { EventManager } from './EventManager'
-import { all, type ObjectTypeOrAll } from './GameObjectTypes'
+import { all, noone, type ObjectTypeOrAll } from './GameObjectTypes'
 
 /**
  * Manages all game objects in the engine
@@ -358,5 +358,22 @@ export class GameObjectManager {
     for (const obj of objects) {
       this.destroyObject(obj.id)
     }
+  }
+
+  /**
+   * GameMaker-style instance_find function
+   * Returns the first instance of an object type, or noone if not found
+   */
+  public instance_find(objectType: ObjectTypeOrAll, index: number = 0): GameObject | typeof noone {
+    const objects = this.getObjectsByType(objectType)
+    return objects[index] || noone
+  }
+
+  /**
+   * GameMaker-style instance_nearest function  
+   * Returns the nearest instance to a position, or noone if not found
+   */
+  public instance_nearest(x: number, y: number, objectType: ObjectTypeOrAll): GameObject | typeof noone {
+    return this.getNearestObject(x, y, objectType) || noone
   }
 }

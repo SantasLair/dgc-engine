@@ -10,13 +10,23 @@
 export const all = 'all' as const
 
 /**
+ * GameMaker 'noone' keyword - refers to no object (null/undefined)
+ * Usage: if (target === noone) instead of if (target === null)
+ */
+export const noone = null
+
+/**
  * Type for object type identifiers that can include the 'all' keyword
  */
 export type ObjectTypeOrAll = string | typeof all
 
 /**
+ * Type for object references that can be an object or noone
+ */
+export type ObjectOrNoone<T = any> = T | typeof noone
+
+/**
  * Other GameMaker constants could go here:
  */
-// export const noone = null
 // export const self = 'self' as const
 // export const other = 'other' as const

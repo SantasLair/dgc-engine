@@ -21,7 +21,7 @@ export { SpriteManager, type SpriteLoadConfig } from './SpriteManager'
 export { DGCDrawingSystem } from './DGCDrawingSystem'
 
 // GameMaker constants and types
-export { all, type ObjectTypeOrAll } from './GameMakerConstants'
+export { all, noone, type ObjectTypeOrAll } from './GameMakerConstants'
 
 // GameMaker object types (unquoted object type constants)
 export { 
