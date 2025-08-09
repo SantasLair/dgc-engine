@@ -1,0 +1,1 @@
+export { SpriteMoveTestRoom } from './SpriteMoveTestRoom'
