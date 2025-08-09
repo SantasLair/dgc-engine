@@ -3,26 +3,6 @@ import { resolve } from 'path'
 import { copyFileSync, mkdirSync, existsSync } from 'fs'
 import { glob } from 'glob'
 
-// Function to copy JSON room data files
-function copyRoomDataFiles() {
-  const sourceDir = resolve(__dirname, 'src/game/rooms/data')
-  const targetDir = resolve(__dirname, 'public/data/rooms')
-  
-  // Ensure target directory exists
-  if (!existsSync(targetDir)) {
-    mkdirSync(targetDir, { recursive: true })
-  }
-  
-  // Copy all JSON files directly
-  const files = glob.sync('**/*.json', { cwd: sourceDir })
-  files.forEach(file => {
-    const sourcePath = resolve(sourceDir, file)
-    const targetPath = resolve(targetDir, file)
-    copyFileSync(sourcePath, targetPath)
-    console.log(`� Copied room data: ${file}`)
-  })
-}
-
 // Function to copy image assets
 function copyImageAssets() {
   const sourceDir = resolve(__dirname, 'src/assets/images')
@@ -52,19 +32,14 @@ export default defineConfig({
     }
   },
   plugins: [
-    // Plugin to copy room data and assets
+    // Plugin to copy assets
     {
       name: 'copy-assets',
       buildStart() {
-        // Copy JSON room data files
-        copyRoomDataFiles()
+        // Copy image assets only (no more JSON room data)
         copyImageAssets()
       },
       handleHotUpdate({ file }) {
-        // Re-copy room data files when they change during development
-        if (file.includes('src/game/rooms/data/')) {
-          copyRoomDataFiles()
-        }
         // Re-copy images when they change during development
         if (file.includes('src/assets/images/')) {
           copyImageAssets()

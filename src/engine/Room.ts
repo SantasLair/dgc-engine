@@ -117,6 +117,9 @@ export class Room {
     // Now that sprites are loaded, resolve sprite names to sprite objects for all game objects
     this.resolveSpriteReferences()
     
+    // Call preload hook for custom room setup
+    await this.preload()
+    
     // Execute create event if not already created
     if (!this.isCreated) {
       await this.executeEvent(GameEvent.CREATE)
@@ -136,6 +139,15 @@ export class Room {
       this.spriteManager.unloadSprites(spriteNames)
       console.log(`🧹 Unloaded ${spriteNames.length} sprites from room: ${this.name}`)
     }
+  }
+
+  /**
+   * Preload room assets and setup game objects
+   * Override this method in subclasses to customize room initialization
+   */
+  protected async preload(): Promise<void> {
+    // Default implementation - can be overridden by subclasses
+    console.log(`🔄 Room ${this.name} preload complete (default implementation)`)
   }
 
   /**
