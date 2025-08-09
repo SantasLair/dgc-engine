@@ -267,6 +267,7 @@ MessagePack Binary → JSON-Only Transparent Data
 6. **Simplicity Over Compatibility**: Clean code improves development experience more than compatibility layers
 7. **Focus on Core Features**: Feature development should precede compatibility concerns
 8. **Developer Experience First**: Personal enjoyment and workflow efficiency drive better outcomes
+9. **Avoid Premature Complexity**: Adding too much complexity too soon can hinder development progress and enjoyment
 
 ### Simplification Strategy
 - **Removed GameMaker Compatibility**: Eliminated GML compatibility layer for cleaner codebase
