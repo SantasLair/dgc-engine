@@ -25,7 +25,7 @@ function copyRoomDataFiles() {
 
 // Function to copy image assets
 function copyImageAssets() {
-  const sourceDir = resolve(__dirname, 'src/game/artifacts/images')
+  const sourceDir = resolve(__dirname, 'src/assets/images')
   const targetDir = resolve(__dirname, 'public/images')
   
   // Ensure target directory exists
@@ -66,7 +66,7 @@ export default defineConfig({
           copyRoomDataFiles()
         }
         // Re-copy images when they change during development
-        if (file.includes('src/game/artifacts/images/')) {
+        if (file.includes('src/assets/images/')) {
           copyImageAssets()
         }
       }
