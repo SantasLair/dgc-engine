@@ -95,9 +95,16 @@ export class DGCEngine {
       
       // Step Phase (using cached active objects)
       this.processGameMakerEvent('step_begin', allActiveObjects)
+      this.processVirtualEvents('onStepBegin', allActiveObjects)
+      
       this.processGameMakerEvent('step', allActiveObjects)
+      this.processVirtualEvents('onStep', allActiveObjects)
+      
       this.processGameMakerEvent('collision', allActiveObjects)
+      // Note: onCollision is called per-collision, not globally
+      
       this.processGameMakerEvent('step_end', allActiveObjects)
+      this.processVirtualEvents('onStepEnd', allActiveObjects)
       
       // Animation Updates
       this.processAnimationEvents()
@@ -105,8 +112,14 @@ export class DGCEngine {
       // Draw Phase (using cached active objects)
       this.startRender()
       this.processGameMakerEvent('draw_begin', allActiveObjects)
+      this.processVirtualEvents('onDrawBegin', allActiveObjects)
+      
       this.processGameMakerEvent('draw', allActiveObjects)
+      this.processVirtualEvents('onDraw', allActiveObjects)
+      
       this.processGameMakerEvent('draw_end', allActiveObjects)
+      this.processVirtualEvents('onDrawEnd', allActiveObjects)
+      
       this.processGameMakerEvent('draw_gui_begin', allActiveObjects)
       this.processGameMakerEvent('draw_gui', allActiveObjects)
       this.processGameMakerEvent('draw_gui_end', allActiveObjects)
@@ -293,6 +306,24 @@ export class DGCEngine {
     
     for (const gameObject of objects) {
       gameObject.executeEventSync(eventName as any, { deltaTime: 0 })
+    }
+  }
+
+  /**
+   * Process virtual event methods for all game objects
+   */
+  private processVirtualEvents(methodName: keyof GameObject, cachedObjects?: GameObject[]): void {
+    const objects = cachedObjects || this.gameObjectManager.getAllActiveObjects()
+    
+    for (const gameObject of objects) {
+      const method = gameObject[methodName] as Function
+      if (typeof method === 'function') {
+        try {
+          method.call(gameObject)
+        } catch (error) {
+          console.error(`Error executing ${methodName} on ${gameObject.objectType}:`, error)
+        }
+      }
     }
   }
 

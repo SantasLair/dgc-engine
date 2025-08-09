@@ -1,4 +1,4 @@
-import { GameObject, GameEvent } from '../../engine'
+import { GameObject } from '../../engine'
 
 /**
  * Simplified Player class for real-time movement and interaction
@@ -49,134 +49,135 @@ export class Player extends GameObject {
     this.realX = this.x // Floating-point logical position
     this.realY = this.y // Floating-point logical position
     
-    this.setupPlayerEvents()
     console.log('🎮 Player setup complete with sub-pixel precision and real class properties')
   }
 
+  // Virtual event methods (replacing GameMaker event scripts)
+
   /**
-   * Setup player event handlers
+   * CREATE event - called when player is first created
    */
-  private setupPlayerEvents(): void {
-    // CREATE event - called when player is first created
-    this.addEventScript(GameEvent.CREATE, (self) => {
-      console.log('🎮 Player CREATE event - Player spawned!')
-      console.log('🎮 Player position:', self.x, self.y)
-      console.log('🎮 Player visible:', self.visible)
-      console.log('🎮 Player sprite at CREATE:', self.sprite ? 'assigned' : 'null')
-      
-      // Force visibility
-      self.visible = true
-      
-      // Initialize using class properties (no more GameMaker variables)
-      const player = self as Player
-      player.alive = true
-      player.score = 0
-    })
+  public onCreate(): void {
+    console.log('🎮 Player CREATE event - Player spawned!')
+    console.log('🎮 Player position:', this.x, this.y)
+    console.log('🎮 Player visible:', this.visible)
+    console.log('🎮 Player sprite at CREATE:', this.sprite ? 'assigned' : 'null')
+    
+    // Force visibility
+    this.visible = true
+    
+    // Initialize using class properties (no more GameMaker variables)
+    this.alive = true
+    this.score = 0
+  }
 
-    // STEP event - called every frame for game logic
-    this.addEventScript(GameEvent.STEP, (self) => {
-      // Sub-pixel precision movement for buttery smoothness
-      const game = (window as any).game
-      if (game) {
-        const player = self as Player
+  /**
+   * STEP event - called every frame for game logic
+   */
+  public onStep(): void {
+    // Sub-pixel precision movement for buttery smoothness
+    const game = (window as any).game
+    if (game) {
+      // Get high-precision logical position from class properties
+      let realX = this.realX
+      let realY = this.realY
+      
+      // Direct movement based on input (affects logical position)
+      let moveX = 0
+      let moveY = 0
+      
+      if (game.isKeyPressed('KeyA') || game.isKeyPressed('ArrowLeft')) moveX = -this.speed
+      if (game.isKeyPressed('KeyD') || game.isKeyPressed('ArrowRight')) moveX = this.speed
+      if (game.isKeyPressed('KeyW') || game.isKeyPressed('ArrowUp')) moveY = -this.speed
+      if (game.isKeyPressed('KeyS') || game.isKeyPressed('ArrowDown')) moveY = this.speed
+      
+      // Apply movement to high-precision logical coordinates
+      if (moveX !== 0 || moveY !== 0) {
+        realX += moveX
+        realY += moveY
         
-        // Get high-precision logical position from class properties
-        let realX = player.realX
-        let realY = player.realY
-        
-        // Direct movement based on input (affects logical position)
-        let moveX = 0
-        let moveY = 0
-        
-        if (game.isKeyPressed('KeyA') || game.isKeyPressed('ArrowLeft')) moveX = -player.speed
-        if (game.isKeyPressed('KeyD') || game.isKeyPressed('ArrowRight')) moveX = player.speed
-        if (game.isKeyPressed('KeyW') || game.isKeyPressed('ArrowUp')) moveY = -player.speed
-        if (game.isKeyPressed('KeyS') || game.isKeyPressed('ArrowDown')) moveY = player.speed
-        
-        // Apply movement to high-precision logical coordinates
-        if (moveX !== 0 || moveY !== 0) {
-          realX += moveX
-          realY += moveY
-          
-          // Keep player within canvas bounds (logical position)
-          const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
-          if (canvas) {
-            const spriteSize = 32
-            const halfSprite = spriteSize / 2
-            realX = Math.max(halfSprite, Math.min(canvas.width - halfSprite, realX))
-            realY = Math.max(halfSprite, Math.min(canvas.height - halfSprite, realY))
-          }
-          
-          // Store updated logical position in class properties
-          player.realX = realX
-          player.realY = realY
-          
-          // Update visual position for rendering (will be rounded during draw)
-          self.x = realX
-          self.y = realY
+        // Keep player within canvas bounds (logical position)
+        const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement
+        if (canvas) {
+          const spriteSize = 32
+          const halfSprite = spriteSize / 2
+          realX = Math.max(halfSprite, Math.min(canvas.width - halfSprite, realX))
+          realY = Math.max(halfSprite, Math.min(canvas.height - halfSprite, realY))
         }
+        
+        // Store updated logical position in class properties
+        this.realX = realX
+        this.realY = realY
+        
+        // Update visual position for rendering (will be rounded during draw)
+        this.x = realX
+        this.y = realY
       }
+    }
+    
+    // Health regeneration using class properties
+    if (this.health < this.maxHealth && Math.random() < 0.001) {
+      this.health = Math.min(this.maxHealth, this.health + 1)
+    }
+  }
+
+  /**
+   * DRAW event - called every frame for rendering
+   */
+  public onDraw(): void {
+    // Draw the player sprite if we have one, otherwise draw a rectangle
+    if (this.sprite) {
+      // Ensure sprite is drawn at integer pixel positions to avoid jitter
+      const drawX = Math.round(this.x)
+      const drawY = Math.round(this.y)
       
-      // Health regeneration using class properties
-      const player = self as Player
-      if (player.health < player.maxHealth && Math.random() < 0.001) {
-        player.health = Math.min(player.maxHealth, player.health + 1)
+      // Temporarily set rounded position for drawing
+      const originalX = this.x
+      const originalY = this.y
+      this.x = drawX
+      this.y = drawY
+      
+      this.drawSelf()
+      
+      // Restore original position
+      this.x = originalX
+      this.y = originalY
+    } else {
+      // Fallback rectangle if no sprite
+      const drawing = this.getDrawingSystem()
+      if (drawing) {
+        const drawX = Math.round(this.x)
+        const drawY = Math.round(this.y)
+        drawing.drawRectangle(
+          drawX - 25, drawY - 25,
+          drawX + 25, drawY + 25,
+          true, 0x00FF00, 1.0  // Green, fully opaque
+        )
       }
-    })
+    }
+  }
 
-    // DRAW event - called every frame for rendering
-    this.addEventScript(GameEvent.DRAW, (self) => {
-      // Draw the player sprite if we have one, otherwise draw a rectangle
-      if (self.sprite) {
-        // Ensure sprite is drawn at integer pixel positions to avoid jitter
-        const drawX = Math.round(self.x)
-        const drawY = Math.round(self.y)
-        
-        // Temporarily set rounded position for drawing
-        const originalX = self.x
-        const originalY = self.y
-        self.x = drawX
-        self.y = drawY
-        
-        self.drawSelf()
-        
-        // Restore original position
-        self.x = originalX
-        self.y = originalY
-      } else {
-        // Fallback rectangle if no sprite
-        const drawing = self.getDrawingSystem()
-        if (drawing) {
-          const drawX = Math.round(self.x)
-          const drawY = Math.round(self.y)
-          drawing.drawRectangle(
-            drawX - 25, drawY - 25,
-            drawX + 25, drawY + 25,
-            true, 0x00FF00, 1.0  // Green, fully opaque
-          )
-        }
-      }
-    })
+  /**
+   * COLLISION event - handle collisions with other objects
+   */
+  public onCollision(other: GameObject): void {
+    if (!other) return
 
-    // COLLISION event - handle collisions with other objects
-    this.addEventScript(GameEvent.COLLISION, (_self, eventData) => {
-      const other = eventData?.other
-      if (!other) return
+    switch (other.objectType) {
+      case 'Enemy':
+        this.takeDamage(15)
+        break
+      case 'Item':
+        this.collectItem(other)
+        break
+    }
+  }
 
-      switch (other.objectType) {
-        case 'Enemy':
-          this.takeDamage(15)
-          break
-        case 'Item':
-          this.collectItem(other)
-          break
-      }
-    })
-
-    // DESTROY event - cleanup when player is destroyed
-    this.addEventScript(GameEvent.DESTROY, () => {
-      console.log('🎮 Player DESTROY event - Player removed!')
-    })
+  /**
+   * DESTROY event - cleanup when player is destroyed
+   */
+  public onDestroy(): void {
+    console.log('🎮 Player DESTROY event - Player removed!')
   }
 
   /**

@@ -62,8 +62,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       // Expose room functionality for testing
       ;(window as any).goToMenu = async () => await game.goToRoom('main_menu')
-      ;(window as any).goToSpriteDemo = async () => await game.goToRoom('sprite_demo')
-      ;(window as any).goToTestLevel = async () => await game.goToRoom('test_level')
       ;(window as any).getCurrentRoom = () => game.getRoomManager().getCurrentRoom()?.name
       ;(window as any).getRoomManager = () => game.getRoomManager()
       
