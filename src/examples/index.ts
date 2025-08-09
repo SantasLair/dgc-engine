@@ -3,6 +3,9 @@
  * Collection of all available examples demonstrating engine features
  */
 
+// Engine Philosophy and Paradigm Examples
+export { demonstrateEnginePhilosophy } from './EnginePhilosophyDemo'
+
 // GameMaker Compatibility Examples
 export { runGameMakerKeywordTests } from './GameMakerKeywordTests'
 
@@ -18,6 +21,9 @@ export * from './TomlRoomExample'
 export * from './VariableSystemExample'
 
 console.log('📖 DGC Engine Examples Available:')
+console.log('')
+console.log('🌉 Engine Philosophy:')
+console.log('  • EnginePhilosophyDemo - Bridge philosophy demonstration')  
 console.log('')
 console.log('🎮 GameMaker Compatibility:')
 console.log('  • GameMakerKeywordTests - Comprehensive test suite')

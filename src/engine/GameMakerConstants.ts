@@ -21,9 +21,10 @@ export const noone = null
 export type ObjectTypeOrAll = string | typeof all
 
 /**
- * Type for object references that can be an object or noone
+ * Type for object references that can be an object, noone, or null
+ * In GameMaker, noone and null are interchangeable for object references
  */
-export type ObjectOrNoone<T = any> = T | typeof noone
+export type ObjectOrNoone<T = any> = T | typeof noone | null
 
 /**
  * Other GameMaker constants could go here:
