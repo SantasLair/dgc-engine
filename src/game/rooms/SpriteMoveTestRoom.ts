@@ -10,8 +10,8 @@ export class SpriteMoveTestRoom extends Room {
   constructor(game: Game) {
     const config: RoomConfig = {
       name: 'sprite_move_test',
-      width: 800,
-      height: 600,
+      width: 640,
+      height: 480,
       background: '#1a1a1a',
       sprites: [
         {
